@@ -1,0 +1,47 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="SaleManeger.Views.ClientSelectionView">
+
+
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition MaxHeight="50"/>
+			<RowDefinition/>
+		</Grid.RowDefinitions>
+		<Grid Margin="0,50,0,0" MinHeight="50" Grid.Row="0">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto"/>
+				<ColumnDefinition/>
+				<ColumnDefinition Width="Auto"/>
+				<ColumnDefinition Width="Auto"/>
+			</Grid.ColumnDefinitions>	
+			<Button Margin="5" VerticalAlignment="Stretch" VerticalContentAlignment="Center" Grid.Column="0" Content="Cofnij" Command="{Binding	OpenProjectSelectionCommand}"/>
+			<TextBox Margin="0,5,0,5" Name="clientName" Text="{Binding ClientName}" VerticalAlignment="Stretch" VerticalContentAlignment="Center"  Grid.Column="1" Watermark="Wprowadz imie, nazwisko lub numer telefonu"/>
+			<Button Margin="5,5,0,5" VerticalAlignment="Stretch" VerticalContentAlignment="Center"  Grid.Column="2" Content="Filtr"/>
+			<Button Margin="5" VerticalAlignment="Stretch" VerticalContentAlignment="Center"  Grid.Column="3" Content="Add client" Command="{Binding $parent[UserControl].DataContext.OpenClientEditionCommand}" CommandParameter="{Binding	#clientName.Text}"/>
+		</Grid>
+
+		<ScrollViewer Margin="5,20,5,0" Grid.Row="1">
+			<ItemsRepeater Items="{Binding Clients,Mode=TwoWay}" Name="clients" >
+				<ItemsRepeater.Layout>
+					<StackLayout Orientation="Vertical"/>
+				</ItemsRepeater.Layout>
+				<ItemsRepeater.ItemTemplate>
+					<DataTemplate>
+						<Grid Margin="5">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="100*"/>
+								<ColumnDefinition Width="50*"/>
+							</Grid.ColumnDefinitions>
+							<TextBlock Grid.Column="0" FontSize="40" Text="{Binding Name}"/>
+							<Button HorizontalAlignment="Right" Grid.Column="2" Command="{Binding $parent[UserControl].DataContext.OpenClientEditionCommand}" CommandParameter="{Binding ID}" HorizontalContentAlignment="Center" Width="80" FontSize="20" Content="Open"/>
+						</Grid>
+					</DataTemplate>
+				</ItemsRepeater.ItemTemplate>
+			</ItemsRepeater>
+		</ScrollViewer>
+	</Grid>
+</UserControl>
