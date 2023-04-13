@@ -1,17 +1,13 @@
-﻿using Avalonia.Interactivity;
-using ReactiveUI;
+﻿using ReactiveUI;
 using SaleManeger.Models;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SaleManeger.ViewModels
 {
-    public class ProductEditionViewModel:ViewModelBase
+    public class ProductEditionViewModel : ViewModelBase
     {
         public ObservableCollection<Product> Products { get; set; }
         public ReactiveCommand<Unit, Unit> SaveToDataBaseCommand { get; set; }

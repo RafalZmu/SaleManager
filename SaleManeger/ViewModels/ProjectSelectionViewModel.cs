@@ -1,7 +1,5 @@
-﻿using Microsoft.VisualBasic;
-using ReactiveUI;
+﻿using ReactiveUI;
 using SaleManeger.Models;
-using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;

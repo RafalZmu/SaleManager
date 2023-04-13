@@ -2,13 +2,11 @@
 using SaleManeger.Models;
 using SQLitePCL;
 using System;
-using System.Collections.Generic;
 using System.Reactive.Linq;
-using System.Xml.Serialization;
 
 namespace SaleManeger.ViewModels
 {
-    public class MainWindowViewModel : ReactiveObject 
+    public class MainWindowViewModel : ReactiveObject
     {
         private string _saleName;
         private DataBase _dataBase { get; set; }

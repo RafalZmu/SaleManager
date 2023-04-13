@@ -1,11 +1,8 @@
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
-using Avalonia.Input;
-using System;
 using Avalonia.Interactivity;
-using System.Collections.Generic;
 using SaleManeger.Models;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SaleManeger.Views;
@@ -20,7 +17,7 @@ public partial class ClientEditionView : UserControl
         sale.AddHandler(KeyUpEvent, Sale_InputHandler, RoutingStrategies.Tunnel);
         order.AddHandler(KeyUpEvent, Order_InputHandler, RoutingStrategies.Tunnel);
         _dataBase = new DataBase();
-        _products = _dataBase.GetProducts(); 
+        _products = _dataBase.GetProducts();
     }
     private void Order_InputHandler(object? sender, EventArgs e)
     {
@@ -31,7 +28,7 @@ public partial class ClientEditionView : UserControl
         var cursorPostion = 0;
         foreach (var line in text.Split("\n"))
         {
-            if(string.IsNullOrEmpty(line)) continue;
+            if (string.IsNullOrEmpty(line)) continue;
             if (line.Length == 2 && _products.Any(x => x.Code == line))
             {
                 var replacement = _products.Where(x => x.Code == line).First().Name;
@@ -45,7 +42,7 @@ public partial class ClientEditionView : UserControl
 
         }
         order.Text = newText;
-        if(cursorPostion != 0)
+        if (cursorPostion != 0)
         {
             order.CaretIndex = cursorPostion;
         }
@@ -60,7 +57,7 @@ public partial class ClientEditionView : UserControl
         var codeConverted = false;
         foreach (var line in text.Split("\n"))
         {
-            if(string.IsNullOrEmpty(line)) continue;
+            if (string.IsNullOrEmpty(line)) continue;
             if (line.Length == 2 && _products.Any(x => x.Code == line))
             {
                 var replacement = _products.Where(x => x.Code == line).First().Name;
@@ -75,7 +72,7 @@ public partial class ClientEditionView : UserControl
 
         }
         sale.Text = newText;
-        if(codeConverted == true)
+        if (codeConverted == true)
         {
             sale.CaretIndex = cursorPostion;
         }

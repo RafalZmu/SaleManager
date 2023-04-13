@@ -1,26 +1,15 @@
-﻿using Avalonia.Controls;
-using Avalonia.VisualTree;
-using Avalonia.Controls.Mixins;
-using Avalonia.Input;
-using DynamicData.Binding;
-using Microsoft.CodeAnalysis.Text;
-using ReactiveUI;
+﻿using ReactiveUI;
 using SaleManeger.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Drawing.Text;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Avalonia.Interactivity;
 
 namespace SaleManeger.ViewModels
 {
-    public class ClientEditionViewModel:ViewModelBase
+    public class ClientEditionViewModel : ViewModelBase
     {
         public string ClientID { get; set; }
         public string Name { get; set; }
@@ -44,7 +33,7 @@ namespace SaleManeger.ViewModels
         private List<Product> _products;
         private DataBase _dataBase { get; set; }
 
-        public ClientEditionViewModel(DataBase db, Client client, string saleName) 
+        public ClientEditionViewModel(DataBase db, Client client, string saleName)
         {
             _dataBase = db;
             _saleName = saleName;
@@ -56,16 +45,16 @@ namespace SaleManeger.ViewModels
 
             foreach (var item in client.Products)
             {
-                if(item.IsReserved)
+                if (item.IsReserved)
                 {
-                    if(item.Name == "")
+                    if (item.Name == "")
                         Order += $"{item.Value.Trim()}{Environment.NewLine}";
                     else
                         Order += $"{item.Name}: {item.Value}{Environment.NewLine}";
                 }
                 else
                 {
-                    if(item.Name == "")
+                    if (item.Name == "")
                         Sale += $"{item.Value.Trim()}{Environment.NewLine}";
                     else
                         Sale += $"{item.Name}: {item.Value}{Environment.NewLine}";
@@ -75,7 +64,7 @@ namespace SaleManeger.ViewModels
         private string OpenClientSelection()
         {
             SaveClient();
-            return _saleName; 
+            return _saleName;
         }
         private void SaveClient()
         {
@@ -97,7 +86,7 @@ namespace SaleManeger.ViewModels
             {
                 foreach (var item in Order.Trim().Split("\n"))
                 {
-                    if(!item.Contains(':'))
+                    if (!item.Contains(':'))
                     {
                         Product comment = new()
                         {
@@ -108,7 +97,7 @@ namespace SaleManeger.ViewModels
                         };
                         client.Products.Add(comment);
                         continue;
-                        
+
                     }
                     var name = item.Split(":")[0].Trim();
                     var code = _products.Where(x => x.Name == name).First().Code;
@@ -129,7 +118,7 @@ namespace SaleManeger.ViewModels
             {
                 foreach (var item in Sale.Trim().Split("\n"))
                 {
-                    if(!item.Contains(':'))
+                    if (!item.Contains(':'))
                     {
                         Product comment = new()
                         {
@@ -140,7 +129,7 @@ namespace SaleManeger.ViewModels
                         };
                         client.Products.Add(comment);
                         continue;
-                        
+
                     }
                     double.TryParse(item.Split(':')[1].Trim(), out var value);
                     var name = item.Split(":")[0].Trim();

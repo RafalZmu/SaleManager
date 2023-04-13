@@ -1,9 +1,7 @@
-﻿using Avalonia.Controls;
-using ReactiveUI;
+﻿using ReactiveUI;
 using SaleManeger.Models;
 using System;
 using System.Collections.ObjectModel;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -19,7 +17,7 @@ namespace SaleManeger.ViewModels
             get => _clientName;
             set
             {
-                if(_clientName != value)
+                if (_clientName != value)
                 {
                     this.RaiseAndSetIfChanged(ref _clientName, value);
                     FiltrClients();
@@ -39,9 +37,9 @@ namespace SaleManeger.ViewModels
                 }
             }
         }
-        
+
         public ReactiveCommand<string, Client> OpenClientEditionCommand { get; }
-        public ReactiveCommand<Unit, Unit> OpenProjectSelectionCommand { get; }  
+        public ReactiveCommand<Unit, Unit> OpenProjectSelectionCommand { get; }
 
         private DataBase _dataBase;
 
@@ -52,13 +50,13 @@ namespace SaleManeger.ViewModels
 
             OpenClientEditionCommand = ReactiveCommand.Create<string, Client>(CreateNewClient);
 
-            OpenProjectSelectionCommand = ReactiveCommand.Create(() => {});
+            OpenProjectSelectionCommand = ReactiveCommand.Create(() => { });
 
             AllClients = Clients = _dataBase.GetClientsFromSale(saleName);
         }
         private Client CreateNewClient(string clientID)
         {
-            if(!Guid.TryParse(clientID, out var id))
+            if (!Guid.TryParse(clientID, out var id))
             {
                 Client newClient = new Client()
                 {
@@ -66,7 +64,7 @@ namespace SaleManeger.ViewModels
                     Name = "",
                     PhoneNumber = "",
                     Products = new ObservableCollection<Product>()
-                   
+
                 };
                 return newClient;
             }
@@ -75,13 +73,12 @@ namespace SaleManeger.ViewModels
         }
         private void FiltrClients()
         {
-            if(string.IsNullOrWhiteSpace(ClientName))
+            if (string.IsNullOrWhiteSpace(ClientName))
             {
-                return;
+                Clients = new ObservableCollection<Client>(AllClients);
             }
-            var clients = new ObservableCollection<Client>(AllClients.Where(x => x.Name.Contains(ClientName)));
-            Clients =  new ObservableCollection<Client>(AllClients.Where(x => x.Name.Contains(ClientName)));
-            
+            Clients = new ObservableCollection<Client>(AllClients.Where(x => x.Name.ToLower().Contains(ClientName.ToLower()) || x.PhoneNumber.Contains(ClientName)));
+
         }
     }
 }
