@@ -3,6 +3,7 @@ using SaleManeger.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Data.Entity.Migrations.Model;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -21,13 +22,21 @@ namespace SaleManeger.ViewModels
             get => _sale;
             set
             {
-                if (_sale != value)
-                {
-                    this.RaiseAndSetIfChanged(ref _sale, value);
-                }
+                _sale = value;
+                UpdateSaleSum();
             }
         }
+
         public string Codes { get; set; }
+        private string _saleSum;
+        public string SaleSum
+        {
+            get => _saleSum;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _saleSum, value);
+            }
+        }
         public ReactiveCommand<Unit, string> OpenClientSelectionCommand { get; }
         private string _saleName;
         private List<Product> _products;
@@ -42,6 +51,11 @@ namespace SaleManeger.ViewModels
             Number = client.PhoneNumber;
             ClientID = client.ID;
             _products = _dataBase.GetProducts();
+
+            foreach (var item in _products)
+            {
+                Codes += $"{item.Code}-{item.Name}{Environment.NewLine}";
+            }
 
             foreach (var item in client.Products)
             {
@@ -75,8 +89,8 @@ namespace SaleManeger.ViewModels
             var client = new Client()
             {
                 ID = ClientID,
-                Name = string.IsNullOrWhiteSpace(Name) ? "Podaj imie" : Name,
-                PhoneNumber = string.IsNullOrWhiteSpace(Number) ? "Podaj numer" : Number,
+                Name = string.IsNullOrWhiteSpace(Name) ? "" : Name,
+                PhoneNumber = string.IsNullOrWhiteSpace(Number) ? "" : Number,
                 Products = new ObservableCollection<Product>()
             };
 
@@ -148,6 +162,39 @@ namespace SaleManeger.ViewModels
 
             _dataBase.UpdateOrCreateClient(client, _saleName);
 
+        }
+        private void UpdateSaleSum()
+        {
+            if (string.IsNullOrWhiteSpace(Sale))
+                return;
+            SaleSum = "";
+            double sum = 0;
+            foreach (var line in Sale.Split("\n"))
+            {
+                if(line.Contains(':'))
+                {
+                    double.TryParse(line.Split(":")[1].Trim(), out double productCost);
+                    sum += productCost;
+                }
+                else
+                {
+                    SaleSum += $"{sum} + ";
+                    sum = 0;
+                }
+            }
+            SaleSum += sum;
+            if(SaleSum.Contains('+'))
+            {
+                SaleSum.Replace(" ", "");
+                double allSaleSum = 0;
+                foreach (var num in SaleSum.Split('+'))
+                {
+                    double.TryParse(num, out var value);
+                    allSaleSum += value;
+                }
+                SaleSum += $"{Environment.NewLine}Suma: {allSaleSum}";
+
+            }
         }
     }
 }

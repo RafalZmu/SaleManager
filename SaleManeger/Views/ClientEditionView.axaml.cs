@@ -49,6 +49,7 @@ public partial class ClientEditionView : UserControl
     }
     private void Sale_InputHandler(object? sender, EventArgs e)
     {
+        saleSum = saleSum;
         var text = sale.Text;
         if (string.IsNullOrWhiteSpace(text))
             return;

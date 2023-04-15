@@ -62,6 +62,10 @@ namespace SaleManeger.ViewModels
             {
                 OpenProjectSelection();
             });
+            clientSelectionViewModel.OpenSaleSummaryCommand.Subscribe(model =>
+            {
+                OpenSaleSummary(model);
+            });
         }
 
         public void OpenClientEdition(Client client)
@@ -71,6 +75,15 @@ namespace SaleManeger.ViewModels
 
             clientEditionViewModel.OpenClientSelectionCommand.Subscribe(OpenClientSelection);
 
+        }
+        public void OpenSaleSummary(string saleName)
+        {
+            var saleSummaryViewModel = new SaleSummaryViewModel(_dataBase, saleName);
+            Content = saleSummaryViewModel;
+            saleSummaryViewModel.OpenClientSelectionCommand.Subscribe(model =>
+            { 
+                OpenClientSelection(saleName); 
+            });
         }
     }
 }

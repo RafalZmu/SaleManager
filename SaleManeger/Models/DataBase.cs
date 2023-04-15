@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data.SQLite;
 using System.IO;
@@ -125,7 +126,7 @@ namespace SaleManeger.Models
                         {
                             while (reader.Read())
                             {
-                                // Add the products to the order
+                                // Add the products to the orde
                                 var productID = reader.GetString(2);
                                 if (productID == "")
                                 {
@@ -286,6 +287,52 @@ namespace SaleManeger.Models
                                 createClientCommand.ExecuteNonQuery();
                             }
                         }
+                    }
+                }
+            }
+        }
+        public int GetSumOfProduct(string saleName, string code, bool isReserved)
+        {
+            using(SQLiteConnection connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+                using (SQLiteCommand GetProductSum = new("SELECT SUM(Value) FROM ClientOrder WHERE SaleID = @saleID AND IsReserved ==@isReserved AND ProductID ==@product", connection))
+                {
+                    GetProductSum.Parameters.AddWithValue("@saleID", saleName);
+                    GetProductSum.Parameters.AddWithValue("@isReserved", isReserved);
+                    GetProductSum.Parameters.AddWithValue("@product", code);
+                    using(var reader = GetProductSum.ExecuteReader())
+                    {
+                        while(reader.Read())
+                        {
+                            if (reader.IsDBNull(0))
+                                return 0;
+                            return reader.GetInt32(0);
+                        }
+                        return 0;
+                    }
+                }
+            }
+        }
+        public int GetLeftProduct(string saleName, string code, bool isReserved)
+        {
+            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+                using (SQLiteCommand GetProductSum = new("SELECT SUM(Value) FROM ClientOrder WHERE IsReserved = 1 AND ProductID == @product AND SaleID == @saleID AND ClientID NOT IN(SELECT DISTINCT ClientID FROM ClientOrder WHERE SaleID = @saleID AND IsReserved = 0)", connection))
+                {
+                    GetProductSum.Parameters.AddWithValue("@saleID", saleName);
+                    GetProductSum.Parameters.AddWithValue("@product", code);
+                    using (var reader = GetProductSum.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            if(reader.IsDBNull(0))
+                                return 0;
+
+                            return reader.GetInt32(0);
+                        }
+                        return 0;
                     }
                 }
             }

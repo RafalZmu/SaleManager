@@ -10,7 +10,15 @@ namespace SaleManeger.ViewModels
 {
     public class ClientSelectionViewModel : ViewModelBase
     {
+        // The name of the current sale.
         public string SaleName { get; set; }
+        public ReactiveCommand<string, Client> OpenClientEditionCommand { get; }
+        public ReactiveCommand<Unit, Unit> OpenProjectSelectionCommand { get; } 
+        public ReactiveCommand<Unit, string> OpenSaleSummaryCommand { get; }
+        // All clients in the current sale.
+        public ObservableCollection<Client> AllClients { get; set; }
+
+        // The name of the client currently being searched for.
         private string _clientName;
         public string ClientName
         {
@@ -24,7 +32,8 @@ namespace SaleManeger.ViewModels
                 }
             }
         }
-        public ObservableCollection<Client> AllClients { get; set; }
+
+        // Clients that match the current search term.
         private ObservableCollection<Client> _clients;
         public ObservableCollection<Client> Clients
         {
@@ -38,8 +47,6 @@ namespace SaleManeger.ViewModels
             }
         }
 
-        public ReactiveCommand<string, Client> OpenClientEditionCommand { get; }
-        public ReactiveCommand<Unit, Unit> OpenProjectSelectionCommand { get; }
 
         private DataBase _dataBase;
 
@@ -49,28 +56,49 @@ namespace SaleManeger.ViewModels
             _dataBase = dataBase;
 
             OpenClientEditionCommand = ReactiveCommand.Create<string, Client>(CreateNewClient);
-
             OpenProjectSelectionCommand = ReactiveCommand.Create(() => { });
+            OpenSaleSummaryCommand = ReactiveCommand.Create(OpenSaleSummary);
 
+            // Get all clients for the current sale and set their colors based on their product reservations.
             AllClients = Clients = _dataBase.GetClientsFromSale(saleName);
+            foreach (var client in AllClients)
+            {
+                if (client.Products.Any(x => x.IsReserved == true) && client.Products.Any(x => x.IsReserved == false))
+                {
+                    client.Color = "Green";
+                }
+                else if (client.Products.Any(x => x.IsReserved == true) && !client.Products.Any(x => x.IsReserved == false))
+                {
+                    client.Color = "Red";
+                }
+                else
+                {
+                    client.Color = "White";
+                }
+            }
         }
+
+        // Create a new client with the given ID.
         private Client CreateNewClient(string clientID)
         {
             if (!Guid.TryParse(clientID, out var id))
             {
+                // If the ID is not a valid GUID, create a new client with a new GUID.
                 Client newClient = new Client()
                 {
                     ID = Guid.NewGuid().ToString(),
                     Name = "",
                     PhoneNumber = "",
                     Products = new ObservableCollection<Product>()
-
                 };
                 return newClient;
             }
+            // If the ID is valid, return the existing client with that ID.
             var client = Clients.Where(x => x.ID == clientID).FirstOrDefault();
             return client;
         }
+
+        // Filter the clients based on the current search term.
         private void FiltrClients()
         {
             if (string.IsNullOrWhiteSpace(ClientName))
@@ -78,7 +106,11 @@ namespace SaleManeger.ViewModels
                 Clients = new ObservableCollection<Client>(AllClients);
             }
             Clients = new ObservableCollection<Client>(AllClients.Where(x => x.Name.ToLower().Contains(ClientName.ToLower()) || x.PhoneNumber.Contains(ClientName)));
-
+        }
+        private string OpenSaleSummary()
+        {
+            return SaleName;
         }
     }
 }
+
