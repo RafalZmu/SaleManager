@@ -183,17 +183,21 @@ namespace SaleManeger.ViewModels
                 }
             }
             SaleSum += sum;
+            double allSaleSum = 0;
             if(SaleSum.Contains('+'))
             {
                 SaleSum.Replace(" ", "");
-                double allSaleSum = 0;
                 foreach (var num in SaleSum.Split('+'))
                 {
                     double.TryParse(num, out var value);
                     allSaleSum += value;
                 }
                 SaleSum += $"{Environment.NewLine}Suma: {allSaleSum}";
-
+            }
+            if (allSaleSum != 0)
+            {
+                SaleSum += $"       Reszta z {Math.Ceiling(allSaleSum/100)*100}: {  Math.Ceiling(allSaleSum/100)*100 - allSaleSum}";
+                SaleSum += $"  Reszta z {Math.Ceiling(allSaleSum/50)*50}: {  Math.Ceiling(allSaleSum/50)*50 - allSaleSum}";
             }
         }
     }

@@ -255,26 +255,6 @@ namespace SaleManeger.Models
                                 updateClientCommand.Parameters.AddWithValue("@id", client.ID);
                                 updateClientCommand.ExecuteNonQuery();
                             }
-
-
-                            using (SQLiteCommand updateClientOrderCommand = new SQLiteCommand("DELETE FROM ClientOrder WHERE ClientID = @ClientID AND SaleID = @SaleID", connection))
-                            {
-                                updateClientOrderCommand.Parameters.AddWithValue("@ClientID", client.ID);
-                                updateClientOrderCommand.Parameters.AddWithValue("@SaleID", saleName);
-                                updateClientOrderCommand.ExecuteNonQuery();
-                            }
-                            foreach (var item in client.Products)
-                            {
-                                using (SQLiteCommand addProduct = new SQLiteCommand("INSERT INTO ClientOrder (ProductID, ClientID, SaleID, IsReserved, Value) VALUES (@ProductID, @ClientID, @SaleID, @IsReserved, @Value)", connection))
-                                {
-                                    addProduct.Parameters.AddWithValue("@ProductID", item.Code);
-                                    addProduct.Parameters.AddWithValue("@ClientID", client.ID);
-                                    addProduct.Parameters.AddWithValue("@SaleID", saleName);
-                                    addProduct.Parameters.AddWithValue("@IsReserved", item.IsReserved);
-                                    addProduct.Parameters.AddWithValue("@Value", item.Value);
-                                    addProduct.ExecuteNonQuery();
-                                }
-                            }
                         }
                         else
                         {
@@ -285,6 +265,25 @@ namespace SaleManeger.Models
                                 createClientCommand.Parameters.AddWithValue("@Name", client.Name);
                                 createClientCommand.Parameters.AddWithValue("@Number", client.PhoneNumber);
                                 createClientCommand.ExecuteNonQuery();
+                            }
+                        }
+
+                        using (SQLiteCommand updateClientOrderCommand = new SQLiteCommand("DELETE FROM ClientOrder WHERE ClientID = @ClientID AND SaleID = @SaleID", connection))
+                        {
+                            updateClientOrderCommand.Parameters.AddWithValue("@ClientID", client.ID);
+                            updateClientOrderCommand.Parameters.AddWithValue("@SaleID", saleName);
+                            updateClientOrderCommand.ExecuteNonQuery();
+                        }
+                        foreach (var item in client.Products)
+                        {
+                            using (SQLiteCommand addProduct = new SQLiteCommand("INSERT INTO ClientOrder (ProductID, ClientID, SaleID, IsReserved, Value) VALUES (@ProductID, @ClientID, @SaleID, @IsReserved, @Value)", connection))
+                            {
+                                addProduct.Parameters.AddWithValue("@ProductID", item.Code);
+                                addProduct.Parameters.AddWithValue("@ClientID", client.ID);
+                                addProduct.Parameters.AddWithValue("@SaleID", saleName);
+                                addProduct.Parameters.AddWithValue("@IsReserved", item.IsReserved);
+                                addProduct.Parameters.AddWithValue("@Value", item.Value);
+                                addProduct.ExecuteNonQuery();
                             }
                         }
                     }

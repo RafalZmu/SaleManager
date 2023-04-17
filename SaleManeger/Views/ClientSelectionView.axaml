@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 xmlns:commands="clr-namespace:SaleManeger.ViewModels"
              x:Class="SaleManeger.Views.ClientSelectionView">
 
 	<Grid>
@@ -21,7 +22,36 @@
 			<Button Margin="5" VerticalAlignment="Stretch" VerticalContentAlignment="Center" Grid.Column="0" Content="Cofnij" Command="{Binding	OpenProjectSelectionCommand}"/>
 			<Button Margin="5" VerticalAlignment="Stretch" VerticalContentAlignment="Center" Grid.Column="1" Content="Podsumowanie Sprzedarzy" Command="{Binding OpenSaleSummaryCommand}"/>
 			<TextBox Margin="0,5,0,5" Name="clientName" Text="{Binding ClientName}" VerticalAlignment="Stretch" VerticalContentAlignment="Center"  Grid.Column="2" Watermark="Wprowadz imie, nazwisko lub numer telefonu"/>
-			<Button Margin="5,5,0,5" VerticalAlignment="Stretch" VerticalContentAlignment="Center"  Grid.Column="3" Content="Filtr"/>
+			<Button Name="filtr" Margin="5,5,0,5" VerticalAlignment="Stretch" VerticalContentAlignment="Center"  Grid.Column="3" Content="Filtr">
+				<Button.Flyout>
+					<Flyout Placement="Bottom">
+						<StackPanel Orientation="Vertical">
+							<ItemsControl Items="{Binding Products}">
+								<ItemsControl.ItemsPanel>
+									<ItemsPanelTemplate>
+										<WrapPanel Orientation="Vertical" MaxHeight="500"/>
+									</ItemsPanelTemplate>
+								</ItemsControl.ItemsPanel>
+								<ItemsControl.ItemTemplate>
+									<DataTemplate>
+										<Border Margin="1">
+											<CheckBox Command="{Binding	$parent[UserControl].DataContext.UpdateClientsCommand}" IsChecked="{Binding IsReserved,Mode=TwoWay}" Content="{Binding Name}"></CheckBox>
+										</Border>
+									</DataTemplate>
+								</ItemsControl.ItemTemplate>
+							</ItemsControl>
+							<Border BorderBrush="Gray" BorderThickness="0,3,0,0" Padding="2">
+								<StackPanel Orientation="Vertical">
+									<CheckBox Command="{Binding UpdateClientsCommand}" IsChecked="{Binding AreClientsWithOrderShowing}">Ma zamówienie</CheckBox>
+									<CheckBox Command="{Binding UpdateClientsCommand}" IsChecked="{Binding AreClientsWithSaleShowing}">Ma kupno</CheckBox>
+									<CheckBox Command="{Binding UpdateClientsCommand}" IsChecked="{Binding AreAllClientsShowing}">Pokarz wszystkich</CheckBox>
+								</StackPanel>
+							</Border>
+
+						</StackPanel>
+					</Flyout>
+				</Button.Flyout>
+			</Button>
 			<Button Margin="5" VerticalAlignment="Stretch" VerticalContentAlignment="Center"  Grid.Column="4" Content="Add client" Command="{Binding $parent[UserControl].DataContext.OpenClientEditionCommand}" CommandParameter="{Binding	#clientName.Text}"/>
 		</Grid>
 
