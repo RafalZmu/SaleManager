@@ -9,7 +9,6 @@ namespace SaleManeger.Models
 {
     public class DataBase
     {
-        public SQLiteConnection connection;
         private string connectionString = "Data Source=SaleManeger.sqlite;Version=3";
 
         public DataBase()
@@ -17,59 +16,50 @@ namespace SaleManeger.Models
             if (!File.Exists("SaleManeger.sqlite"))
             {
                 SQLiteConnection.CreateFile("SaleManeger.sqlite");
-                using (connection = new SQLiteConnection(connectionString))
+                using (var connection = new SQLiteConnection(connectionString))
                 {
                     connection.Open();
                     var createClientsTableCommand = new SQLiteCommand("CREATE TABLE Clients (ClientID TEXT PRIMARY KEY, Name TEXT, Number TEXT)", connection);
                     createClientsTableCommand.ExecuteNonQuery();
+
                     var createProductsTableCommand = new SQLiteCommand(
                         "CREATE TABLE Products (Code TEXT PRIMARY KEY, Name TEXT, PricePerKg REAL)", connection);
                     createProductsTableCommand.ExecuteNonQuery();
+
                     var createSalesTableCommand = new SQLiteCommand("CREATE TABLE Sales (SaleName TEXT PRIMARY KEY)", connection);
                     createSalesTableCommand.ExecuteNonQuery();
+
                     var createClientOrderTableCommand = new SQLiteCommand(
                         "CREATE TABLE ClientOrder (ProductID TEXT, ClientID TEXT NOT NULL, SaleID TEXT NOT NULL, IsReserved INTEGER, Value TEXT)", connection);
                     createClientOrderTableCommand.ExecuteNonQuery();
                 }
             }
-            else
-            {
-                connection = new SQLiteConnection("Data Source=SaleManeger.sqlite;Version=3");
-            }
-        }
-
-        public void AddToSales(string saleName)
-        {
-            using (connection = new SQLiteConnection(connectionString))
-            {
-                connection.Open();
-                SQLiteCommand InsertToTableCommand = new SQLiteCommand("INSERT INTO Sales (SaleName) VALUES (@saleDate)", connection);
-                InsertToTableCommand.Parameters.AddWithValue("saleDate", saleName);
-                InsertToTableCommand.ExecuteNonQuery();
-            }
         }
 
         public ObservableCollection<Sale> GetSalesList()
         {
-            using (connection = new SQLiteConnection(connectionString))
+            var sales = new ObservableCollection<Sale>();
+
+            using (var connection = new SQLiteConnection(connectionString))
             {
                 connection.Open();
-                var command = new SQLiteCommand("SELECT * FROM Sales", connection);
-                var reader = command.ExecuteReader();
 
-                var sales = new ObservableCollection<Sale>();
-
-                while (reader.Read())
+                using (var command = new SQLiteCommand("SELECT * FROM Sales", connection))
+                using (var reader = command.ExecuteReader())
                 {
-                    var sale = new Sale(reader.GetString(0));
-                    sales.Add(sale);
+                    while (reader.Read())
+                    {
+                        var sale = new Sale(reader.GetString(0));
+                        sales.Add(sale);
+                    }
                 }
-                return sales;
             }
+
+            return sales;
         }
         public List<Product> GetProducts()
         {
-            using (connection = new SQLiteConnection(connectionString))
+            using (var connection = new SQLiteConnection(connectionString))
             {
                 //Get products from data base 
                 connection.Open();
@@ -93,7 +83,7 @@ namespace SaleManeger.Models
         public ObservableCollection<Client> GetClientsFromSale(string saleName)
         {
             List<Product> products = GetProducts();
-            using (connection = new SQLiteConnection(connectionString))
+            using (var connection = new SQLiteConnection(connectionString))
             {
                 connection.Open();
 
@@ -195,43 +185,9 @@ namespace SaleManeger.Models
         public void AddProductsToDatabase(ObservableCollection<Product> products)
         {
             DeleteAllFromTable("Products");
-            using (SQLiteConnection connection = new(connectionString))
+            foreach (var product in products)
             {
-                connection.Open();
-
-                foreach (var product in products)
-                {
-                    SQLiteCommand command = new SQLiteCommand("INSERT INTO Products (Name, Code, PricePerKg) VALUES (@Name, @Code, @PricePerKg)", connection);
-                    command.Parameters.AddWithValue("@Name", product.Name);
-                    command.Parameters.AddWithValue("@Code", product.Code);
-                    command.Parameters.AddWithValue("@PricePerKg", product.PricePerKg);
-                    command.ExecuteNonQuery();
-                }
-            }
-        }
-        public Client GetClient(string clientID, string saleID)
-        {
-            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
-            {
-                connection.Open();
-                SQLiteCommand command = new SQLiteCommand("SELECT ProductID, IsReserved, Value FROM ClientOrder WHERE ClientID == @clientID && SaleID == @saleID", connection);
-                command.Parameters.AddWithValue("@clientID", clientID);
-                command.Parameters.AddWithValue("@saleID", saleID);
-                command.ExecuteNonQuery();
-                var reader = command.ExecuteReader();
-                var client = new Client();
-
-                while (reader.Read())
-                {
-                    var product = new Product();
-
-                    product.Code = reader.GetString(0);
-                    product.IsReserved = reader.GetBoolean(1);
-                    product.Value = reader.GetString(2);
-                    client.Products.Add(product);
-                }
-                return client;
-
+                AddToTable("Products", ("Name", product.Name), ("Code", product.Code), ("PricePerKg", product.PricePerKg));
             }
         }
         public void UpdateOrCreateClient(Client client, string saleName)
@@ -259,15 +215,10 @@ namespace SaleManeger.Models
                         else
                         {
                             //Create client
-                            using (SQLiteCommand createClientCommand = new SQLiteCommand("INSERT INTO Clients (ClientID, Name, Number) VALUES (@ID, @Name, @Number)", connection))
-                            {
-                                createClientCommand.Parameters.AddWithValue("@ID", client.ID);
-                                createClientCommand.Parameters.AddWithValue("@Name", client.Name);
-                                createClientCommand.Parameters.AddWithValue("@Number", client.PhoneNumber);
-                                createClientCommand.ExecuteNonQuery();
-                            }
+                            AddToTable("Clients",("ClientID", client.ID), ("Name", client.Name), ("Number", client.PhoneNumber));
                         }
 
+                        //Update clients products
                         using (SQLiteCommand updateClientOrderCommand = new SQLiteCommand("DELETE FROM ClientOrder WHERE ClientID = @ClientID AND SaleID = @SaleID", connection))
                         {
                             updateClientOrderCommand.Parameters.AddWithValue("@ClientID", client.ID);
@@ -276,6 +227,7 @@ namespace SaleManeger.Models
                         }
                         foreach (var item in client.Products)
                         {
+
                             using (SQLiteCommand addProduct = new SQLiteCommand("INSERT INTO ClientOrder (ProductID, ClientID, SaleID, IsReserved, Value) VALUES (@ProductID, @ClientID, @SaleID, @IsReserved, @Value)", connection))
                             {
                                 addProduct.Parameters.AddWithValue("@ProductID", item.Code);
@@ -292,7 +244,7 @@ namespace SaleManeger.Models
         }
         public int GetSumOfProduct(string saleName, string code, bool isReserved)
         {
-            using(SQLiteConnection connection = new SQLiteConnection(connectionString))
+            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
             {
                 connection.Open();
                 using (SQLiteCommand GetProductSum = new("SELECT SUM(Value) FROM ClientOrder WHERE SaleID = @saleID AND IsReserved ==@isReserved AND ProductID ==@product", connection))
@@ -300,9 +252,9 @@ namespace SaleManeger.Models
                     GetProductSum.Parameters.AddWithValue("@saleID", saleName);
                     GetProductSum.Parameters.AddWithValue("@isReserved", isReserved);
                     GetProductSum.Parameters.AddWithValue("@product", code);
-                    using(var reader = GetProductSum.ExecuteReader())
+                    using (var reader = GetProductSum.ExecuteReader())
                     {
-                        while(reader.Read())
+                        while (reader.Read())
                         {
                             if (reader.IsDBNull(0))
                                 return 0;
@@ -326,7 +278,7 @@ namespace SaleManeger.Models
                     {
                         while (reader.Read())
                         {
-                            if(reader.IsDBNull(0))
+                            if (reader.IsDBNull(0))
                                 return 0;
 
                             return reader.GetInt32(0);

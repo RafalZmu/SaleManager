@@ -361,3 +361,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+SaleManeger/.vscode/tasks.json
+SaleManeger/.vscode/launch.json
+SaleManeger/SaleManeger.sqlite

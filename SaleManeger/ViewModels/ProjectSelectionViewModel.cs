@@ -45,7 +45,7 @@ namespace SaleManeger.ViewModels
             }
             Sale sale = new(NewSaleDate);
             SalesList.Add(sale);
-            Db.AddToSales(NewSaleDate);
+            Db.AddToTable("Sales", ("SaleName", NewSaleDate));
             return NewSaleDate;
 
         }

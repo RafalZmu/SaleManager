@@ -12,10 +12,10 @@ namespace SaleManeger.ViewModels
 {
     public class ClientEditionViewModel : ViewModelBase
     {
-        public string ClientID { get; set; }
-        public string Name { get; set; }
-        public string Number { get; set; }
-        public string Order { get; set; }
+        public string? ClientID { get; set; }
+        public string? Name { get; set; }
+        public string? Number { get; set; }
+        public string? Order { get; set; }
         private string _sale;
         public string Sale
         {
@@ -171,7 +171,7 @@ namespace SaleManeger.ViewModels
             double sum = 0;
             foreach (var line in Sale.Split("\n"))
             {
-                if(line.Contains(':'))
+                if (line.Contains(':'))
                 {
                     double.TryParse(line.Split(":")[1].Trim(), out double productCost);
                     sum += productCost;
@@ -184,7 +184,7 @@ namespace SaleManeger.ViewModels
             }
             SaleSum += sum;
             double allSaleSum = 0;
-            if(SaleSum.Contains('+'))
+            if (SaleSum.Contains('+'))
             {
                 SaleSum.Replace(" ", "");
                 foreach (var num in SaleSum.Split('+'))
@@ -196,8 +196,8 @@ namespace SaleManeger.ViewModels
             }
             if (allSaleSum != 0)
             {
-                SaleSum += $"       Reszta z {Math.Ceiling(allSaleSum/100)*100}: {  Math.Ceiling(allSaleSum/100)*100 - allSaleSum}";
-                SaleSum += $"  Reszta z {Math.Ceiling(allSaleSum/50)*50}: {  Math.Ceiling(allSaleSum/50)*50 - allSaleSum}";
+                SaleSum += $"       Reszta z {Math.Ceiling(allSaleSum / 100) * 100}: {Math.Ceiling(allSaleSum / 100) * 100 - allSaleSum}";
+                SaleSum += $"  Reszta z {Math.Ceiling(allSaleSum / 50) * 50}: {Math.Ceiling(allSaleSum / 50) * 50 - allSaleSum}";
             }
         }
     }
