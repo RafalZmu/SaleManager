@@ -19,7 +19,7 @@ public partial class ClientEditionView : UserControl
         _dataBase = new DataBase();
         _products = _dataBase.GetProducts();
     }
-    private void Order_InputHandler(object? sender, EventArgs e)
+    private void Order_InputHandler(object sender, EventArgs e)
     {
         var text = order.Text;
         if (string.IsNullOrWhiteSpace(text))
@@ -47,7 +47,7 @@ public partial class ClientEditionView : UserControl
             order.CaretIndex = cursorPostion;
         }
     }
-    private void Sale_InputHandler(object? sender, EventArgs e)
+    private void Sale_InputHandler(object sender, EventArgs e)
     {
         saleSum = saleSum;
         var text = sale.Text;

@@ -12,10 +12,10 @@ namespace SaleManeger.ViewModels
 {
     public class ClientEditionViewModel : ViewModelBase
     {
-        public string? ClientID { get; set; }
-        public string? Name { get; set; }
-        public string? Number { get; set; }
-        public string? Order { get; set; }
+        public string ClientID { get; set; }
+        public string Name { get; set; }
+        public string Number { get; set; }
+        public string Order { get; set; }
         private string _sale;
         public string Sale
         {
@@ -152,7 +152,7 @@ namespace SaleManeger.ViewModels
                     {
                         Name = name,
                         Code = code,
-                        Value = item.Split(':')[1].Trim(),
+                        Value = item.Split(':')[1].Trim().Replace(",","."),
                         IsReserved = false
                     };
                     client.Products.Add(product);
@@ -173,7 +173,7 @@ namespace SaleManeger.ViewModels
             {
                 if (line.Contains(':'))
                 {
-                    double.TryParse(line.Split(":")[1].Trim(), out double productCost);
+                    double.TryParse(line.Split(":")[1].Trim().Replace(",","."), out double productCost);
                     sum += productCost;
                 }
                 else

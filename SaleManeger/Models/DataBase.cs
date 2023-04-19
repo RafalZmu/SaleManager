@@ -185,8 +185,12 @@ namespace SaleManeger.Models
         public void AddProductsToDatabase(ObservableCollection<Product> products)
         {
             DeleteAllFromTable("Products");
-            foreach (var product in products)
+            foreach (var product in products.OrderBy(x=>x.Code))
             {
+                if(string.IsNullOrWhiteSpace(product.Name) || string.IsNullOrWhiteSpace(product.Code))
+                {
+                    continue;
+                }
                 AddToTable("Products", ("Name", product.Name), ("Code", product.Code), ("PricePerKg", product.PricePerKg));
             }
         }
@@ -242,48 +246,55 @@ namespace SaleManeger.Models
                 }
             }
         }
-        public int GetSumOfProduct(string saleName, string code, bool isReserved)
+        public double GetSumOfProduct(string saleName, string code, bool isReserved)
         {
             using (SQLiteConnection connection = new SQLiteConnection(connectionString))
             {
                 connection.Open();
-                using (SQLiteCommand GetProductSum = new("SELECT SUM(Value) FROM ClientOrder WHERE SaleID = @saleID AND IsReserved ==@isReserved AND ProductID ==@product", connection))
+                using (SQLiteCommand GetProductSum = new("SELECT Value FROM ClientOrder WHERE SaleID = @saleID AND IsReserved ==@isReserved AND ProductID ==@product", connection))
                 {
                     GetProductSum.Parameters.AddWithValue("@saleID", saleName);
                     GetProductSum.Parameters.AddWithValue("@isReserved", isReserved);
                     GetProductSum.Parameters.AddWithValue("@product", code);
                     using (var reader = GetProductSum.ExecuteReader())
                     {
+                        double sum = 0;
                         while (reader.Read())
                         {
-                            if (reader.IsDBNull(0))
-                                return 0;
-                            return reader.GetInt32(0);
+                            string valueString = reader.GetString(0);
+                            string[] valueParts = valueString.Split(' ');
+                            if (double.TryParse(valueParts[0], out double value))
+                            {
+                                sum += value;
+                            }
                         }
-                        return 0;
+                        return sum;
                     }
                 }
             }
         }
-        public int GetLeftProduct(string saleName, string code, bool isReserved)
+        public double GetLeftProduct(string saleName, string code, bool isReserved)
         {
             using (SQLiteConnection connection = new SQLiteConnection(connectionString))
             {
                 connection.Open();
-                using (SQLiteCommand GetProductSum = new("SELECT SUM(Value) FROM ClientOrder WHERE IsReserved = 1 AND ProductID == @product AND SaleID == @saleID AND ClientID NOT IN(SELECT DISTINCT ClientID FROM ClientOrder WHERE SaleID = @saleID AND IsReserved = 0)", connection))
+                using (SQLiteCommand GetProductSum = new("SELECT Value FROM ClientOrder WHERE IsReserved = 1 AND ProductID == @product AND SaleID == @saleID AND ClientID NOT IN(SELECT DISTINCT ClientID FROM ClientOrder WHERE SaleID = @saleID AND IsReserved = 0)", connection))
                 {
                     GetProductSum.Parameters.AddWithValue("@saleID", saleName);
                     GetProductSum.Parameters.AddWithValue("@product", code);
                     using (var reader = GetProductSum.ExecuteReader())
                     {
+                        double sum = 0;
                         while (reader.Read())
                         {
-                            if (reader.IsDBNull(0))
-                                return 0;
-
-                            return reader.GetInt32(0);
+                            string valueString = reader.GetString(0);
+                            string[] valueParts = valueString.Split(' ');
+                            if (double.TryParse(valueParts[0], out double value))
+                            {
+                                sum += value;
+                            }
                         }
-                        return 0;
+                        return sum;
                     }
                 }
             }

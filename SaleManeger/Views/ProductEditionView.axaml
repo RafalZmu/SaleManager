@@ -4,14 +4,14 @@
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 			 x:Class="SaleManeger.Views.ProductEditionView">
-	<Grid Margin="5" RowDefinitions="50, Auto" ColumnDefinitions="Auto, Auto, *">
+	<Grid Margin="5" MaxHeight="1000" RowDefinitions="50, *" ColumnDefinitions="Auto, Auto, *">
 		<Button Margin="0,0,5,0" FontSize="25" Content="Cofnij" Command="{Binding SaveToDataBaseCommand}"/>
 		<Button FontSize="25" Grid.Column="1" Content="Dodaj Produkt" Command="{Binding	AddProduct}"/>
-		<ScrollViewer Grid.Row="1" Grid.ColumnSpan="3">
+		<ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Row="1" Grid.ColumnSpan="3">
 			<ItemsControl Items="{Binding Products}">
 				<ItemsControl.ItemTemplate>
 					<DataTemplate>
-						<Grid ColumnDefinitions="50, 300*, 300*">
+						<Grid ColumnDefinitions="50, 300*, 300*" RowDefinitions="*">
 							<TextBox MaxLength="2" Watermark="Kod" Margin="10,0,15,0" Grid.Column="0" Text="{Binding Code, Mode=TwoWay}" FontSize="20"/>
 							<TextBox Watermark="Nazwa produktu" Grid.Column="1" Text="{Binding Name, Mode=TwoWay}" FontSize="20"/>
 							<TextBox Watermark="Cena produktu" Margin="5,0,5,0" Grid.Column="2" Text="{Binding PricePerKg, Mode=TwoWay}" FontSize="20"/>
@@ -19,7 +19,6 @@
 					</DataTemplate>
 				</ItemsControl.ItemTemplate>
 			</ItemsControl>
-			
 		</ScrollViewer>
 	</Grid>
 </UserControl>
