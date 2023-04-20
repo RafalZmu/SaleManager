@@ -81,8 +81,8 @@ namespace SaleManeger.ViewModels
             var saleSummaryViewModel = new SaleSummaryViewModel(_dataBase, saleName);
             Content = saleSummaryViewModel;
             saleSummaryViewModel.OpenClientSelectionCommand.Subscribe(model =>
-            { 
-                OpenClientSelection(saleName); 
+            {
+                OpenClientSelection(saleName);
             });
         }
     }

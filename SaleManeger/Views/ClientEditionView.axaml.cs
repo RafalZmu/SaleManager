@@ -21,6 +21,7 @@ public partial class ClientEditionView : UserControl
     }
     private void Order_InputHandler(object sender, EventArgs e)
     {
+        order.Text = order.Text.Replace(",", ".");
         var text = order.Text;
         if (string.IsNullOrWhiteSpace(text))
             return;
@@ -41,7 +42,7 @@ public partial class ClientEditionView : UserControl
             }
 
         }
-        order.Text = newText;
+        order.Text = newText.Trim('\r', '\n') + "\n";
         if (cursorPostion != 0)
         {
             order.CaretIndex = cursorPostion;
@@ -49,7 +50,9 @@ public partial class ClientEditionView : UserControl
     }
     private void Sale_InputHandler(object sender, EventArgs e)
     {
+        //Updates saleSum on input
         saleSum = saleSum;
+        sale.Text = sale.Text.Replace(",", ".");
         var text = sale.Text;
         if (string.IsNullOrWhiteSpace(text))
             return;
@@ -72,7 +75,7 @@ public partial class ClientEditionView : UserControl
             }
 
         }
-        sale.Text = newText;
+        sale.Text = newText.Trim('\r', '\n') + "\n";
         if (codeConverted == true)
         {
             sale.CaretIndex = cursorPostion;

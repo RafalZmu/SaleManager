@@ -29,6 +29,10 @@ namespace SaleManeger.ViewModels
             //Clear products table and replace it with updated products
             var random = new Random();
             const string chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+
+            // Remove products with empty name and code
+            Products = new ObservableCollection<Product>(Products.Where(x => !string.IsNullOrWhiteSpace(x.Name) && !string.IsNullOrWhiteSpace(x.Code)));
+
             foreach (var item in Products)
             {
                 if (item.PricePerKg <= 0)
