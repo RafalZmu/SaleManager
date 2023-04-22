@@ -15,7 +15,7 @@ namespace SaleManegerTests
             dataBase = new DataBase();
         }
         [Test]
-        public void AddingAndReadingSalesFromDB()
+        public void AddingAndReadingSalesToDB()
         {
             //Arrange
             ObservableCollection<Sale> salesAdded = new ObservableCollection<Sale>();
@@ -32,12 +32,12 @@ namespace SaleManegerTests
             var matchingNames = salesAdded.Zip(salesRead, (s1, s2) => s1.SaleDate == s2.SaleDate);
 
             //Assert
-            Assert.AreEqual(salesAdded.Count, 200);
-            Assert.AreEqual(salesRead.Count, 200);
+            Assert.That(salesAdded.Count, Is.EqualTo(200));
+            Assert.That(salesRead.Count, Is.EqualTo(200));
             Assert.IsTrue(matchingNames.All(x => x));
         }
         [Test]
-        public void AddingAndReadingProductsFromDataBase()
+        public void AddingAndReadingProductsToDB()
         {
             //Arrange
             dataBase.DeleteAllFromTable("Products");
@@ -65,12 +65,45 @@ namespace SaleManegerTests
             }
 
             //Act
-            dataBase.AddProductsToDatabase(products);
+            dataBase.AddProductsToProductsTable(products);
             var readProducts = dataBase.GetProducts();
 
             //Assert
             Assert.That(products.Count == readProducts.Count);
+        }
 
+        [Test]
+        public void DeletingClientFromDB()
+        {
+            //Arrange
+            // Add sale
+            dataBase.DeleteAllFromTable("Sales");
+            dataBase.AddToTable("Sales", ("saleName", "sale1"));
+            dataBase.DeleteAllFromTable("Clients");
+            ObservableCollection<Client> clients = new ObservableCollection<Client>();
+            for (int i = 0; i < 200; i++)
+            {
+                clients.Add(new Client()
+                {
+                    ID = faker.Random.Guid().ToString(),
+                    Name = faker.Random.Word(),
+                    PhoneNumber = faker.Phone.PhoneNumber().ToString(),
+                });
+            }
+
+            //Act
+            foreach (var client in clients)
+            {
+                dataBase.UpdateOrCreateClient(client, "sale1");
+            }
+            var clientIDToDelete = clients[0].ID;
+            dataBase.DeleteClient(clientIDToDelete);
+            var readClients = dataBase.GetClientsFromSale("sale1");
+
+            //Assert
+            Assert.That(readClients.Any(x => x.ID == clientIDToDelete) == false);
+            Assert.That(clients.Count != readClients.Count);
+            Assert.That(readClients.Count == 199);
 
         }
     }

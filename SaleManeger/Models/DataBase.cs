@@ -1,5 +1,4 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data.SQLite;
 using System.IO;
@@ -44,14 +43,12 @@ namespace SaleManeger.Models
             {
                 connection.Open();
 
-                using (var command = new SQLiteCommand("SELECT * FROM Sales", connection))
-                using (var reader = command.ExecuteReader())
+                using var command = new SQLiteCommand("SELECT * FROM Sales", connection);
+                using var reader = command.ExecuteReader();
+                while (reader.Read())
                 {
-                    while (reader.Read())
-                    {
-                        var sale = new Sale(reader.GetString(0));
-                        sales.Add(sale);
-                    }
+                    var sale = new Sale(reader.GetString(0));
+                    sales.Add(sale);
                 }
             }
 
@@ -182,7 +179,7 @@ namespace SaleManeger.Models
             }
         }
 
-        public void AddProductsToDatabase(ObservableCollection<Product> products)
+        public void AddProductsToProductsTable(ObservableCollection<Product> products)
         {
             DeleteAllFromTable("Products");
             foreach (var product in products.OrderBy(x=>x.Code))
@@ -228,6 +225,11 @@ namespace SaleManeger.Models
                             updateClientOrderCommand.Parameters.AddWithValue("@ClientID", client.ID);
                             updateClientOrderCommand.Parameters.AddWithValue("@SaleID", saleName);
                             updateClientOrderCommand.ExecuteNonQuery();
+                        }
+
+                        if(client.Products == null)
+                        {
+                            client.Products = new ObservableCollection<Product>();
                         }
                         foreach (var item in client.Products)
                         {
@@ -298,6 +300,19 @@ namespace SaleManeger.Models
                     }
                 }
             }
+        }
+        public void DeleteClient(string id)
+        {
+            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+                using (SQLiteCommand command = new SQLiteCommand("DELETE FROM Clients WHERE ClientID == @ID", connection))
+                {
+                    command.Parameters.AddWithValue("@ID", id);
+                    command.ExecuteNonQuery();
+                }
+            }
+        
         }
     }
 }

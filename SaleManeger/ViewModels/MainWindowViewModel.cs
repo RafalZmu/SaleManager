@@ -8,7 +8,6 @@ namespace SaleManeger.ViewModels
 {
     public class MainWindowViewModel : ReactiveObject
     {
-        private string _saleName;
         private DataBase _dataBase { get; set; }
         private ViewModelBase content;
         public ViewModelBase Content
@@ -17,12 +16,16 @@ namespace SaleManeger.ViewModels
             private set => this.RaiseAndSetIfChanged(ref content, value);
         }
 
+        private string _saleName;
 
         public MainWindowViewModel()
         {
             _dataBase = new DataBase();
+
+
             OpenProjectSelection();
             Batteries.Init();
+
         }
 
         public void OpenEditProductsView()
@@ -81,8 +84,8 @@ namespace SaleManeger.ViewModels
             var saleSummaryViewModel = new SaleSummaryViewModel(_dataBase, saleName);
             Content = saleSummaryViewModel;
             saleSummaryViewModel.OpenClientSelectionCommand.Subscribe(model =>
-            {
-                OpenClientSelection(saleName);
+            { 
+                OpenClientSelection(saleName); 
             });
         }
     }

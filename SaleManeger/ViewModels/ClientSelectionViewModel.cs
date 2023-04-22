@@ -1,7 +1,12 @@
-﻿using ReactiveUI;
+﻿using Avalonia.FreeDesktop.DBusIme;
+using Avalonia.Interactivity;
+using MessageBox.Avalonia.Models;
+using ReactiveUI;
 using SaleManeger.Models;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -19,6 +24,7 @@ namespace SaleManeger.ViewModels
         public ReactiveCommand<Unit, Unit> OpenProjectSelectionCommand { get; }
         public ReactiveCommand<Unit, string> OpenSaleSummaryCommand { get; }
         public ReactiveCommand<Unit, Unit> UpdateClientsCommand { get; }
+        public ReactiveCommand<string, Unit> DeleteClientCommand { get; }
         // All clients in the current sale.
         public ObservableCollection<Client> AllClients { get; set; }
 
@@ -76,6 +82,7 @@ namespace SaleManeger.ViewModels
             OpenProjectSelectionCommand = ReactiveCommand.Create(() => { });
             OpenSaleSummaryCommand = ReactiveCommand.Create(OpenSaleSummary);
             UpdateClientsCommand = ReactiveCommand.Create(FiltrClients);
+            DeleteClientCommand = ReactiveCommand.Create<string>(DeleteClient);
 
             AllClients = Clients = _dataBase.GetClientsFromSale(saleName);
             Products = new ObservableCollection<Product>(_dataBase.GetProducts());
@@ -96,6 +103,23 @@ namespace SaleManeger.ViewModels
                     client.Color = "White";
                 }
             }
+        }
+
+        private void DeleteClient(string ID)
+        {
+            var messageBoxStandardWindow = MessageBox.Avalonia.MessageBoxManager
+                .GetMessageBoxCustomWindow(new MessageBox.Avalonia.DTO.MessageBoxCustomParams()
+                {
+                    ButtonDefinitions = new[]
+                    {
+                        new ButtonDefinition{ Name = "Tak", IsDefault = true},
+                        new ButtonDefinition{ Name = "Nie", IsCancel = true},
+                    },
+                    ContentMessage = "Czy na pewno chcesz usunąć klienta?",
+                });
+            messageBoxStandardWindow.Show();
+            _dataBase.DeleteClient(ID);
+            FiltrClients();
         }
 
         // Create a new client with the given ID.

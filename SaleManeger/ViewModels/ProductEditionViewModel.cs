@@ -59,7 +59,7 @@ namespace SaleManeger.ViewModels
                 }
             }
 
-            _dataBase.AddProductsToDatabase(Products);
+            _dataBase.AddProductsToProductsTable(Products);
         }
     }
 }
