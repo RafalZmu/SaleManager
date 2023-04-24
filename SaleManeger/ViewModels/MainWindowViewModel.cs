@@ -61,6 +61,10 @@ namespace SaleManeger.ViewModels
             {
                 OpenClientEdition(model);
             });
+            clientSelectionViewModel.DeleteClientCommand.Subscribe(model =>
+            {
+                OpenClientDeletion(model);
+            });
             clientSelectionViewModel.OpenProjectSelectionCommand.Subscribe(model =>
             {
                 OpenProjectSelection();
@@ -69,6 +73,21 @@ namespace SaleManeger.ViewModels
             {
                 OpenSaleSummary(model);
             });
+        }
+
+        public void OpenClientDeletion(string model)
+        {
+            var clientDeletionViewModel = new PopUpViewModel(_dataBase, model, _saleName);
+            Content = clientDeletionViewModel;
+            clientDeletionViewModel.OpenClientSelectionCommand.Subscribe(model =>
+            {
+                OpenClientSelection(_saleName);
+            });
+            clientDeletionViewModel.ReturnCommand.Subscribe(model =>
+            {
+                OpenClientSelection(_saleName);
+            });
+
         }
 
         public void OpenClientEdition(Client client)
@@ -84,8 +103,8 @@ namespace SaleManeger.ViewModels
             var saleSummaryViewModel = new SaleSummaryViewModel(_dataBase, saleName);
             Content = saleSummaryViewModel;
             saleSummaryViewModel.OpenClientSelectionCommand.Subscribe(model =>
-            { 
-                OpenClientSelection(saleName); 
+            {
+                OpenClientSelection(saleName);
             });
         }
     }

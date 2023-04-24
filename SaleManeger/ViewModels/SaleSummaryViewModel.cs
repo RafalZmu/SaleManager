@@ -4,12 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SaleManeger.ViewModels
 {
-    public class SaleSummaryViewModel: ViewModelBase
+    public class SaleSummaryViewModel : ViewModelBase
     {
         public DataBase _dataBase { get; set; }
         public string SaleName { get; set; }
@@ -18,16 +16,16 @@ namespace SaleManeger.ViewModels
         public string SoldAll { get; set; }
         public int ClientsLeft { get; set; }
         private List<Client> _clients;
-        private List<Product> _products; 
+        private List<Product> _products;
 
         public ReactiveCommand<Unit, string> OpenClientSelectionCommand { get; set; }
-        public SaleSummaryViewModel(DataBase dataBase, string saleName) 
+        public SaleSummaryViewModel(DataBase dataBase, string saleName)
         {
             _dataBase = dataBase;
             SaleName = saleName;
             _clients = new List<Client>(_dataBase.GetClientsFromSale(SaleName));
             _products = _dataBase.GetProducts();
-            ClientsLeft = _clients.Count(x => (x.Products.Any(y => (y.IsReserved == true))) && (!x.Products.Any(y => y.IsReserved==false)));
+            ClientsLeft = _clients.Count(x => (x.Products.Any(y => (y.IsReserved == true))) && (!x.Products.Any(y => y.IsReserved == false)));
             GetProducts();
 
             OpenClientSelectionCommand = ReactiveCommand.Create(OpenClientSelection);
@@ -39,7 +37,7 @@ namespace SaleManeger.ViewModels
             {
                 AllOrders += $"{product.Name}: {_dataBase.GetSumOfProduct(SaleName, product.Code, true)}{Environment.NewLine}";
                 OrdersLeft += $"{product.Name}: {_dataBase.GetLeftProduct(SaleName, product.Code, true)}{Environment.NewLine}";
-                SoldAll += $"{product.Name}: {_dataBase.GetSumOfProduct(SaleName, product.Code, false)/product.PricePerKg}{Environment.NewLine}";
+                SoldAll += $"{product.Name}: {_dataBase.GetSumOfProduct(SaleName, product.Code, false) / product.PricePerKg}{Environment.NewLine}";
             }
         }
         private string OpenClientSelection()

@@ -3,7 +3,6 @@ using SaleManeger.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Data.Entity.Migrations.Model;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -152,7 +151,7 @@ namespace SaleManeger.ViewModels
                     {
                         Name = name,
                         Code = code,
-                        Value = item.Split(':')[1].Trim().Replace(",","."),
+                        Value = item.Split(':')[1].Trim().Replace(",", "."),
                         IsReserved = false
                     };
                     client.Products.Add(product);
@@ -173,7 +172,7 @@ namespace SaleManeger.ViewModels
             {
                 if (line.Contains(':'))
                 {
-                    double.TryParse(line.Split(":")[1].Trim().Replace(",","."), out double productCost);
+                    double.TryParse(line.Split(":")[1].Trim().Replace(",", "."), out double productCost);
                     sum += productCost;
                 }
                 else

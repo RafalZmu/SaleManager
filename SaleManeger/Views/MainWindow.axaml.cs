@@ -1,6 +1,5 @@
-using Avalonia.Controls;
-using SaleManeger.ViewModels;
 using Avalonia.ReactiveUI;
+using SaleManeger.ViewModels;
 
 namespace SaleManeger.Views
 {

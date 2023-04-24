@@ -182,9 +182,9 @@ namespace SaleManeger.Models
         public void AddProductsToProductsTable(ObservableCollection<Product> products)
         {
             DeleteAllFromTable("Products");
-            foreach (var product in products.OrderBy(x=>x.Code))
+            foreach (var product in products.OrderBy(x => x.Code))
             {
-                if(string.IsNullOrWhiteSpace(product.Name) || string.IsNullOrWhiteSpace(product.Code))
+                if (string.IsNullOrWhiteSpace(product.Name) || string.IsNullOrWhiteSpace(product.Code))
                 {
                     continue;
                 }
@@ -216,7 +216,7 @@ namespace SaleManeger.Models
                         else
                         {
                             //Create client
-                            AddToTable("Clients",("ClientID", client.ID), ("Name", client.Name), ("Number", client.PhoneNumber));
+                            AddToTable("Clients", ("ClientID", client.ID), ("Name", client.Name), ("Number", client.PhoneNumber));
                         }
 
                         //Update clients products
@@ -227,7 +227,7 @@ namespace SaleManeger.Models
                             updateClientOrderCommand.ExecuteNonQuery();
                         }
 
-                        if(client.Products == null)
+                        if (client.Products == null)
                         {
                             client.Products = new ObservableCollection<Product>();
                         }
@@ -301,7 +301,7 @@ namespace SaleManeger.Models
                 }
             }
         }
-        public void DeleteClient(string id)
+        public void DeleteClient(string id, string saleName)
         {
             using (SQLiteConnection connection = new SQLiteConnection(connectionString))
             {
@@ -311,8 +311,14 @@ namespace SaleManeger.Models
                     command.Parameters.AddWithValue("@ID", id);
                     command.ExecuteNonQuery();
                 }
+                using (SQLiteCommand DeleteClientOrder = new("DELETE FROM ClientOrder WHERE ClientID == @ID AND SaleID = @SaleID", connection))
+                {
+                    DeleteClientOrder.Parameters.AddWithValue("@ID", id);
+                    DeleteClientOrder.Parameters.AddWithValue("@SaleID", saleName);
+                    DeleteClientOrder.ExecuteNonQuery();
+                }
             }
-        
+
         }
     }
 }
