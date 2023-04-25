@@ -21,6 +21,7 @@ public partial class ClientEditionView : UserControl
     }
     private void Order_InputHandler(object sender, EventArgs e)
     {
+        if(order.Text == null) return;
         order.Text = order.Text.Replace(",", ".");
         var text = order.Text;
         if (string.IsNullOrWhiteSpace(text))
@@ -52,6 +53,7 @@ public partial class ClientEditionView : UserControl
     {
         //Updates saleSum on input
         saleSum = saleSum;
+        if(order.Text == null) return;
         sale.Text = sale.Text.Replace(",", ".");
         var text = sale.Text;
         if (string.IsNullOrWhiteSpace(text))

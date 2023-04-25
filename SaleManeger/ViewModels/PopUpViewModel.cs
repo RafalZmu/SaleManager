@@ -13,7 +13,7 @@ namespace SaleManeger.ViewModels
         private string ClientID { get; set; }
         private string SaleName { get; set; }
 
-        public PopUpViewModel(DataBase dataBase, string clientID, string saleName)
+        public PopUpViewModel(DataBase dataBase, string saleName, string clientID) 
         {
             _dataBase = dataBase;
             SaleName = saleName;

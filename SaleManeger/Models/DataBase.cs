@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data.SQLite;
 using System.IO;
@@ -117,7 +118,7 @@ namespace SaleManeger.Models
                                 var productID = reader.GetString(2);
                                 if (productID == "")
                                 {
-                                    Product comment = new Product()
+                                    Product comment = new()
                                     {
                                         Name = "",
                                         Code = "",
@@ -128,7 +129,18 @@ namespace SaleManeger.Models
                                     continue;
 
                                 }
-                                Product product = new Product()
+                                else if(!products.Any(x => x.Code == productID))
+                                {
+                                    Product notFound = new()
+                                    {
+                                        Name = "Brak produktu w bazie",
+                                        Code = productID,
+                                        Value = reader.GetString(4),
+                                        IsReserved = reader.GetBoolean(3)
+                                    };
+                                    continue;
+                                }
+                                Product product = new()
                                 {
                                     Name = products.FirstOrDefault(p => p.Code == productID).Name,
                                     Code = productID,
@@ -319,6 +331,24 @@ namespace SaleManeger.Models
                 }
             }
 
+        }
+
+        public void DeleteSale(string saleName)
+        {
+            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+                using (SQLiteCommand DeleteSale = new("DELETE FROM Sales WHERE SaleName == @SaleName", connection))
+                {
+                    DeleteSale.Parameters.AddWithValue("@SaleName", saleName);
+                    DeleteSale.ExecuteNonQuery();
+                }
+                using (SQLiteCommand DeleteClientOrder = new("DELETE FROM ClientOrder WHERE SaleID == @SaleName", connection))
+                {
+                    DeleteClientOrder.Parameters.AddWithValue("@SaleName", saleName);
+                    DeleteClientOrder.ExecuteNonQuery();
+                }
+            }
         }
     }
 }

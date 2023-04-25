@@ -97,7 +97,7 @@ namespace SaleManegerTests
                 dataBase.UpdateOrCreateClient(client, "sale1");
             }
             var clientIDToDelete = clients[0].ID;
-            dataBase.DeleteClient(clientIDToDelete);
+            dataBase.DeleteClient(clientIDToDelete, "sale1");
             var readClients = dataBase.GetClientsFromSale("sale1");
 
             //Assert

@@ -16,7 +16,7 @@
 				<ColumnDefinition/>
 				<ColumnDefinition/>
 			</Grid.ColumnDefinitions>	
-			<Button Margin="5" VerticalAlignment="Stretch" VerticalContentAlignment="Center"
+			<Button Margin="0,0,5,0" VerticalAlignment="Stretch" VerticalContentAlignment="Center"
 					Content="Cofnij" Command="{Binding OpenClientSelectionCommand}"/>
 			<TextBox Grid.Column="1" FontSize="20" Text="{Binding	Name}" Watermark="Imie"/>
 			<TextBox Grid.Column="2" FontSize="20" Text="{Binding	Number}" Watermark="Numer Telefonu"/>

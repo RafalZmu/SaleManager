@@ -1,0 +1,19 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:oxy="clr-namespace:OxyPlot.Avalonia;assembly=OxyPlot.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="SaleManeger.Views.AllSalesSummaryView">
+
+	<Grid Margin="5" ColumnDefinitions="Auto, *, Auto, 150" RowDefinitions="Auto,*">
+		<Button Grid.Column="0" FontSize="20" Content="Cofnij" Command="{Binding OpenProjectSelectionCommand}"/>
+		<TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Column="1" FontSize="25" Text="{Binding NumberOfSales, StringFormat='Podsumowanie {0} sprzedarzy'}"/>
+		<StackPanel Orientation="Horizontal" Grid.Column="2">
+			<CheckBox IsChecked="{Binding Profit}" FontSize="20" Command="{Binding UpdateGraphCommand}" Content="Zysk" Margin="0,0,10,0"/>
+			<CheckBox IsChecked="{Binding NumberOfClients}" FontSize="20" Command="{Binding UpdateGraphCommand}" Content="Liczba klientów" Margin="0,0,10,0"/>
+			<CheckBox IsChecked="{Binding Weight}" FontSize="20" Command="{Binding UpdateGraphCommand}" Content="Suma wag"/>
+		</StackPanel>
+		<oxy:PlotView Margin="0,10,0,0" Grid.ColumnSpan="4" Grid.Row="1" Model="{Binding Plot, Mode=TwoWay}"/>
+	</Grid>
+</UserControl>

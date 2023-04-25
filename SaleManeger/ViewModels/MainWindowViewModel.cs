@@ -2,12 +2,14 @@
 using SaleManeger.Models;
 using SQLitePCL;
 using System;
+using System.Collections.Generic;
 using System.Reactive.Linq;
 
 namespace SaleManeger.ViewModels
 {
     public class MainWindowViewModel : ReactiveObject
     {
+        private List<bool> _selected;
         private DataBase _dataBase { get; set; }
         private ViewModelBase content;
         public ViewModelBase Content
@@ -51,11 +53,45 @@ namespace SaleManeger.ViewModels
             {
                 OpenClientSelection(model);
             });
+            projectViewModel.OpenAllSalesSummaryCommand.Subscribe(model =>
+            {
+                OpenAllSalesSummary();
+            });
+            projectViewModel.DeleteSaleCommand.Subscribe(model =>
+            {
+                OpenSaleDeletionConfirmation(model);
+            });
         }
+
+        private void OpenSaleDeletionConfirmation(string saleName)
+        {
+            var saleDeletionConfirmationViewModel = new SaleDeletionConfirmationViewModel(_dataBase, saleName);
+            Content = saleDeletionConfirmationViewModel;
+
+            saleDeletionConfirmationViewModel.DeleteSaleCommand.Subscribe(model =>
+            {
+                OpenProjectSelection();
+            });
+            saleDeletionConfirmationViewModel.ReturnCommand.Subscribe(model =>
+            {
+                OpenProjectSelection();
+            });
+        }
+
+        private void OpenAllSalesSummary()
+        {
+            var allSalesSummaryViewModel = new AllSalesSummaryViewModel(_dataBase);
+            Content = allSalesSummaryViewModel;
+            allSalesSummaryViewModel.OpenProjectSelectionCommand.Subscribe(model =>
+            {
+                OpenProjectSelection();
+            });
+        }
+
         public void OpenClientSelection(string saleName)
         {
             _saleName = saleName;
-            var clientSelectionViewModel = new ClientSelectionViewModel(saleName, _dataBase);
+            var clientSelectionViewModel = new ClientSelectionViewModel(saleName, _dataBase, _selected);
             Content = clientSelectionViewModel;
             clientSelectionViewModel.OpenClientEditionCommand.Subscribe(model =>
             {
@@ -73,11 +109,15 @@ namespace SaleManeger.ViewModels
             {
                 OpenSaleSummary(model);
             });
+            clientSelectionViewModel.UpdateClientsCommand.Subscribe(model =>
+            {
+                _selected = model;
+            });
         }
 
         public void OpenClientDeletion(string model)
         {
-            var clientDeletionViewModel = new PopUpViewModel(_dataBase, model, _saleName);
+            var clientDeletionViewModel = new PopUpViewModel(_dataBase, _saleName, model);
             Content = clientDeletionViewModel;
             clientDeletionViewModel.OpenClientSelectionCommand.Subscribe(model =>
             {

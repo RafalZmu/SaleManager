@@ -1,5 +1,6 @@
 ﻿using ReactiveUI;
 using SaleManeger.Models;
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
@@ -10,6 +11,8 @@ namespace SaleManeger.ViewModels
     public class ProjectSelectionViewModel : ViewModelBase
     {
         public ReactiveCommand<Unit, string> CreateNewSaleCommand { get; }
+        public ReactiveCommand<string, string> DeleteSaleCommand { get; }
+        public ReactiveCommand<Unit, Unit> OpenAllSalesSummaryCommand { get; }
         public ReactiveCommand<string, string> OpenSaleCommand { get; }
         private string _newSaleDate;
         public string NewSaleDate
@@ -19,15 +22,21 @@ namespace SaleManeger.ViewModels
         }
 
         private ObservableCollection<Sale> SalesList { get; set; }
-        private DataBase Db { get; set; }
+        private DataBase _dataBase { get; set; }
         public ProjectSelectionViewModel(DataBase db)
         {
-            Db = db;
-            SalesList = Db.GetSalesList();
+            _dataBase = db;
+            SalesList = _dataBase.GetSalesList();
             CreateNewSaleCommand = ReactiveCommand.Create(CreateNewSale, this.WhenAnyValue(x => x.NewSaleDate, text => !string.IsNullOrWhiteSpace(text)));
+            OpenAllSalesSummaryCommand = ReactiveCommand.Create(() => { });
             OpenSaleCommand = ReactiveCommand.Create<string, string>(OpenSale);
+            DeleteSaleCommand = ReactiveCommand.Create<string, string>(DeleteSale);
         }
 
+        private string DeleteSale(string saleName)
+        {
+            return saleName;
+        }
 
         private string OpenSale(string saleName)
         {
@@ -45,7 +54,7 @@ namespace SaleManeger.ViewModels
             }
             Sale sale = new(NewSaleDate);
             SalesList.Add(sale);
-            Db.AddToTable("Sales", ("SaleName", NewSaleDate));
+            _dataBase.AddToTable("Sales", ("SaleName", NewSaleDate));
             return NewSaleDate;
 
         }
