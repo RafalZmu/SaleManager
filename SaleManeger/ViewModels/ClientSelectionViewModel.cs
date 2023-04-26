@@ -1,5 +1,4 @@
-﻿using Avalonia.FreeDesktop.DBusIme;
-using Bogus;
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
 using ReactiveUI;
 using SaleManeger.Models;
 using System;
@@ -8,13 +7,11 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
-using System.Runtime.CompilerServices;
 
 namespace SaleManeger.ViewModels
 {
     public class ClientSelectionViewModel : ViewModelBase
     {
-        // The name of the current sale.
         public string SaleName { get; set; }
         public bool AreClientsWithSaleShowing { get; set; } = false;
         public bool AreClientsWithOrderShowing { get; set; } = true;
@@ -24,9 +21,9 @@ namespace SaleManeger.ViewModels
         public ReactiveCommand<Unit, string> OpenSaleSummaryCommand { get; }
         public ReactiveCommand<Unit, List<bool>> UpdateClientsCommand { get; }
         public ReactiveCommand<string, string> DeleteClientCommand { get; }
-
-        // All clients in the current sale.
         public ObservableCollection<Client> AllClients { get; set; }
+
+        private DataBase _dataBase;
 
         // The name of the client currently being searched for.
         private string _clientName;
@@ -71,8 +68,6 @@ namespace SaleManeger.ViewModels
         }
 
 
-        private DataBase _dataBase;
-
         public ClientSelectionViewModel(string saleName, DataBase dataBase, List<bool> selected)
         {
             // Add to database samle users created with bogus
@@ -90,19 +85,20 @@ namespace SaleManeger.ViewModels
             //    dataBase.UpdateOrCreateClient(client, saleName);
             //}
 
-
             SaleName = saleName;
             _dataBase = dataBase;
 
             OpenClientEditionCommand = ReactiveCommand.Create<string, Client>(CreateNewClient);
             OpenProjectSelectionCommand = ReactiveCommand.Create(() => { });
-            OpenSaleSummaryCommand = ReactiveCommand.Create(OpenSaleSummary);
+            OpenSaleSummaryCommand = ReactiveCommand.Create(() => { return saleName; });
             UpdateClientsCommand = ReactiveCommand.Create<List<bool>>(FiltrClients);
-            DeleteClientCommand = ReactiveCommand.Create<string, string>(DeleteClient);
+            DeleteClientCommand = ReactiveCommand.Create((string clientID) => { return clientID; });
 
             AllClients = Clients = _dataBase.GetClientsFromSale(saleName);
+
+            // Get all products and set their reservation status based on the current sale.
             Products = new ObservableCollection<Product>(_dataBase.GetProducts());
-            if(selected != null)
+            if (selected != null)
             {
                 int i;
                 for (i = 0; i < Products.Count; i++)
@@ -117,25 +113,10 @@ namespace SaleManeger.ViewModels
             // Get all clients for the current sale and set their colors based on their product reservations.
             foreach (var client in AllClients)
             {
-                if (client.Products.Any(x => x.IsReserved == false))
-                {
-                    client.Color = "Green";
-                }
-                else if (client.Products.Any(x => x.IsReserved == true) && !client.Products.Any(x => x.IsReserved == false))
-                {
-                    client.Color = "Red";
-                }
-                else
-                {
-                    client.Color = "White";
-                }
+                client.Color = client.Products.Any(x => x.IsReserved == false) ? "Green" :
+                    client.Products.Any(x => x.IsReserved == true) ? "Red" : "White";
             }
             FiltrClients();
-        }
-
-        private string DeleteClient(string ClientID)
-        {
-            return ClientID;
         }
 
         // Create a new client with the given ID.
@@ -144,7 +125,7 @@ namespace SaleManeger.ViewModels
             if (!Guid.TryParse(clientID, out var id))
             {
                 // If the ID is not a valid GUID, create a new client with a new GUID.
-                Client newClient = new Client()
+                Client newClient = new()
                 {
                     ID = Guid.NewGuid().ToString(),
                     Name = "",
@@ -163,7 +144,7 @@ namespace SaleManeger.ViewModels
         {
             Clients = OrderAndSaleFiltr(ProductFiltr(NameAndNumberFiltr(AllClients)));
             var tempList = new List<bool>();
-            foreach (var product in Products) 
+            foreach (var product in Products)
             {
                 tempList.Add(product.IsReserved);
             }
@@ -175,14 +156,7 @@ namespace SaleManeger.ViewModels
         private ObservableCollection<Client> ProductFiltr(ObservableCollection<Client> clients)
         {
             var reservedProductIds = Products.Where(p => p.IsReserved).Select(p => p.Code).ToList();
-            if (reservedProductIds.Count != 0)
-            {
-                return new ObservableCollection<Client>(clients.Where(c => c.Products.Any(cp => reservedProductIds.Contains(cp.Code))));
-            }
-            else
-            {
-                return clients;
-            }
+            return reservedProductIds.Count !=0 ?  new ObservableCollection<Client>(clients.Where(c => c.Products.Any(cp => reservedProductIds.Contains(cp.Code)))) : clients;
         }
         private ObservableCollection<Client> NameAndNumberFiltr(ObservableCollection<Client> clients)
         {
@@ -197,14 +171,10 @@ namespace SaleManeger.ViewModels
             return (AreClientsWithOrderShowing, AreClientsWithSaleShowing) switch
             {
                 (true, true) => new ObservableCollection<Client>(clients.Where(x => x.Products.Any(y => y.IsReserved == false) && x.Products.Any(y => y.IsReserved == true)).OrderByDescending(x => x.Products.Count)),
-                (true, false) => new ObservableCollection<Client>(clients.Where(x => x.Products.All(y => y.IsReserved == true) && x.Products.Count !=0).OrderByDescending(x => x.Products.Count)),
-                (false, true) => new ObservableCollection<Client>(clients.Where(x => x.Products.All(y => y.IsReserved == false) && x.Products.Count !=0).OrderByDescending(x => x.Products.Count)),
+                (true, false) => new ObservableCollection<Client>(clients.Where(x => x.Products.All(y => y.IsReserved == true) && x.Products.Count != 0).OrderByDescending(x => x.Products.Count)),
+                (false, true) => new ObservableCollection<Client>(clients.Where(x => x.Products.All(y => y.IsReserved == false) && x.Products.Count != 0).OrderByDescending(x => x.Products.Count)),
                 _ => new ObservableCollection<Client>(),
             };
-        }
-        private string OpenSaleSummary()
-        {
-            return SaleName;
         }
     }
 }

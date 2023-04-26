@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data.SQLite;
 using System.IO;
@@ -129,7 +128,7 @@ namespace SaleManeger.Models
                                     continue;
 
                                 }
-                                else if(!products.Any(x => x.Code == productID))
+                                else if (!products.Any(x => x.Code == productID))
                                 {
                                     Product notFound = new()
                                     {
@@ -169,9 +168,9 @@ namespace SaleManeger.Models
 
                 using (var command = new SQLiteCommand(insertCommand, connection))
                 {
-                    foreach (var pair in columnsAndValues)
+                    foreach (var (column, value) in columnsAndValues)
                     {
-                        command.Parameters.AddWithValue($"@{pair.column}", pair.value);
+                        command.Parameters.AddWithValue($"@{column}", value);
                     }
 
                     connection.Open();
@@ -182,11 +181,11 @@ namespace SaleManeger.Models
 
         public void DeleteAllFromTable(string tableName)
         {
-            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            using (SQLiteConnection connection = new(connectionString))
             {
                 connection.Open();
 
-                SQLiteCommand command = new SQLiteCommand($"DELETE FROM {tableName}", connection);
+                SQLiteCommand command = new($"DELETE FROM {tableName}", connection);
                 command.ExecuteNonQuery();
             }
         }
@@ -205,10 +204,10 @@ namespace SaleManeger.Models
         }
         public void UpdateOrCreateClient(Client client, string saleName)
         {
-            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            using (SQLiteConnection connection = new(connectionString))
             {
                 connection.Open();
-                using (SQLiteCommand command = new SQLiteCommand("SELECT ClientID FROM Clients WHERE ClientID == @ID", connection))
+                using (SQLiteCommand command = new("SELECT ClientID FROM Clients WHERE ClientID == @ID", connection))
                 {
                     command.Parameters.AddWithValue("@ID", client.ID);
                     using (var reader = command.ExecuteReader())
@@ -217,7 +216,7 @@ namespace SaleManeger.Models
                         if (reader.Read())
                         {
                             //Update client
-                            using (SQLiteCommand updateClientCommand = new SQLiteCommand("UPDATE Clients SET Name = @name, Number = @number WHERE ClientID = @id", connection))
+                            using (SQLiteCommand updateClientCommand = new("UPDATE Clients SET Name = @name, Number = @number WHERE ClientID = @id", connection))
                             {
                                 updateClientCommand.Parameters.AddWithValue("@name", client.Name);
                                 updateClientCommand.Parameters.AddWithValue("@number", client.PhoneNumber);
@@ -232,21 +231,18 @@ namespace SaleManeger.Models
                         }
 
                         //Update clients products
-                        using (SQLiteCommand updateClientOrderCommand = new SQLiteCommand("DELETE FROM ClientOrder WHERE ClientID = @ClientID AND SaleID = @SaleID", connection))
+                        using (SQLiteCommand updateClientOrderCommand = new("DELETE FROM ClientOrder WHERE ClientID = @ClientID AND SaleID = @SaleID", connection))
                         {
                             updateClientOrderCommand.Parameters.AddWithValue("@ClientID", client.ID);
                             updateClientOrderCommand.Parameters.AddWithValue("@SaleID", saleName);
                             updateClientOrderCommand.ExecuteNonQuery();
                         }
 
-                        if (client.Products == null)
-                        {
-                            client.Products = new ObservableCollection<Product>();
-                        }
+                        client.Products ??= new ObservableCollection<Product>();
                         foreach (var item in client.Products)
                         {
-
-                            using (SQLiteCommand addProduct = new SQLiteCommand("INSERT INTO ClientOrder (ProductID, ClientID, SaleID, IsReserved, Value) VALUES (@ProductID, @ClientID, @SaleID, @IsReserved, @Value)", connection))
+                            //Add products to client
+                            using (SQLiteCommand addProduct = new("INSERT INTO ClientOrder (ProductID, ClientID, SaleID, IsReserved, Value) VALUES (@ProductID, @ClientID, @SaleID, @IsReserved, @Value)", connection))
                             {
                                 addProduct.Parameters.AddWithValue("@ProductID", item.Code);
                                 addProduct.Parameters.AddWithValue("@ClientID", client.ID);
@@ -262,7 +258,7 @@ namespace SaleManeger.Models
         }
         public double GetSumOfProduct(string saleName, string code, bool isReserved)
         {
-            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            using (SQLiteConnection connection = new(connectionString))
             {
                 connection.Open();
                 using (SQLiteCommand GetProductSum = new("SELECT Value FROM ClientOrder WHERE SaleID = @saleID AND IsReserved ==@isReserved AND ProductID ==@product", connection))
@@ -287,9 +283,9 @@ namespace SaleManeger.Models
                 }
             }
         }
-        public double GetLeftProduct(string saleName, string code, bool isReserved)
+        public double GetLeftProduct(string saleName, string code)
         {
-            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            using (SQLiteConnection connection = new(connectionString))
             {
                 connection.Open();
                 using (SQLiteCommand GetProductSum = new("SELECT Value FROM ClientOrder WHERE IsReserved = 1 AND ProductID == @product AND SaleID == @saleID AND ClientID NOT IN(SELECT DISTINCT ClientID FROM ClientOrder WHERE SaleID = @saleID AND IsReserved = 0)", connection))
@@ -315,10 +311,10 @@ namespace SaleManeger.Models
         }
         public void DeleteClient(string id, string saleName)
         {
-            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            using (SQLiteConnection connection = new(connectionString))
             {
                 connection.Open();
-                using (SQLiteCommand command = new SQLiteCommand("DELETE FROM Clients WHERE ClientID == @ID", connection))
+                using (SQLiteCommand command = new("DELETE FROM Clients WHERE ClientID == @ID", connection))
                 {
                     command.Parameters.AddWithValue("@ID", id);
                     command.ExecuteNonQuery();
@@ -335,7 +331,7 @@ namespace SaleManeger.Models
 
         public void DeleteSale(string saleName)
         {
-            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            using (SQLiteConnection connection = new(connectionString))
             {
                 connection.Open();
                 using (SQLiteCommand DeleteSale = new("DELETE FROM Sales WHERE SaleName == @SaleName", connection))

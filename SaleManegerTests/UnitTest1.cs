@@ -7,7 +7,7 @@ namespace SaleManegerTests
     [TestFixture]
     public class Tests
     {
-        public Faker faker = new Faker();
+        public Faker faker = new();
         public DataBase dataBase;
         [SetUp]
         public void SetUp()
@@ -18,7 +18,7 @@ namespace SaleManegerTests
         public void AddingAndReadingSalesToDB()
         {
             //Arrange
-            ObservableCollection<Sale> salesAdded = new ObservableCollection<Sale>();
+            ObservableCollection<Sale> salesAdded = new();
             dataBase.DeleteAllFromTable("Sales");
             for (int i = 0; i < 200; i++)
             {
@@ -41,8 +41,8 @@ namespace SaleManegerTests
         {
             //Arrange
             dataBase.DeleteAllFromTable("Products");
-            ObservableCollection<Product> products = new ObservableCollection<Product>();
-            List<string> codes = new List<string>();
+            ObservableCollection<Product> products = new();
+            List<string> codes = new();
             // Generate cods
             for (int i = 0; i < 200; i++)
             {
@@ -80,7 +80,7 @@ namespace SaleManegerTests
             dataBase.DeleteAllFromTable("Sales");
             dataBase.AddToTable("Sales", ("saleName", "sale1"));
             dataBase.DeleteAllFromTable("Clients");
-            ObservableCollection<Client> clients = new ObservableCollection<Client>();
+            ObservableCollection<Client> clients = new();
             for (int i = 0; i < 200; i++)
             {
                 clients.Add(new Client()

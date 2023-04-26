@@ -13,8 +13,14 @@ namespace SaleManeger.ViewModels
     {
         public string ClientID { get; set; }
         public string Name { get; set; }
+        public string Codes { get; set; }
         public string Number { get; set; }
         public string Order { get; set; }
+
+        private string _saleName;
+        private List<Product> _products;
+        private DataBase _dataBase { get; set; }
+
         private string _sale;
         public string Sale
         {
@@ -26,7 +32,6 @@ namespace SaleManeger.ViewModels
             }
         }
 
-        public string Codes { get; set; }
         private string _saleSum;
         public string SaleSum
         {
@@ -37,9 +42,6 @@ namespace SaleManeger.ViewModels
             }
         }
         public ReactiveCommand<Unit, string> OpenClientSelectionCommand { get; }
-        private string _saleName;
-        private List<Product> _products;
-        private DataBase _dataBase { get; set; }
 
         public ClientEditionViewModel(DataBase db, Client client, string saleName)
         {

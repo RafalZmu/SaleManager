@@ -23,27 +23,24 @@ namespace SaleManeger.ViewModels
         {
             _dataBase = dataBase;
             SaleName = saleName;
+
             _clients = new List<Client>(_dataBase.GetClientsFromSale(SaleName));
             _products = _dataBase.GetProducts();
             ClientsLeft = _clients.Count(x => (x.Products.Any(y => (y.IsReserved == true))) && (!x.Products.Any(y => y.IsReserved == false)));
             GetProducts();
 
-            OpenClientSelectionCommand = ReactiveCommand.Create(OpenClientSelection);
+            OpenClientSelectionCommand = ReactiveCommand.Create(() => { return SaleName; });
         }
 
         private void GetProducts()
         {
+            // Get all orders, orders left and sold all
             foreach (var product in _products)
             {
                 AllOrders += $"{product.Name}: {_dataBase.GetSumOfProduct(SaleName, product.Code, true)}{Environment.NewLine}";
-                OrdersLeft += $"{product.Name}: {_dataBase.GetLeftProduct(SaleName, product.Code, true)}{Environment.NewLine}";
+                OrdersLeft += $"{product.Name}: {_dataBase.GetLeftProduct(SaleName, product.Code)}{Environment.NewLine}";
                 SoldAll += $"{product.Name}: {_dataBase.GetSumOfProduct(SaleName, product.Code, false) / product.PricePerKg}{Environment.NewLine}";
             }
         }
-        private string OpenClientSelection()
-        {
-            return SaleName;
-        }
-
     }
 }

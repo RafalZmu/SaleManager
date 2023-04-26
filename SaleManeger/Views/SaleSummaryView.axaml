@@ -6,22 +6,29 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="SaleManeger.Views.SaleSummaryView">
 
-	<Grid Margin="5" ColumnDefinitions="Auto, *" RowDefinitions="50, Auto,Auto,Auto">
-        <Button Content="Cofnij" Margin="5" Command="{Binding OpenClientSelectionCommand}"/>
+	<Grid Margin="5" ColumnDefinitions="Auto, *" RowDefinitions="50, *">
+		<Button Content="Cofnij" Margin="5" Command="{Binding OpenClientSelectionCommand}"/>
 		<TextBlock Grid.Column="1" TextAlignment="Center" FontSize="20" VerticalAlignment="Center" Text="{Binding ClientsLeft, StringFormat='Pozostało {0} klientów z zamówieniami'}}"/>
 
-		<Expander Grid.ColumnSpan="2" Grid.Row="1" FontSize="20" Header="Pozostałe zamówienia" ExpandDirection="Down">
-			<TextBlock Text="{Binding OrdersLeft}"/>
-		</Expander>
+		<Grid Grid.Row="1" Grid.ColumnSpan="2" ColumnDefinitions="*,*,*">
+			<Expander Grid.Column="0" VerticalAlignment="Stretch" FontSize="20" Header="Pozostałe zamówienia" HorizontalContentAlignment="Stretch" ExpandDirection="Down">
+				<ScrollViewer VerticalScrollBarVisibility="Hidden">
+					<TextBlock Text="{Binding OrdersLeft}"/>
+				</ScrollViewer>
+			</Expander>
 
-		<Expander Grid.ColumnSpan="2" Grid.Row="2" FontSize="20" Header="Zamówione ogólnie" ExpandDirection="Down">
-			<TextBlock Text="{Binding AllOrders}"/>
-		</Expander>
+			<Expander Grid.Column="1" FontSize="20" Header="Zamówione ogólnie" HorizontalContentAlignment="Stretch" ExpandDirection="Down">
+				<ScrollViewer VerticalScrollBarVisibility="Hidden">
+					<TextBlock Text="{Binding AllOrders}"/>
+				</ScrollViewer>
+			</Expander>
 
-		<Expander Grid.ColumnSpan="2" Grid.Row="3" FontSize="20" Header="Sprzedane ogólnie" ExpandDirection="Down">
-			<TextBlock Text="{Binding SoldAll}"/>
-		</Expander>
-		
+			<Expander Grid.Column="2" FontSize="20" Header="Sprzedane ogólnie" ExpandDirection="Down" HorizontalContentAlignment="Stretch">
+				<ScrollViewer VerticalScrollBarVisibility="Hidden">
+					<TextBlock Text="{Binding SoldAll}"/>
+				</ScrollViewer>
+			</Expander>
+		</Grid>
 	</Grid>
-	
+
 </UserControl>

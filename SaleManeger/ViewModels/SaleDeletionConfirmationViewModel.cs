@@ -1,15 +1,10 @@
 ﻿using ReactiveUI;
 using SaleManeger.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reactive;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SaleManeger.ViewModels
 {
-    internal class SaleDeletionConfirmationViewModel:ViewModelBase
+    internal class SaleDeletionConfirmationViewModel : ViewModelBase
     {
         public ReactiveCommand<Unit, Unit> DeleteSaleCommand { get; }
         public ReactiveCommand<Unit, Unit> ReturnCommand { get; }
@@ -22,12 +17,9 @@ namespace SaleManeger.ViewModels
             SaleName = saleName;
 
             DeleteSaleCommand = ReactiveCommand.Create(DeleteSale);
-            ReturnCommand = ReactiveCommand.Create(Return);
+            ReturnCommand = ReactiveCommand.Create(() => { });
         }
 
-        private void Return()
-        {
-        }
         private void DeleteSale()
         {
             _dataBase.DeleteSale(SaleName);

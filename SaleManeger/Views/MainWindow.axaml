@@ -23,6 +23,5 @@
 			<Setter Property="BorderBrush" Value="Green"/>
 		</Style>
 	</Window.Styles>
-	<ContentControl Content="{Binding WindowContent}"/>
 </Window>
 

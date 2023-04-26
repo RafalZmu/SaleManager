@@ -45,21 +45,12 @@ namespace SaleManeger.ViewModels
             var projectViewModel = new ProjectSelectionViewModel(_dataBase);
             Content = projectViewModel;
 
-            projectViewModel.CreateNewSaleCommand.Subscribe(model =>
-            {
-                OpenClientSelection(model);
-            });
-            projectViewModel.OpenSaleCommand.Subscribe(model =>
-            {
-                OpenClientSelection(model);
-            });
+            projectViewModel.CreateNewSaleCommand.Subscribe(OpenClientSelection);
+            projectViewModel.OpenSaleCommand.Subscribe(OpenClientSelection);
+            projectViewModel.DeleteSaleCommand.Subscribe(OpenSaleDeletionConfirmation);
             projectViewModel.OpenAllSalesSummaryCommand.Subscribe(model =>
             {
                 OpenAllSalesSummary();
-            });
-            projectViewModel.DeleteSaleCommand.Subscribe(model =>
-            {
-                OpenSaleDeletionConfirmation(model);
             });
         }
 
@@ -93,21 +84,13 @@ namespace SaleManeger.ViewModels
             _saleName = saleName;
             var clientSelectionViewModel = new ClientSelectionViewModel(saleName, _dataBase, _selected);
             Content = clientSelectionViewModel;
-            clientSelectionViewModel.OpenClientEditionCommand.Subscribe(model =>
-            {
-                OpenClientEdition(model);
-            });
-            clientSelectionViewModel.DeleteClientCommand.Subscribe(model =>
-            {
-                OpenClientDeletion(model);
-            });
+
+            clientSelectionViewModel.OpenClientEditionCommand.Subscribe(OpenClientEdition);
+            clientSelectionViewModel.DeleteClientCommand.Subscribe(OpenClientDeletion);
+            clientSelectionViewModel.OpenSaleSummaryCommand.Subscribe(OpenSaleSummary);
             clientSelectionViewModel.OpenProjectSelectionCommand.Subscribe(model =>
             {
                 OpenProjectSelection();
-            });
-            clientSelectionViewModel.OpenSaleSummaryCommand.Subscribe(model =>
-            {
-                OpenSaleSummary(model);
             });
             clientSelectionViewModel.UpdateClientsCommand.Subscribe(model =>
             {

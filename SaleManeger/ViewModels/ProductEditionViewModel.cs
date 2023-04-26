@@ -35,13 +35,14 @@ namespace SaleManeger.ViewModels
 
             foreach (var item in Products)
             {
+                
                 if (item.PricePerKg <= 0)
                     item.PricePerKg = 1;
 
                 if (string.IsNullOrEmpty(item.Name))
                     item.Name = "Podaj nazwe przedmiotu";
 
-
+                // Check if there are two products with the same code if there are, generate a new code 
                 if (Products.Where(x => x.Code == item.Code).Count() > 1)
                 {
                     // Generate a random two-character string
