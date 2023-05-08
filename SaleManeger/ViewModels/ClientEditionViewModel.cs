@@ -1,8 +1,9 @@
 ﻿using ReactiveUI;
 using SaleManeger.Models;
+using SaleManeger.Repositories;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -11,47 +12,28 @@ namespace SaleManeger.ViewModels
 {
     public class ClientEditionViewModel : ViewModelBase
     {
-        public string ClientID { get; set; }
-        public string Name { get; set; }
-        public string Codes { get; set; }
-        public string Number { get; set; }
-        public string Order { get; set; }
+        #region Private properties
 
-        private string _saleName;
+        private string _order;
         private List<Product> _products;
-        private DataBase _dataBase { get; set; }
-
         private string _sale;
-        public string Sale
-        {
-            get => _sale;
-            set
-            {
-                _sale = value;
-                UpdateSaleSum();
-            }
-        }
-
+        private string _saleID;
         private string _saleSum;
-        public string SaleSum
-        {
-            get => _saleSum;
-            set
-            {
-                this.RaiseAndSetIfChanged(ref _saleSum, value);
-            }
-        }
-        public ReactiveCommand<Unit, string> OpenClientSelectionCommand { get; }
 
-        public ClientEditionViewModel(DataBase db, Client client, string saleName)
+        #endregion
+
+        public ClientEditionViewModel(IProjectRepository db, Client client, string saleID)
         {
             _dataBase = db;
-            _saleName = saleName;
+            _saleID = saleID;
             OpenClientSelectionCommand = ReactiveCommand.Create(OpenClientSelection);
             Name = client.Name;
             Number = client.PhoneNumber;
             ClientID = client.ID;
-            _products = _dataBase.GetProducts();
+
+            Client = client;
+
+            _products = _dataBase.GetAll<Product>().AsNoTracking().ToList();
 
             foreach (var item in _products)
             {
@@ -76,25 +58,71 @@ namespace SaleManeger.ViewModels
                 }
             }
         }
+
+        #region Public properties
+
+        public Client Client { get; set; }
+        public string ClientID { get; set; }
+        public string Codes { get; set; }
+        public string Name { get; set; }
+        public string Number { get; set; }
+        public ReactiveCommand<Unit, string> OpenClientSelectionCommand { get; }
+
+        public string Order
+        {
+            get => _order;
+            set
+            {
+                if (_order != value)
+                {
+                    this.RaiseAndSetIfChanged(ref _order, value, nameof(Order));
+                }
+            }
+        }
+
+        public int OrderCaretIndex { get; set; }
+
+        public string Sale
+        {
+            get => _sale;
+            set
+            {
+                _sale = value;
+                UpdateSaleSum();
+            }
+        }
+
+
+        public string SaleSum
+        {
+            get => _saleSum;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _saleSum, value);
+            }
+        }
+
+        private IProjectRepository _dataBase { get; set; }
+
+        #endregion
+
         private string OpenClientSelection()
         {
             SaveClient();
-            return _saleName;
+            return _saleID;
         }
+
+
         private void SaveClient()
         {
+            Client.Products.Clear();
+            // Return if all fields are empty
             if (string.IsNullOrWhiteSpace(Name) && string.IsNullOrWhiteSpace(Number) && string.IsNullOrWhiteSpace(Sale) && string.IsNullOrWhiteSpace(Order))
             {
                 return;
             }
-            var client = new Client()
-            {
-                ID = ClientID,
-                Name = string.IsNullOrWhiteSpace(Name) ? "" : Name,
-                PhoneNumber = string.IsNullOrWhiteSpace(Number) ? "" : Number,
-                Products = new ObservableCollection<Product>()
-            };
-
+            Client.Name = string.IsNullOrWhiteSpace(Name) ? "" : Name;
+            Client.PhoneNumber = string.IsNullOrWhiteSpace(Number) ? "" : Number;
 
             //Get ordered products
             if (!string.IsNullOrWhiteSpace(Order))
@@ -105,26 +133,26 @@ namespace SaleManeger.ViewModels
                     {
                         Product comment = new()
                         {
+                            ID = "",
                             Name = "",
                             Code = "",
                             Value = item,
                             IsReserved = true
                         };
-                        client.Products.Add(comment);
+                        Client.Products.Add(comment);
                         continue;
-
                     }
                     var name = item.Split(":")[0].Trim();
                     var code = _products.Where(x => x.Name == name).First().Code;
                     Product product = new()
                     {
+                        ID = _products.First(x => x.Code == code).ID,
                         Name = name,
                         Code = code,
                         Value = item.Split(':')[1].Trim(),
                         IsReserved = true
                     };
-                    client.Products.Add(product);
-
+                    Client.Products.Add(product);
                 }
             }
 
@@ -137,33 +165,68 @@ namespace SaleManeger.ViewModels
                     {
                         Product comment = new()
                         {
+                            ID = "",
                             Name = "",
                             Code = "",
                             Value = item,
                             IsReserved = false
                         };
-                        client.Products.Add(comment);
+                        Client.Products.Add(comment);
                         continue;
-
                     }
                     double.TryParse(item.Split(':')[1].Trim(), out var value);
                     var name = item.Split(":")[0].Trim();
                     var code = _products.Where(x => x.Name == name).First().Code;
                     Product product = new()
                     {
+                        ID = _products.First(x => x.Code == code).ID,
                         Name = name,
                         Code = code,
                         Value = item.Split(':')[1].Trim().Replace(",", "."),
                         IsReserved = false
                     };
-                    client.Products.Add(product);
-
+                    Client.Products.Add(product);
                 }
             }
+            //Save client
+            if (!_dataBase.GetAll<Client>().AsNoTracking().Any(x => x.ID == Client.ID))
+            {
+                Client.ID = Guid.NewGuid().ToString();
+                _dataBase.Add<Client>(Client);
+            }
+            else
+            {
+                _dataBase.Update<Client>(Client);
+            }
 
-            _dataBase.UpdateOrCreateClient(client, _saleName);
+            //Delete old client orders
+            foreach (var item in _dataBase.GetAll<ClientOrder>().Where(x => x.ClientID == Client.ID && x.SaleID == _saleID))
+            {
+                _dataBase.Delete<ClientOrder>(item);
+            }
+            _dataBase.Save();
 
+            //Add new client orders
+            foreach (var order in Client.Products)
+            {
+                if (order.ID == "")
+                {
+                    order.ID = "Comment";
+                }
+                _dataBase.Add(new ClientOrder()
+                {
+                    ClientID = Client.ID,
+                    ClientOrderID = Guid.NewGuid().ToString(),
+                    ProductID = order.ID,
+                    SaleID = _saleID,
+                    Date = DateTime.Now,
+                    Value = order.Value,
+                    IsReserved = order.IsReserved
+                });
+                _dataBase.Save();
+            }
         }
+
         private void UpdateSaleSum()
         {
             if (string.IsNullOrWhiteSpace(Sale))
