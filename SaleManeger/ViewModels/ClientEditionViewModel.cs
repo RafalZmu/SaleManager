@@ -20,44 +20,41 @@ namespace SaleManeger.ViewModels
         private string _saleID;
         private string _saleSum;
 
-        #endregion
+        #endregion Private properties
+
+        #region Public Constructors
 
         public ClientEditionViewModel(IProjectRepository db, Client client, string saleID)
         {
             _dataBase = db;
             _saleID = saleID;
-            OpenClientSelectionCommand = ReactiveCommand.Create(OpenClientSelection);
             Name = client.Name;
             Number = client.PhoneNumber;
             ClientID = client.ID;
-
             Client = client;
 
-            _products = _dataBase.GetAll<Product>().AsNoTracking().ToList();
+            OpenClientSelectionCommand = ReactiveCommand.Create(OpenClientSelection);
 
-            foreach (var item in _products)
+            _products = _dataBase.GetAll<Product>().AsNoTracking().ToList();
+            _products.ForEach(p =>
             {
-                Codes += $"{item.Code}-{item.Name}{Environment.NewLine}";
-            }
+                Codes += $"{p.Code}-{p.Name}{Environment.NewLine}";
+            });
 
             foreach (var item in client.Products)
             {
                 if (item.IsReserved)
                 {
-                    if (item.Name == "")
-                        Order += $"{item.Value.Trim()}{Environment.NewLine}";
-                    else
-                        Order += $"{item.Name}: {item.Value}{Environment.NewLine}";
+                    Order += $"{item.Name}{(string.IsNullOrEmpty(item.Name) ? "" : ": ")}{item.Value}{Environment.NewLine}";
                 }
                 else
                 {
-                    if (item.Name == "")
-                        Sale += $"{item.Value.Trim()}{Environment.NewLine}";
-                    else
-                        Sale += $"{item.Name}: {item.Value}{Environment.NewLine}";
+                    Sale += $"{item.Name}{(string.IsNullOrEmpty(item.Name) ? "" : ": ")}{item.Value}{Environment.NewLine}";
                 }
             }
         }
+
+        #endregion Public Constructors
 
         #region Public properties
 
@@ -80,8 +77,6 @@ namespace SaleManeger.ViewModels
             }
         }
 
-        public int OrderCaretIndex { get; set; }
-
         public string Sale
         {
             get => _sale;
@@ -91,7 +86,6 @@ namespace SaleManeger.ViewModels
                 UpdateSaleSum();
             }
         }
-
 
         public string SaleSum
         {
@@ -104,14 +98,52 @@ namespace SaleManeger.ViewModels
 
         private IProjectRepository _dataBase { get; set; }
 
-        #endregion
+        #endregion Public properties
+
+        #region Private Methods
+
+        private void GetProductsFromInput(bool IsOrder)
+        {
+            var text = IsOrder ? Order : Sale;
+            if (string.IsNullOrWhiteSpace(text))
+                return;
+
+            foreach (var item in text.Trim().Split("\n"))
+            {
+                if (!item.Contains(':'))
+                {
+                    Product comment = new()
+                    {
+                        ID = "",
+                        Name = "",
+                        Code = "",
+                        Value = item.Trim(),
+                        IsReserved = IsOrder
+                    };
+                    Client.Products.Add(comment);
+                    continue;
+                }
+                var name = item.Split(":")[0].Trim();
+                var value = item.Split(':')[1].Trim();
+                var code = _products.First(x => x.Name == name).Code;
+                var ID = _products.First(x => x.Code == code).ID;
+                Product product = new()
+                {
+                    ID = ID,
+                    Name = name,
+                    Code = code,
+                    Value = value,
+                    IsReserved = IsOrder
+                };
+                Client.Products.Add(product);
+            }
+        }
 
         private string OpenClientSelection()
         {
             SaveClient();
             return _saleID;
         }
-
 
         private void SaveClient()
         {
@@ -125,79 +157,16 @@ namespace SaleManeger.ViewModels
             Client.PhoneNumber = string.IsNullOrWhiteSpace(Number) ? "" : Number;
 
             //Get ordered products
-            if (!string.IsNullOrWhiteSpace(Order))
-            {
-                foreach (var item in Order.Trim().Split("\n"))
-                {
-                    if (!item.Contains(':'))
-                    {
-                        Product comment = new()
-                        {
-                            ID = "",
-                            Name = "",
-                            Code = "",
-                            Value = item,
-                            IsReserved = true
-                        };
-                        Client.Products.Add(comment);
-                        continue;
-                    }
-                    var name = item.Split(":")[0].Trim();
-                    var code = _products.Where(x => x.Name == name).First().Code;
-                    Product product = new()
-                    {
-                        ID = _products.First(x => x.Code == code).ID,
-                        Name = name,
-                        Code = code,
-                        Value = item.Split(':')[1].Trim(),
-                        IsReserved = true
-                    };
-                    Client.Products.Add(product);
-                }
-            }
+            GetProductsFromInput(true);
 
             //Get sold products
-            if (!string.IsNullOrWhiteSpace(Sale))
-            {
-                foreach (var item in Sale.Trim().Split("\n"))
-                {
-                    if (!item.Contains(':'))
-                    {
-                        Product comment = new()
-                        {
-                            ID = "",
-                            Name = "",
-                            Code = "",
-                            Value = item,
-                            IsReserved = false
-                        };
-                        Client.Products.Add(comment);
-                        continue;
-                    }
-                    double.TryParse(item.Split(':')[1].Trim(), out var value);
-                    var name = item.Split(":")[0].Trim();
-                    var code = _products.Where(x => x.Name == name).First().Code;
-                    Product product = new()
-                    {
-                        ID = _products.First(x => x.Code == code).ID,
-                        Name = name,
-                        Code = code,
-                        Value = item.Split(':')[1].Trim().Replace(",", "."),
-                        IsReserved = false
-                    };
-                    Client.Products.Add(product);
-                }
-            }
+            GetProductsFromInput(false);
+
             //Save client
             if (!_dataBase.GetAll<Client>().AsNoTracking().Any(x => x.ID == Client.ID))
-            {
-                Client.ID = Guid.NewGuid().ToString();
                 _dataBase.Add<Client>(Client);
-            }
             else
-            {
                 _dataBase.Update<Client>(Client);
-            }
 
             //Delete old client orders
             foreach (var item in _dataBase.GetAll<ClientOrder>().Where(x => x.ClientID == Client.ID && x.SaleID == _saleID))
@@ -231,7 +200,9 @@ namespace SaleManeger.ViewModels
         {
             if (string.IsNullOrWhiteSpace(Sale))
                 return;
+
             SaleSum = "";
+            List<string> sumOfOrder = new List<string>();
             double sum = 0;
             foreach (var line in Sale.Split("\n"))
             {
@@ -242,11 +213,12 @@ namespace SaleManeger.ViewModels
                 }
                 else
                 {
-                    SaleSum += $"{sum} + ";
+                    sumOfOrder.Add(sum.ToString());
                     sum = 0;
                 }
             }
-            SaleSum += sum;
+            SaleSum = string.Join(" + ", sumOfOrder);
+
             double allSaleSum = 0;
             if (SaleSum.Contains('+'))
             {
@@ -264,5 +236,7 @@ namespace SaleManeger.ViewModels
                 SaleSum += $"  Reszta z {Math.Ceiling(allSaleSum / 50) * 50}: {Math.Ceiling(allSaleSum / 50) * 50 - allSaleSum}";
             }
         }
+
+        #endregion Private Methods
     }
 }

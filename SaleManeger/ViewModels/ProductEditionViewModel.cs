@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Xml.Serialization;
 
 namespace SaleManeger.ViewModels
 {
@@ -29,7 +30,7 @@ namespace SaleManeger.ViewModels
         public ProductEditionViewModel(IProjectRepository db)
         {
             _dataBase = db;
-            Products = new ObservableCollection<Product>(db.GetAll<Product>().ToList());
+            Products = new ObservableCollection<Product>(db.GetAll<Product>().OrderBy(x => x.Code).ToList());
             SaveToDataBaseCommand = ReactiveCommand.Create(SaveToDataBase);
         }
 

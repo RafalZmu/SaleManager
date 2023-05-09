@@ -10,7 +10,13 @@ namespace SaleManeger.Views;
 
 public partial class ClientEditionView : UserControl
 {
+    #region Private Fields
+
     private List<Product> _products = null;
+
+    #endregion Private Fields
+
+    #region Public Constructors
 
     public ClientEditionView()
     {
@@ -18,6 +24,10 @@ public partial class ClientEditionView : UserControl
         sale.AddHandler(KeyUpEvent, Sale_InputHandler, RoutingStrategies.Tunnel);
         order.AddHandler(KeyUpEvent, Order_InputHandler, RoutingStrategies.Tunnel);
     }
+
+    #endregion Public Constructors
+
+    #region Private Methods
 
     private void Order_InputHandler(object sender, KeyEventArgs e)
     {
@@ -108,4 +118,6 @@ public partial class ClientEditionView : UserControl
             sale.CaretIndex = cursorPostion;
         }
     }
+
+    #endregion Private Methods
 }

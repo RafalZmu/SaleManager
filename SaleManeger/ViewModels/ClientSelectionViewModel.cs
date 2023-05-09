@@ -13,22 +13,25 @@ namespace SaleManeger.ViewModels
 {
     public class ClientSelectionViewModel : ViewModelBase
     {
-        public string SaleID { get; set; }
-        public bool AreClientsWithSaleShowing { get; set; } = false;
-        public bool AreClientsWithOrderShowing { get; set; } = true;
-        public bool AreAllClientsShowing { get; set; } = true;
-        public ReactiveCommand<string, Client> OpenClientEditionCommand { get; }
-        public ReactiveCommand<Unit, Unit> OpenProjectSelectionCommand { get; }
-        public ReactiveCommand<Unit, string> OpenSaleSummaryCommand { get; }
-        public ReactiveCommand<Unit, List<bool>> UpdateClientsCommand { get; }
-        public ReactiveCommand<string, string> DeleteClientCommand { get; }
-        public ObservableCollection<Client> AllClients { get; set; }
-        public List<Product> ProductsList { get; }
-
-        private IProjectRepository _dataBase;
+        #region Private Fields
 
         // The name of the client currently being searched for.
         private string _clientName;
+
+        // Clients that match the current search term.
+        private ObservableCollection<Client> _clients;
+
+        private IProjectRepository _dataBase;
+        private ObservableCollection<Product> _products;
+
+        #endregion Private Fields
+
+        #region Public Properties
+
+        public ObservableCollection<Client> AllClients { get; set; }
+        public bool AreAllClientsShowing { get; set; } = true;
+        public bool AreClientsWithOrderShowing { get; set; } = true;
+        public bool AreClientsWithSaleShowing { get; set; } = false;
 
         public string ClientName
         {
@@ -43,9 +46,6 @@ namespace SaleManeger.ViewModels
             }
         }
 
-        // Clients that match the current search term.
-        private ObservableCollection<Client> _clients;
-
         public ObservableCollection<Client> Clients
         {
             get => _clients;
@@ -58,7 +58,10 @@ namespace SaleManeger.ViewModels
             }
         }
 
-        private ObservableCollection<Product> _products;
+        public ReactiveCommand<string, string> DeleteClientCommand { get; }
+        public ReactiveCommand<string, Client> OpenClientEditionCommand { get; }
+        public ReactiveCommand<Unit, Unit> OpenProjectSelectionCommand { get; }
+        public ReactiveCommand<Unit, string> OpenSaleSummaryCommand { get; }
 
         public ObservableCollection<Product> Products
         {
@@ -72,6 +75,14 @@ namespace SaleManeger.ViewModels
                 }
             }
         }
+
+        public List<Product> ProductsList { get; }
+        public string SaleID { get; set; }
+        public ReactiveCommand<Unit, List<bool>> UpdateClientsCommand { get; }
+
+        #endregion Public Properties
+
+        #region Public Constructors
 
         public ClientSelectionViewModel(string saleID, IProjectRepository dataBase, List<bool> selected)
         {
@@ -167,6 +178,10 @@ namespace SaleManeger.ViewModels
             FiltrClients();
         }
 
+        #endregion Public Constructors
+
+        #region Private Methods
+
         // Create a new client with the given ID.
         private Client CreateNewClient(string clientID)
         {
@@ -202,12 +217,6 @@ namespace SaleManeger.ViewModels
             return tempList;
         }
 
-        private ObservableCollection<Client> ProductFiltr(ObservableCollection<Client> clients)
-        {
-            var reservedProductIds = Products.Where(p => p.IsReserved).Select(p => p.Code).ToList();
-            return reservedProductIds.Count != 0 ? new ObservableCollection<Client>(clients.Where(c => c.Products.Any(cp => reservedProductIds.Contains(cp.Code)))) : clients;
-        }
-
         private ObservableCollection<Client> NameAndNumberFiltr(ObservableCollection<Client> clients)
         {
             return string.IsNullOrWhiteSpace(ClientName) ?
@@ -227,5 +236,13 @@ namespace SaleManeger.ViewModels
                 _ => new ObservableCollection<Client>(),
             };
         }
+
+        private ObservableCollection<Client> ProductFiltr(ObservableCollection<Client> clients)
+        {
+            var reservedProductIds = Products.Where(p => p.IsReserved).Select(p => p.Code).ToList();
+            return reservedProductIds.Count != 0 ? new ObservableCollection<Client>(clients.Where(c => c.Products.Any(cp => reservedProductIds.Contains(cp.Code)))) : clients;
+        }
+
+        #endregion Private Methods
     }
 }

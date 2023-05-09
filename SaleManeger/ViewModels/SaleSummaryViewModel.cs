@@ -28,7 +28,7 @@ namespace SaleManeger.ViewModels
             // Get all clients and their orders.
             var ProductsList = _dataBase.GetAll<Product>().ToList();
             var clients = _dataBase.GetAll<Client>().ToList();
-            var clientsOrders = _dataBase.GetAll<ClientOrder>().ToList();
+            var clientsOrders = _dataBase.GetAll<ClientOrder>().Where(x => x.SaleID == SaleName).ToList();
             var clientsOrdersList = clientsOrders.GroupBy(x => x.ClientID).Select(y => y.ToList()).ToList();
             foreach (var clientOrder in clientsOrdersList)
             {
@@ -79,28 +79,27 @@ namespace SaleManeger.ViewModels
 
         private void GetProducts()
         {
-            // Get all orders, orders left and all sold
+            // Get all orders, orders left and all sold products
             foreach (var product in _products)
             {
                 AllOrders += $"{product.Name}: {_dataBase.GetAll<ClientOrder>()
-                    .Where(x => x.ProductID == product.ID && x.IsReserved == true)
+                    .Where(x => x.ProductID == product.ID && x.IsReserved == true && x.SaleID == SaleName)
                     .ToList()
-                    .Sum(x => double.Parse(x.Value))}{Environment.NewLine}";
+                    .Sum(x => double.Parse(x.Value.Split(' ')[0]))}{Environment.NewLine}";
 
                 var sum = 0.0;
                 foreach (var client in _clients)
                 {
                     if (client.Products.Any(x => x.IsReserved == false))
-                    {
                         continue;
-                    }
+
                     sum += client.Products.Where(x => x.ID == product.ID).Sum(x => long.Parse(x.Value));
                 }
                 OrdersLeft += $"{product.Name}: {sum}{Environment.NewLine}";
                 SoldAll += $"{product.Name}: {_dataBase.GetAll<ClientOrder>()
-                    .Where(x => x.ProductID == product.ID && x.IsReserved == false)
+                    .Where(x => x.ProductID == product.ID && x.IsReserved == false && x.SaleID == SaleName)
                     .ToList()
-                    .Sum(x => long.Parse(x.Value))}{Environment.NewLine}";
+                    .Sum(x => long.Parse(x.Value.Split(' ')[0]))}{Environment.NewLine}";
             }
         }
 

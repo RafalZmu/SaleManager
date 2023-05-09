@@ -18,6 +18,30 @@ namespace SaleManeger.ViewModels
 
         #endregion Private Fields
 
+        #region Public Properties
+
+        public LineSeries NumberOfCliensSeries { get; set; }
+
+        public bool NumberOfClients { get; set; } = false;
+
+        public int NumberOfSales { get; set; }
+
+        public LineSeries NumberOfSoldProductsSeries { get; set; }
+
+        public ReactiveCommand<Unit, Unit> OpenProjectSelectionCommand { get; }
+
+        public PlotModel Plot { get; set; }
+
+        public bool Profit { get; set; } = true;
+
+        public LineSeries SalesProfitSeries { get; set; }
+
+        public ReactiveCommand<Unit, Unit> UpdateGraphCommand { get; }
+
+        public bool Weight { get; set; } = false;
+
+        #endregion Public Properties
+
         #region Public Constructors
 
         public AllSalesSummaryViewModel(IProjectRepository dataBase)
@@ -40,18 +64,28 @@ namespace SaleManeger.ViewModels
                     saleProfit += _dataBase.GetAll<ClientOrder>()
                         .Where(x => x.ProductID == product.ID && x.SaleID == sale.SaleID && x.IsReserved == false)
                         .ToList()
-                        .Sum(x => long.Parse(x.Value));
+                        .Sum(x => long.Parse(x.Value.Split(' ')[0]));
                     saleSumOfProducts += saleProfit / product.PricePerKg;
                 }
                 salesProfit.Add(saleProfit);
                 numberOfSoldProducts.Add(saleSumOfProducts);
                 var clients = _dataBase.GetAll<ClientOrder>()
                     .Where(x => x.IsReserved == false)
-                    .GroupBy(x => x.ClientID);
+                    .GroupBy(x => x.ClientID)
+                    .ToList();
                 clientsWhoBought.Add(clients.Count());
             }
             NumberOfSales = numberOfSoldProducts.Count;
 
+            CreateGraph(clientsWhoBought, salesProfit, numberOfSoldProducts);
+        }
+
+        #endregion Public Constructors
+
+        #region Private Methods
+
+        private void CreateGraph(List<int> clientsWhoBought, List<double> salesProfit, List<double> numberOfSoldProducts)
+        {
             var saleProfitPoints = new List<DataPoint>();
             var numberOfClientsPoints = new List<DataPoint>();
             var numberOfSoldProductsPoints = new List<DataPoint>();
@@ -102,25 +136,6 @@ namespace SaleManeger.ViewModels
                 ShowInvisibleSeries = false,
             });
         }
-
-        #endregion Public Constructors
-
-        #region Public Properties
-
-        public LineSeries NumberOfCliensSeries { get; set; }
-        public bool NumberOfClients { get; set; } = false;
-        public int NumberOfSales { get; set; }
-        public LineSeries NumberOfSoldProductsSeries { get; set; }
-        public ReactiveCommand<Unit, Unit> OpenProjectSelectionCommand { get; }
-        public PlotModel Plot { get; set; }
-        public bool Profit { get; set; } = true;
-        public LineSeries SalesProfitSeries { get; set; }
-        public ReactiveCommand<Unit, Unit> UpdateGraphCommand { get; }
-        public bool Weight { get; set; } = false;
-
-        #endregion Public Properties
-
-        #region Private Methods
 
         private void UpdateGraph()
         {
