@@ -3,6 +3,7 @@ using OxyPlot.Legends;
 using OxyPlot.Series;
 using ReactiveUI;
 using SaleManeger.Models;
+using SaleManeger.Repositories;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
@@ -11,48 +12,80 @@ namespace SaleManeger.ViewModels
 {
     public class AllSalesSummaryViewModel : ViewModelBase
     {
-        public int NumberOfSales { get; set; }
-        public LineSeries NumberOfCliensSeries { get; set; }
-        public LineSeries NumberOfSoldProductsSeries { get; set; }
-        public LineSeries SalesProfitSeries { get; set; }
-        public bool Profit { get; set; } = true;
-        public bool NumberOfClients { get; set; } = false;
-        public bool Weight { get; set; } = false;
-        public PlotModel Plot { get; set; }
+        #region Private Fields
 
-        public ReactiveCommand<Unit, Unit> UpdateGraphCommand { get; }
+        private IProjectRepository _dataBase;
+
+        #endregion Private Fields
+
+        #region Public Properties
+
+        public LineSeries NumberOfCliensSeries { get; set; }
+
+        public bool NumberOfClients { get; set; } = false;
+
+        public int NumberOfSales { get; set; }
+
+        public LineSeries NumberOfSoldProductsSeries { get; set; }
 
         public ReactiveCommand<Unit, Unit> OpenProjectSelectionCommand { get; }
 
-        private DataBase _dataBase;
+        public PlotModel Plot { get; set; }
 
-        public AllSalesSummaryViewModel(DataBase dataBase)
+        public bool Profit { get; set; } = true;
+
+        public LineSeries SalesProfitSeries { get; set; }
+
+        public ReactiveCommand<Unit, Unit> UpdateGraphCommand { get; }
+
+        public bool Weight { get; set; } = false;
+
+        #endregion Public Properties
+
+        #region Public Constructors
+
+        public AllSalesSummaryViewModel(IProjectRepository dataBase)
         {
             _dataBase = dataBase;
 
             OpenProjectSelectionCommand = ReactiveCommand.Create(() => { });
             UpdateGraphCommand = ReactiveCommand.Create(UpdateGraph);
 
-            var clientsWhoBought = new List<int>();
-            var salesProfit = new List<double>();
-            var numberOfSoldProducts = new List<double>();
+            var clientsWhoBoughtPerSale = new List<int>();
+            var saleProfitPerSale = new List<double>();
+            var weightOfSoldProductsPerSale = new List<double>();
 
-            foreach (var sale in _dataBase.GetSalesList())
+            foreach (var sale in _dataBase.GetAll<Sale>().ToList())
             {
                 var saleProfit = 0.0;
-                var saleSumOfProducts = 0.0;
-                foreach (var product in _dataBase.GetProducts())
+                var sumOfProductsWeight = 0.0;
+                foreach (var product in _dataBase.GetAll<Product>().ToList())
                 {
-                    saleProfit += _dataBase.GetSumOfProduct(sale.SaleDate, product.Code, false);
-                    saleSumOfProducts += _dataBase.GetSumOfProduct(sale.SaleDate, product.Code, false) / product.PricePerKg;
+                    saleProfit += _dataBase.GetAll<ClientOrder>()
+                        .Where(x => x.ProductID == product.ID && x.SaleID == sale.SaleID && x.IsReserved == false)
+                        .ToList()
+                        .Sum(x => long.Parse(x.Value.Split(' ')[0]));
+                    sumOfProductsWeight += saleProfit / product.PricePerKg;
                 }
-                salesProfit.Add(saleProfit);
-                numberOfSoldProducts.Add(saleSumOfProducts);
-                var clients = _dataBase.GetClientsFromSale(sale.SaleDate).Where(x => x.Products.Any(y => y.IsReserved == false));
-                clientsWhoBought.Add(clients.Count());
+                saleProfitPerSale.Add(saleProfit);
+                weightOfSoldProductsPerSale.Add(sumOfProductsWeight);
+                var clients = _dataBase.GetAll<ClientOrder>()
+                    .Where(x => x.IsReserved == false)
+                    .GroupBy(x => x.ClientID)
+                    .ToList();
+                clientsWhoBoughtPerSale.Add(clients.Count);
             }
-            NumberOfSales = numberOfSoldProducts.Count;
+            NumberOfSales = weightOfSoldProductsPerSale.Count;
 
+            CreateGraph(clientsWhoBoughtPerSale, saleProfitPerSale, weightOfSoldProductsPerSale);
+        }
+
+        #endregion Public Constructors
+
+        #region Private Methods
+
+        private void CreateGraph(List<int> clientsWhoBought, List<double> salesProfit, List<double> numberOfSoldProducts)
+        {
             var saleProfitPoints = new List<DataPoint>();
             var numberOfClientsPoints = new List<DataPoint>();
             var numberOfSoldProductsPoints = new List<DataPoint>();
@@ -104,7 +137,6 @@ namespace SaleManeger.ViewModels
             });
         }
 
-
         private void UpdateGraph()
         {
             Plot.Series[0].IsVisible = Profit;
@@ -113,5 +145,7 @@ namespace SaleManeger.ViewModels
 
             Plot.InvalidatePlot(true);
         }
+
+        #endregion Private Methods
     }
 }

@@ -7,6 +7,8 @@ namespace SaleManeger
 {
     public class ViewLocator : IDataTemplate
     {
+        #region Public Methods
+
         public IControl Build(object data)
         {
             var name = data.GetType().FullName!.Replace("ViewModel", "View");
@@ -24,5 +26,7 @@ namespace SaleManeger
         {
             return data is ViewModelBase;
         }
+
+        #endregion Public Methods
     }
 }

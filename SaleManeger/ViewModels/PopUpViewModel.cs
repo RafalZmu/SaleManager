@@ -1,18 +1,31 @@
 ﻿using ReactiveUI;
 using SaleManeger.Models;
+using SaleManeger.Repositories;
+using System.Linq;
 using System.Reactive;
 
 namespace SaleManeger.ViewModels
 {
-    class PopUpViewModel : ViewModelBase
+    internal class PopUpViewModel : ViewModelBase
     {
+        #region Public Properties
+
+        public IProjectRepository _dataBase { get; set; }
         public ReactiveCommand<Unit, Unit> OpenClientSelectionCommand { get; }
         public ReactiveCommand<Unit, Unit> ReturnCommand { get; }
-        public DataBase _dataBase { get; set; }
+
+        #endregion Public Properties
+
+        #region Private Properties
+
         private string ClientID { get; set; }
         private string SaleName { get; set; }
 
-        public PopUpViewModel(DataBase dataBase, string saleName, string clientID)
+        #endregion Private Properties
+
+        #region Public Constructors
+
+        public PopUpViewModel(IProjectRepository dataBase, string saleName, string clientID)
         {
             _dataBase = dataBase;
             SaleName = saleName;
@@ -22,10 +35,17 @@ namespace SaleManeger.ViewModels
             ReturnCommand = ReactiveCommand.Create(() => { });
         }
 
+        #endregion Public Constructors
+
+        #region Private Methods
+
         private void DeleteClient()
         {
-            _dataBase.DeleteClient(ClientID, SaleName);
+            Client client = _dataBase.Get<Client>().Where(x => x.ID == ClientID).FirstOrDefault();
+            _dataBase.Delete(client);
+            _dataBase.GetAll<ClientOrder>().Where(x => x.ClientID == ClientID).ToList().ForEach(x => _dataBase.Delete(x));
         }
 
+        #endregion Private Methods
     }
 }

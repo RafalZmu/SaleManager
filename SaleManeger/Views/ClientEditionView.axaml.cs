@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using SaleManeger.Models;
 using System;
@@ -9,18 +10,41 @@ namespace SaleManeger.Views;
 
 public partial class ClientEditionView : UserControl
 {
-    private List<Product> _products;
-    private DataBase _dataBase;
+    #region Private Fields
+
+    private List<Product> _products = null;
+
+    #endregion Private Fields
+
+    #region Public Constructors
+
     public ClientEditionView()
     {
         InitializeComponent();
         sale.AddHandler(KeyUpEvent, Sale_InputHandler, RoutingStrategies.Tunnel);
         order.AddHandler(KeyUpEvent, Order_InputHandler, RoutingStrategies.Tunnel);
-        _dataBase = new DataBase();
-        _products = _dataBase.GetProducts();
     }
-    private void Order_InputHandler(object sender, EventArgs e)
+
+    #endregion Public Constructors
+
+    #region Private Methods
+
+    private void Order_InputHandler(object sender, KeyEventArgs e)
     {
+        if (_products == null)
+        {
+            _products = new List<Product>();
+            var codesList = codes.Text.Trim().Split("\n");
+            foreach (var code in codesList)
+            {
+                _products.Add(new Product()
+                {
+                    Code = code.Split("-")[0].Trim(),
+                    Name = code.Split("-")[1].Trim(),
+                });
+            }
+        }
+
         if (order.Text == null) return;
         order.Text = order.Text.Replace(",", ".");
         var text = order.Text;
@@ -41,7 +65,6 @@ public partial class ClientEditionView : UserControl
             {
                 newText += $"{line}\n";
             }
-
         }
         order.Text = newText.Trim('\r', '\n') + "\n";
         if (cursorPostion != 0)
@@ -49,11 +72,24 @@ public partial class ClientEditionView : UserControl
             order.CaretIndex = cursorPostion;
         }
     }
+
     private void Sale_InputHandler(object sender, EventArgs e)
     {
+        if (_products == null)
+        {
+            _products = new List<Product>();
+            var codesList = codes.Text.Trim().Split("\n");
+            foreach (var code in codesList)
+            {
+                _products.Add(new Product()
+                {
+                    Code = code.Split("-")[0].Trim(),
+                    Name = code.Split("-")[1].Trim(),
+                });
+            }
+        }
         //Updates saleSum on input
-        saleSum = saleSum;
-        if (order.Text == null) return;
+        if (sale.Text == null) return;
         sale.Text = sale.Text.Replace(",", ".");
         var text = sale.Text;
         if (string.IsNullOrWhiteSpace(text))
@@ -75,7 +111,6 @@ public partial class ClientEditionView : UserControl
             {
                 newText += $"{line}\n";
             }
-
         }
         sale.Text = newText.Trim('\r', '\n') + "\n";
         if (codeConverted == true)
@@ -83,4 +118,6 @@ public partial class ClientEditionView : UserControl
             sale.CaretIndex = cursorPostion;
         }
     }
+
+    #endregion Private Methods
 }

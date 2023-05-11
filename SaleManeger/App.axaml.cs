@@ -8,6 +8,8 @@ namespace SaleManeger
 {
     public partial class App : Application
     {
+        #region Public Methods
+
         public override void Initialize()
         {
             AvaloniaXamlLoader.Load(this);
@@ -25,5 +27,7 @@ namespace SaleManeger
 
             base.OnFrameworkInitializationCompleted();
         }
+
+        #endregion Public Methods
     }
 }

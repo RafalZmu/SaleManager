@@ -23,9 +23,9 @@
 
 		</Grid>
 		<Grid Grid.Row="1" RowDefinitions="*, Auto" ColumnDefinitions="*,*,Auto">
-			<TextBox Grid.Column="0" FontSize="20" Grid.RowSpan="2" Name="order" UseFloatingWatermark="True" AcceptsReturn="True"  Text="{Binding	Order, Mode=TwoWay}" Watermark="Zamówienie"/>
+			<TextBox Grid.Column="0" FontSize="20" Grid.RowSpan="2" Name="order" CaretIndex="{Binding OrderCaretIndex}" UseFloatingWatermark="True" AcceptsReturn="True"  Text="{Binding	Order, Mode=TwoWay}" Watermark="Zamówienie"/>
 			<TextBox Grid.Column="1" FontSize="20" Name="sale" UseFloatingWatermark="True" AcceptsReturn="True" Text="{Binding	Sale, Mode=TwoWay}" Watermark="Kupione"/>
-			<TextBox Grid.Column="2" Grid.RowSpan="2" IsReadOnly="True" UseFloatingWatermark="True" AcceptsReturn="True" Text="{Binding	Codes}" Watermark="Codes"/>
+			<TextBox Grid.Column="2" Grid.RowSpan="2" Name="codes" IsReadOnly="True" UseFloatingWatermark="True" AcceptsReturn="True" Text="{Binding	Codes}" Watermark="Codes"/>
 			<TextBox Grid.Column="1" Grid.Row="1" IsReadOnly="True" Name="saleSum"  FontSize="20" Text="{Binding SaleSum, Mode=TwoWay}"/>
 		</Grid>
 	</Grid>

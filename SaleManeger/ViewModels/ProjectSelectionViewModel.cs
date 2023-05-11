@@ -1,5 +1,7 @@
 ﻿using ReactiveUI;
 using SaleManeger.Models;
+using SaleManeger.Repositories;
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
@@ -9,28 +11,50 @@ namespace SaleManeger.ViewModels
 {
     public class ProjectSelectionViewModel : ViewModelBase
     {
-        public ReactiveCommand<Unit, string> CreateNewSaleCommand { get; }
-        public ReactiveCommand<string, string> DeleteSaleCommand { get; }
-        public ReactiveCommand<Unit, Unit> OpenAllSalesSummaryCommand { get; }
-        public ReactiveCommand<string, string> OpenSaleCommand { get; }
-        private ObservableCollection<Sale> _salesList { get; set; }
-        private DataBase _dataBase { get; set; }
+        #region Private Fields
 
         private string _newSaleDate;
+
+        #endregion Private Fields
+
+        #region Public Properties
+
+        public ReactiveCommand<Unit, string> CreateNewSaleCommand { get; }
+        public ReactiveCommand<string, string> DeleteSaleCommand { get; }
+
         public string NewSaleDate
         {
             get => _newSaleDate;
             set => this.RaiseAndSetIfChanged(ref _newSaleDate, value);
         }
-        public ProjectSelectionViewModel(DataBase db)
+
+        public ReactiveCommand<Unit, Unit> OpenAllSalesSummaryCommand { get; }
+        public ReactiveCommand<string, string> OpenSaleCommand { get; }
+
+        #endregion Public Properties
+
+        #region Private Properties
+
+        private IProjectRepository _dataBase { get; set; }
+        private ObservableCollection<Sale> _salesList { get; set; }
+
+        #endregion Private Properties
+
+        #region Public Constructors
+
+        public ProjectSelectionViewModel(IProjectRepository db)
         {
             _dataBase = db;
-            _salesList = _dataBase.GetSalesList();
+            _salesList = new ObservableCollection<Sale>(_dataBase.GetAll<Sale>().ToList());
             CreateNewSaleCommand = ReactiveCommand.Create(CreateNewSale, this.WhenAnyValue(x => x.NewSaleDate, text => !string.IsNullOrWhiteSpace(text)));
             OpenAllSalesSummaryCommand = ReactiveCommand.Create(() => { });
-            OpenSaleCommand = ReactiveCommand.Create((string saleName) => { return saleName; });
-            DeleteSaleCommand = ReactiveCommand.Create((string saleName) => { return saleName; });
+            OpenSaleCommand = ReactiveCommand.Create((string saleID) => { return saleID; });
+            DeleteSaleCommand = ReactiveCommand.Create((string saleID) => { return saleID; });
         }
+
+        #endregion Public Constructors
+
+        #region Private Methods
 
         private string CreateNewSale()
         {
@@ -43,9 +67,16 @@ namespace SaleManeger.ViewModels
             }
             Sale sale = new(NewSaleDate);
             _salesList.Add(sale);
-            _dataBase.AddToTable("Sales", ("SaleName", NewSaleDate));
-            return NewSaleDate;
-
+            var ID = Guid.NewGuid().ToString();
+            _dataBase.Add(new Sale()
+            {
+                SaleID = ID,
+                SaleDate = NewSaleDate
+            });
+            _dataBase.Save();
+            return ID;
         }
+
+        #endregion Private Methods
     }
 }
