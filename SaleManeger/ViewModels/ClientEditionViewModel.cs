@@ -1,4 +1,6 @@
-﻿using ReactiveUI;
+﻿using AvaloniaEdit.Utils;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using ReactiveUI;
 using SaleManeger.Models;
 using SaleManeger.Repositories;
 using System;
@@ -19,6 +21,7 @@ namespace SaleManeger.ViewModels
         private string _sale;
         private string _saleID;
         private string _saleSum;
+        private IProjectRepository _dataBase { get; set; }
 
         #endregion Private properties
 
@@ -96,17 +99,15 @@ namespace SaleManeger.ViewModels
             }
         }
 
-        private IProjectRepository _dataBase { get; set; }
-
         #endregion Public properties
 
         #region Private Methods
 
-        private void GetProductsFromInput(bool IsOrder)
+        private static List<Product> GetProductsFromText(List<Product> products, string text, bool IsReserved)
         {
-            var text = IsOrder ? Order : Sale;
+            var productsList = new List<Product>();
             if (string.IsNullOrWhiteSpace(text))
-                return;
+                return productsList;
 
             foreach (var item in text.Trim().Split("\n"))
             {
@@ -118,25 +119,26 @@ namespace SaleManeger.ViewModels
                         Name = "",
                         Code = "",
                         Value = item.Trim(),
-                        IsReserved = IsOrder
+                        IsReserved = IsReserved
                     };
-                    Client.Products.Add(comment);
+                    productsList.Add(comment);
                     continue;
                 }
                 var name = item.Split(":")[0].Trim();
                 var value = item.Split(':')[1].Trim();
-                var code = _products.First(x => x.Name == name).Code;
-                var ID = _products.First(x => x.Code == code).ID;
+                var code = products.First(x => x.Name == name).Code;
+                var ID = products.First(x => x.Code == code).ID;
                 Product product = new()
                 {
                     ID = ID,
                     Name = name,
                     Code = code,
                     Value = value,
-                    IsReserved = IsOrder
+                    IsReserved = IsReserved
                 };
-                Client.Products.Add(product);
+                productsList.Add(product);
             }
+            return productsList;
         }
 
         private string OpenClientSelection()
@@ -157,21 +159,21 @@ namespace SaleManeger.ViewModels
             Client.PhoneNumber = string.IsNullOrWhiteSpace(Number) ? "" : Number;
 
             //Get ordered products
-            GetProductsFromInput(true);
+            Client.Products.AddRange(GetProductsFromText(_products, Order, true));
 
             //Get sold products
-            GetProductsFromInput(false);
+            Client.Products.AddRange(GetProductsFromText(_products, Sale, false));
 
             //Save client
             if (!_dataBase.GetAll<Client>().AsNoTracking().Any(x => x.ID == Client.ID))
-                _dataBase.Add<Client>(Client);
+                _dataBase.Add(Client);
             else
-                _dataBase.Update<Client>(Client);
+                _dataBase.Update(Client);
 
             //Delete old client orders
             foreach (var item in _dataBase.GetAll<ClientOrder>().Where(x => x.ClientID == Client.ID && x.SaleID == _saleID))
             {
-                _dataBase.Delete<ClientOrder>(item);
+                _dataBase.Delete(item);
             }
             _dataBase.Save();
 
@@ -202,36 +204,32 @@ namespace SaleManeger.ViewModels
                 return;
 
             SaleSum = "";
-            List<string> sumOfOrder = new List<string>();
+            List<string> sumOfOrderSections = new();
             double sum = 0;
+            // Get sum of each order
             foreach (var line in Sale.Split("\n"))
             {
+                // If line contains ':' it means that it is a product
                 if (line.Contains(':'))
                 {
-                    double.TryParse(line.Split(":")[1].Trim().Replace(",", "."), out double productCost);
+                    double.TryParse(line.Split(":")[1].Trim().Replace(",", ".").Split(" ")[0], out double productCost);
                     sum += productCost;
                 }
                 else
                 {
-                    sumOfOrder.Add(sum.ToString());
+                    sumOfOrderSections.Add(sum.ToString());
                     sum = 0;
                 }
             }
-            SaleSum = string.Join(" + ", sumOfOrder);
+            SaleSum = string.Join(" + ", sumOfOrderSections);
 
-            double allSaleSum = 0;
-            if (SaleSum.Contains('+'))
-            {
-                SaleSum.Replace(" ", "");
-                foreach (var num in SaleSum.Split('+'))
-                {
-                    double.TryParse(num, out var value);
-                    allSaleSum += value;
-                }
-                SaleSum += $"{Environment.NewLine}Suma: {allSaleSum}";
-            }
+            // Get sum of all orders
+            double allSaleSum = SaleSum.Split("+").Sum(x => double.Parse(x));
+            SaleSum += $"{Environment.NewLine}Suma: {allSaleSum}";
+
             if (allSaleSum != 0)
             {
+                // Get change
                 SaleSum += $"       Reszta z {Math.Ceiling(allSaleSum / 100) * 100}: {Math.Ceiling(allSaleSum / 100) * 100 - allSaleSum}";
                 SaleSum += $"  Reszta z {Math.Ceiling(allSaleSum / 50) * 50}: {Math.Ceiling(allSaleSum / 50) * 50 - allSaleSum}";
             }

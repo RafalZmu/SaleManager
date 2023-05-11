@@ -86,20 +86,6 @@ namespace SaleManeger.ViewModels
 
         public ClientSelectionViewModel(string saleID, IProjectRepository dataBase, List<bool> selected)
         {
-            // Add to database sample users created with bogus
-            // data for testing purposes.
-            //Faker faker = new Faker();
-            //for (int i = 0; i < 1000; i++)
-            //{
-            //    var client = new Client()
-            //    {
-            //        Name = faker.Name.FullName(),
-            //        PhoneNumber = faker.Phone.PhoneNumber(),
-            //        ID = faker.Random.Guid().ToString(),
-            //        Products = new ObservableCollection<Product>()
-            //    };
-            //    dataBase.UpdateOrCreateClient(client, saleName);
-            //}
             SaleID = saleID;
             _dataBase = dataBase;
 
@@ -121,7 +107,6 @@ namespace SaleManeger.ViewModels
                 ObservableCollection<Product> orders = new();
                 foreach (var order in clientOrder)
                 {
-                    //TODO Add comment to client
                     if (order.ProductID == "Comment")
                     {
                         orders.Add(new Product()
@@ -155,7 +140,7 @@ namespace SaleManeger.ViewModels
             AllClients ??= new ObservableCollection<Client>();
             Clients = AllClients;
 
-            // Get all products and set their reservation status based on the current sale.
+            //Get products that were selected when this window was last opened.
             Products = new ObservableCollection<Product>(_dataBase.GetAll<Product>().AsNoTracking());
             if (selected != null)
             {

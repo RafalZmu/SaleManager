@@ -51,33 +51,33 @@ namespace SaleManeger.ViewModels
             OpenProjectSelectionCommand = ReactiveCommand.Create(() => { });
             UpdateGraphCommand = ReactiveCommand.Create(UpdateGraph);
 
-            var clientsWhoBought = new List<int>();
-            var salesProfit = new List<double>();
-            var numberOfSoldProducts = new List<double>();
+            var clientsWhoBoughtPerSale = new List<int>();
+            var saleProfitPerSale = new List<double>();
+            var weightOfSoldProductsPerSale = new List<double>();
 
             foreach (var sale in _dataBase.GetAll<Sale>().ToList())
             {
                 var saleProfit = 0.0;
-                var saleSumOfProducts = 0.0;
+                var sumOfProductsWeight = 0.0;
                 foreach (var product in _dataBase.GetAll<Product>().ToList())
                 {
                     saleProfit += _dataBase.GetAll<ClientOrder>()
                         .Where(x => x.ProductID == product.ID && x.SaleID == sale.SaleID && x.IsReserved == false)
                         .ToList()
                         .Sum(x => long.Parse(x.Value.Split(' ')[0]));
-                    saleSumOfProducts += saleProfit / product.PricePerKg;
+                    sumOfProductsWeight += saleProfit / product.PricePerKg;
                 }
-                salesProfit.Add(saleProfit);
-                numberOfSoldProducts.Add(saleSumOfProducts);
+                saleProfitPerSale.Add(saleProfit);
+                weightOfSoldProductsPerSale.Add(sumOfProductsWeight);
                 var clients = _dataBase.GetAll<ClientOrder>()
                     .Where(x => x.IsReserved == false)
                     .GroupBy(x => x.ClientID)
                     .ToList();
-                clientsWhoBought.Add(clients.Count());
+                clientsWhoBoughtPerSale.Add(clients.Count);
             }
-            NumberOfSales = numberOfSoldProducts.Count;
+            NumberOfSales = weightOfSoldProductsPerSale.Count;
 
-            CreateGraph(clientsWhoBought, salesProfit, numberOfSoldProducts);
+            CreateGraph(clientsWhoBoughtPerSale, saleProfitPerSale, weightOfSoldProductsPerSale);
         }
 
         #endregion Public Constructors
