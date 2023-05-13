@@ -33,11 +33,6 @@ namespace SaleManeger.Repositories
             _context.Set<T>().Remove(entity);
         }
 
-        public IQueryable<T> Get<T>() where T : class
-        {
-            return _context.Set<T>();
-        }
-
         public IQueryable<T> GetAll<T>() where T : class
         {
             return _context.Set<T>().AsQueryable();

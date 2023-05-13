@@ -27,7 +27,7 @@ namespace SaleManeger.ViewModels
         public SaleDeletionConfirmationViewModel(IProjectRepository dataBase, string saleID)
         {
             _dataBase = dataBase;
-            Sale = _dataBase.Get<Sale>().Where(x => x.SaleID == saleID).First();
+            Sale = _dataBase.GetAll<Sale>().Where(x => x.SaleID == saleID).First();
 
             DeleteSaleCommand = ReactiveCommand.Create(DeleteSale);
             ReturnCommand = ReactiveCommand.Create(() => { });
