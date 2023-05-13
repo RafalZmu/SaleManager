@@ -41,7 +41,7 @@ namespace SaleManeger.ViewModels
 
         private void DeleteClient()
         {
-            Client client = _dataBase.Get<Client>().Where(x => x.ID == ClientID).FirstOrDefault();
+            Client client = _dataBase.GetAll<Client>().Where(x => x.ID == ClientID).FirstOrDefault();
             _dataBase.Delete(client);
             _dataBase.GetAll<ClientOrder>().Where(x => x.ClientID == ClientID).ToList().ForEach(x => _dataBase.Delete(x));
         }

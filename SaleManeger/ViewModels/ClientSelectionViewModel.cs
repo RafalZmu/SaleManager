@@ -141,7 +141,7 @@ namespace SaleManeger.ViewModels
             Clients = AllClients;
 
             //Get products that were selected when this window was last opened.
-            Products = new ObservableCollection<Product>(_dataBase.GetAll<Product>().AsNoTracking());
+            Products = new ObservableCollection<Product>(ProductsList);
             if (selected != null)
             {
                 int i;

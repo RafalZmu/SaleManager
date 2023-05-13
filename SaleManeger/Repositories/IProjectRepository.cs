@@ -11,8 +11,6 @@ namespace SaleManeger.Repositories
 
         void Delete<T>(T entity) where T : class;
 
-        IQueryable<T> Get<T>() where T : class;
-
         IQueryable<T> GetAll<T>() where T : class;
 
         void Save();
