@@ -4,7 +4,9 @@ using OxyPlot.Series;
 using ReactiveUI;
 using SaleManeger.Models;
 using SaleManeger.Repositories;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
 
