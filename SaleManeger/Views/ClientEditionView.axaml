@@ -5,28 +5,18 @@
 			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 			 x:Class="SaleManeger.Views.ClientEditionView">
 
-	<Grid Margin="10,30,10,10">
-		<Grid.RowDefinitions>
-			<RowDefinition Height="50" />
-			<RowDefinition/>
-		</Grid.RowDefinitions>
-		<Grid Margin="5">
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="Auto"/>
-				<ColumnDefinition/>
-				<ColumnDefinition/>
-			</Grid.ColumnDefinitions>	
-			<Button Margin="0,0,5,0" VerticalAlignment="Stretch" VerticalContentAlignment="Center"
-					Content="Cofnij" Command="{Binding OpenClientSelectionCommand}"/>
-			<TextBox Grid.Column="1" FontSize="20" Text="{Binding	Name}" Watermark="Imie"/>
-			<TextBox Grid.Column="2" FontSize="20" Text="{Binding	Number}" Watermark="Numer Telefonu"/>
-
+	<Grid Margin="10,30,10,10" RowDefinitions="Auto, *">
+		<Grid Margin="5" ColumnDefinitions="Auto, *,*">
+			<Button Margin="0,0,5,0" FontSize="25" VerticalAlignment="Stretch" VerticalContentAlignment="Center"
+					Content="Cofnij" Command="{Binding OpenClientSelectionCommand}" />
+			<TextBox Grid.Column="1" FontSize="25" Text="{Binding	Name}" Watermark="Imie" />
+			<TextBox Grid.Column="2" FontSize="25" Text="{Binding	Number}" Watermark="Numer Telefonu" />
 		</Grid>
 		<Grid Grid.Row="1" RowDefinitions="*, Auto" ColumnDefinitions="*,*,Auto">
-			<TextBox Grid.Column="0" FontSize="20" Grid.RowSpan="2" Name="order" CaretIndex="{Binding OrderCaretIndex}" UseFloatingWatermark="True" AcceptsReturn="True"  Text="{Binding	Order, Mode=TwoWay}" Watermark="Zamówienie"/>
-			<TextBox Grid.Column="1" FontSize="20" Name="sale" UseFloatingWatermark="True" AcceptsReturn="True" Text="{Binding	Sale, Mode=TwoWay}" Watermark="Kupione"/>
-			<TextBox Grid.Column="2" Grid.RowSpan="2" Name="codes" IsReadOnly="True" UseFloatingWatermark="True" AcceptsReturn="True" Text="{Binding	Codes}" Watermark="Codes"/>
-			<TextBox Grid.Column="1" Grid.Row="1" IsReadOnly="True" Name="saleSum"  FontSize="20" Text="{Binding SaleSum, Mode=TwoWay}"/>
+			<TextBox Grid.Column="0" FontSize="20" Grid.RowSpan="2" Name="order" CaretIndex="{Binding OrderCaretIndex}" UseFloatingWatermark="True" AcceptsReturn="True"  Text="{Binding	Order, Mode=TwoWay}" Watermark="Zamówienie" />
+			<TextBox Grid.Column="1" FontSize="20" Name="sale" UseFloatingWatermark="True" AcceptsReturn="True" Text="{Binding	Sale, Mode=TwoWay}" Watermark="Kupione" />
+			<TextBox Grid.Column="2" Grid.RowSpan="2" Name="codes" IsReadOnly="True" UseFloatingWatermark="True" AcceptsReturn="True" Text="{Binding	Codes}" Watermark="Codes" />
+			<TextBox Grid.Column="1" Grid.Row="1" IsReadOnly="True" Name="saleSum"  FontSize="20" Text="{Binding SaleSum, Mode=TwoWay}" />
 		</Grid>
 	</Grid>
 </UserControl>

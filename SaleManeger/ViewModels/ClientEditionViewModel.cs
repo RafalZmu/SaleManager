@@ -1,5 +1,4 @@
 ﻿using AvaloniaEdit.Utils;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using ReactiveUI;
 using SaleManeger.Models;
 using SaleManeger.Repositories;

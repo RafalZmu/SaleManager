@@ -41,8 +41,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Views\ProjectSelectionView.axaml.cs">
-      <DependentUpon>ProjectSelectionView.axaml</DependentUpon>
+    <Compile Update="Views\ClientDeletionConfirmationView.axaml.cs">
+      <DependentUpon>ClientDeletionConfirmationView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\SaleSelectionView.axaml.cs">
+      <DependentUpon>SaleSelectionView.axaml</DependentUpon>
     </Compile>
     <Compile Update="Views\SaleDeletionConfirmationView.axaml.cs">
       <DependentUpon>SaleDeletionConfirmationView.axaml</DependentUpon>

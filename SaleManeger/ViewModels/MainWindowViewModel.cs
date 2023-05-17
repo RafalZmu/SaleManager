@@ -51,7 +51,7 @@ namespace SaleManeger.ViewModels
 
         public void OpenClientDeletion(string model)
         {
-            var clientDeletionViewModel = new PopUpViewModel(_dataBase, _saleName, model);
+            var clientDeletionViewModel = new ClientDeletionConfirmationViewModel(_dataBase, _saleName, model);
             Content = clientDeletionViewModel;
             clientDeletionViewModel.OpenClientSelectionCommand.Subscribe(model =>
             {
@@ -102,7 +102,7 @@ namespace SaleManeger.ViewModels
 
         public void OpenProjectSelection()
         {
-            var projectViewModel = new ProjectSelectionViewModel(_dataBase);
+            var projectViewModel = new SaleSelectionViewModel(_dataBase);
             Content = projectViewModel;
 
             projectViewModel.CreateNewSaleCommand.Subscribe(OpenClientSelection);

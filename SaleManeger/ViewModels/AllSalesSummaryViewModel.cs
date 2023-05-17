@@ -1,4 +1,5 @@
 ﻿using OxyPlot;
+using OxyPlot.Annotations;
 using OxyPlot.Legends;
 using OxyPlot.Series;
 using ReactiveUI;
@@ -102,27 +103,44 @@ namespace SaleManeger.ViewModels
             }
             NumberOfSales = saleProfitPoints.Count;
 
-            Plot = new PlotModel();
+            Plot = new PlotModel()
+            {
+                TextColor = OxyColors.White,
+                PlotAreaBorderColor = OxyColors.White,
+                SelectionColor = OxyColors.White,
+                SubtitleColor = OxyColors.White,
+                TitleColor = OxyColors.White,
+            };
 
             // Create a series to represent the data
             SalesProfitSeries = new LineSeries
             {
                 ItemsSource = saleProfitPoints,
                 Color = OxyColors.Green,
-                Title = "Zysk ze sprzedaży"
+                Title = "Zysk ze sprzedaży",
+                CanTrackerInterpolatePoints = false
             };
             NumberOfCliensSeries = new LineSeries
             {
                 ItemsSource = numberOfClientsPoints,
                 Color = OxyColors.Blue,
-                Title = "Ilość klientów"
+                Title = "Ilość klientów",
+                CanTrackerInterpolatePoints = false
             };
             NumberOfSoldProductsSeries = new LineSeries
             {
                 ItemsSource = numberOfSoldProductsPoints,
                 Color = OxyColors.Red,
-                Title = "Ilość sprzedanych produktów"
+                Title = "Ilość sprzedanych produktów",
+                CanTrackerInterpolatePoints = false
             };
+            var annotation = new PointAnnotation()
+            {
+                X = Convert.ToDouble("1"),
+                Y = 200,
+                Text = "Test"
+            };
+            Plot.Annotations.Add(annotation);
 
             // Add the series to the chart model
             Plot.Series.Add(SalesProfitSeries);

@@ -100,6 +100,7 @@ namespace SaleManeger.ViewModels
 
             // Get all clients and their orders.
             var clients = _dataBase.GetAll<Client>().ToList();
+            clients.ForEach(x => x.Products = new ObservableCollection<Product>());
             var clientsOrders = _dataBase.GetAll<ClientOrder>().Where(x => x.SaleID == SaleID).ToList();
             var clientsOrdersList = clientsOrders.GroupBy(x => x.ClientID).Select(y => y.ToList()).ToList();
             foreach (var clientOrder in clientsOrdersList)

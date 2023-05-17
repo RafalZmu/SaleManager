@@ -9,7 +9,7 @@ using System.Reactive.Linq;
 
 namespace SaleManeger.ViewModels
 {
-    public class ProjectSelectionViewModel : ViewModelBase
+    public class SaleSelectionViewModel : ViewModelBase
     {
         #region Private Fields
 
@@ -42,7 +42,7 @@ namespace SaleManeger.ViewModels
 
         #region Public Constructors
 
-        public ProjectSelectionViewModel(IProjectRepository db)
+        public SaleSelectionViewModel(IProjectRepository db)
         {
             _dataBase = db;
             _salesList = new ObservableCollection<Sale>(_dataBase.GetAll<Sale>().ToList());

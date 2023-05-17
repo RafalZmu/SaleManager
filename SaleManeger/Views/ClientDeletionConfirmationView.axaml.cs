@@ -2,11 +2,11 @@ using Avalonia.Controls;
 
 namespace SaleManeger.Views;
 
-public partial class PopUpView : UserControl
+public partial class ClientDeletionConfirmationView : UserControl
 {
     #region Public Constructors
 
-    public PopUpView()
+    public ClientDeletionConfirmationView()
     {
         InitializeComponent();
     }

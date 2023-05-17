@@ -16,6 +16,7 @@ namespace SaleManeger.Repositories
 
         public ProjectRepository(SaleContext context)
         {
+            context.Database.EnsureCreated();
             _context = context;
         }
 

@@ -6,7 +6,7 @@ using System.Reactive;
 
 namespace SaleManeger.ViewModels
 {
-    internal class PopUpViewModel : ViewModelBase
+    internal class ClientDeletionConfirmationViewModel : ViewModelBase
     {
         #region Public Properties
 
@@ -19,16 +19,16 @@ namespace SaleManeger.ViewModels
         #region Private Properties
 
         private string ClientID { get; set; }
-        private string SaleName { get; set; }
+        private string SaleID { get; set; }
 
         #endregion Private Properties
 
         #region Public Constructors
 
-        public PopUpViewModel(IProjectRepository dataBase, string saleName, string clientID)
+        public ClientDeletionConfirmationViewModel(IProjectRepository dataBase, string saleID, string clientID)
         {
             _dataBase = dataBase;
-            SaleName = saleName;
+            SaleID = saleID;
             ClientID = clientID;
 
             OpenClientSelectionCommand = ReactiveCommand.Create(DeleteClient);
@@ -43,7 +43,8 @@ namespace SaleManeger.ViewModels
         {
             Client client = _dataBase.GetAll<Client>().Where(x => x.ID == ClientID).FirstOrDefault();
             _dataBase.Delete(client);
-            _dataBase.GetAll<ClientOrder>().Where(x => x.ClientID == ClientID).ToList().ForEach(x => _dataBase.Delete(x));
+            _dataBase.GetAll<ClientOrder>().Where(x => x.ClientID == ClientID && x.SaleID == SaleID).ToList().ForEach(x => _dataBase.Delete(x));
+            _dataBase.Save();
         }
 
         #endregion Private Methods

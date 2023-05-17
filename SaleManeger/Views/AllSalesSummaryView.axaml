@@ -6,14 +6,28 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="SaleManeger.Views.AllSalesSummaryView">
 
-	<Grid Margin="5" ColumnDefinitions="Auto, *, Auto, 150" RowDefinitions="Auto,*">
-		<Button Grid.Column="0" FontSize="20" Content="Cofnij" Command="{Binding OpenProjectSelectionCommand}"/>
-		<TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Column="1" FontSize="25" Text="{Binding NumberOfSales, StringFormat='Podsumowanie {0} sprzedarzy'}"/>
+	<Grid Margin="5,30,5,5" ColumnDefinitions="Auto, *, Auto, 150" RowDefinitions="Auto,*">
+		<Button Grid.Column="0" FontSize="20" Content="Cofnij" Command="{Binding OpenProjectSelectionCommand}" />
+		<TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Column="1" FontSize="25" Text="{Binding NumberOfSales, StringFormat='Podsumowanie {0} sprzedarzy'}" />
 		<StackPanel Orientation="Horizontal" Grid.Column="2">
-			<CheckBox IsChecked="{Binding Profit}" FontSize="20" Command="{Binding UpdateGraphCommand}" Content="Zysk" Margin="0,0,10,0"/>
-			<CheckBox IsChecked="{Binding NumberOfClients}" FontSize="20" Command="{Binding UpdateGraphCommand}" Content="Liczba klientów" Margin="0,0,10,0"/>
-			<CheckBox IsChecked="{Binding Weight}" FontSize="20" Command="{Binding UpdateGraphCommand}" Content="Suma wag"/>
+			<CheckBox IsChecked="{Binding Profit}" FontSize="20" Command="{Binding UpdateGraphCommand}" Content="Zysk" Margin="0,0,10,0" />
+			<CheckBox IsChecked="{Binding NumberOfClients}" FontSize="20" Command="{Binding UpdateGraphCommand}" Content="Liczba klientów" Margin="0,0,10,0" />
+			<CheckBox IsChecked="{Binding Weight}" FontSize="20" Command="{Binding UpdateGraphCommand}" Content="Suma wag" />
 		</StackPanel>
-		<oxy:PlotView Margin="0,10,0,0" Grid.ColumnSpan="4" Grid.Row="1" Model="{Binding Plot, Mode=TwoWay}"/>
+		<oxy:PlotView Margin="0,10,0,0" Background="#1f1f1f" Grid.ColumnSpan="4"
+					  Grid.Row="1" Model="{Binding Plot, Mode=TwoWay}">
+			<oxy:PlotView.DefaultTrackerTemplate>
+				<ControlTemplate>
+					<oxy:TrackerControl Position="{Binding Position}" LineExtents="{Binding PlotModel.PlotArea}">
+						<oxy:TrackerControl.Background>
+							<SolidColorBrush Color="White" />
+						</oxy:TrackerControl.Background>
+						<oxy:TrackerControl.Content>
+							<TextBlock Text="{Binding}" Margin="7" Foreground="Black" />
+						</oxy:TrackerControl.Content>
+					</oxy:TrackerControl>
+				</ControlTemplate>
+			</oxy:PlotView.DefaultTrackerTemplate>
+		</oxy:PlotView>
 	</Grid>
 </UserControl>

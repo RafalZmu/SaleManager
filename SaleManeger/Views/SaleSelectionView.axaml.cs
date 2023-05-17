@@ -2,11 +2,11 @@ using Avalonia.Controls;
 
 namespace SaleManeger.Views;
 
-public partial class ProjectSelectionView : UserControl
+public partial class SaleSelectionView : UserControl
 {
     #region Public Constructors
 
-    public ProjectSelectionView()
+    public SaleSelectionView()
     {
         InitializeComponent();
     }

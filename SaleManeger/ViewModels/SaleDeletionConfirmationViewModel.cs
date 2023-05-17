@@ -40,6 +40,7 @@ namespace SaleManeger.ViewModels
         private void DeleteSale()
         {
             _dataBase.Delete(Sale);
+            _dataBase.Save();
         }
 
         #endregion Private Methods
