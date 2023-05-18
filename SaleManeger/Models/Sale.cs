@@ -4,7 +4,7 @@
     {
         #region Public Properties
 
-        public string SaleDate { get; set; }
+        public string SaleName { get; set; }
         public string SaleID { get; set; }
 
         #endregion Public Properties
@@ -17,7 +17,7 @@
 
         public Sale(string saleDate)
         {
-            SaleDate = saleDate;
+            SaleName = saleDate;
         }
 
         #endregion Public Constructors

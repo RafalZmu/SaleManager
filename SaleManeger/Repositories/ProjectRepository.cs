@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace SaleManeger.Repositories
 {
-    internal class ProjectRepository : IProjectRepository
+    public class ProjectRepository : IProjectRepository
     {
         #region Public Fields
 

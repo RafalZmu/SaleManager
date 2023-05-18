@@ -6,7 +6,7 @@ using System.Reactive;
 
 namespace SaleManeger.ViewModels
 {
-    internal class ClientDeletionConfirmationViewModel : ViewModelBase
+    public class ClientDeletionConfirmationViewModel : ViewModelBase
     {
         #region Public Properties
 
@@ -31,7 +31,7 @@ namespace SaleManeger.ViewModels
             SaleID = saleID;
             ClientID = clientID;
 
-            OpenClientSelectionCommand = ReactiveCommand.Create(DeleteClient);
+            OpenClientSelectionCommand = ReactiveCommand.Create(() => DeleteClient(_dataBase, ClientID, SaleID));
             ReturnCommand = ReactiveCommand.Create(() => { });
         }
 
@@ -39,12 +39,12 @@ namespace SaleManeger.ViewModels
 
         #region Private Methods
 
-        private void DeleteClient()
+        public static void DeleteClient(IProjectRepository dataBase, string clientID, string saleID)
         {
-            Client client = _dataBase.GetAll<Client>().Where(x => x.ID == ClientID).FirstOrDefault();
-            _dataBase.Delete(client);
-            _dataBase.GetAll<ClientOrder>().Where(x => x.ClientID == ClientID && x.SaleID == SaleID).ToList().ForEach(x => _dataBase.Delete(x));
-            _dataBase.Save();
+            Client client = dataBase.GetAll<Client>().Where(x => x.ID == clientID).FirstOrDefault();
+            dataBase.Delete(client);
+            dataBase.GetAll<ClientOrder>().Where(x => x.ClientID == clientID && x.SaleID == saleID).ToList().ForEach(x => dataBase.Delete(x));
+            dataBase.Save();
         }
 
         #endregion Private Methods

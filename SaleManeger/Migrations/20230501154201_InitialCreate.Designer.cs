@@ -73,7 +73,7 @@ namespace SaleManeger.Migrations
                     b.Property<string>("SaleID")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("SaleDate")
+                    b.Property<string>("SaleID")
                         .HasColumnType("TEXT");
 
                     b.HasKey("SaleID");

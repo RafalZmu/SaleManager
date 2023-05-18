@@ -11,8 +11,8 @@ using SaleManeger.Models;
 namespace SaleManeger.Migrations
 {
     [DbContext(typeof(SaleContext))]
-    [Migration("20230505075648_ClientOrderChange")]
-    partial class ClientOrderChange
+    [Migration("20230518092820_SaleDateCHange")]
+    partial class SaleDateCHange
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -72,9 +72,6 @@ namespace SaleManeger.Migrations
                     b.Property<string>("ID")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("ClientID")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Code")
                         .HasColumnType("TEXT");
 
@@ -92,8 +89,6 @@ namespace SaleManeger.Migrations
 
                     b.HasKey("ID");
 
-                    b.HasIndex("ClientID");
-
                     b.ToTable("Products");
                 });
 
@@ -102,24 +97,12 @@ namespace SaleManeger.Migrations
                     b.Property<string>("SaleID")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("SaleID")
+                    b.Property<string>("SaleName")
                         .HasColumnType("TEXT");
 
                     b.HasKey("SaleID");
 
                     b.ToTable("Sales");
-                });
-
-            modelBuilder.Entity("SaleManeger.Models.Product", b =>
-                {
-                    b.HasOne("SaleManeger.Models.Client", null)
-                        .WithMany("Products")
-                        .HasForeignKey("ClientID");
-                });
-
-            modelBuilder.Entity("SaleManeger.Models.Client", b =>
-                {
-                    b.Navigation("Products");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Avalonia.Controls.Shapes;
+using Microsoft.EntityFrameworkCore;
 using System;
 
 namespace SaleManeger.Models
@@ -17,10 +18,18 @@ namespace SaleManeger.Models
 
         #region Public Constructors
 
-        public SaleContext()
+        public SaleContext(string givenPath = null)
         {
-            var folder = Environment.SpecialFolder.LocalApplicationData;
-            var path = Environment.GetFolderPath(folder);
+            string path;
+            if (givenPath == null)
+            {
+                var folder = Environment.SpecialFolder.LocalApplicationData;
+                path = Environment.GetFolderPath(folder);
+            }
+            else
+            {
+                path = givenPath;
+            }
             DbPath = System.IO.Path.Join(path, "sale.db");
         }
 

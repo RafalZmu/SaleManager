@@ -58,7 +58,7 @@ namespace SaleManeger.ViewModels
 
         private string CreateNewSale()
         {
-            if (_salesList.Any(x => x.SaleDate == NewSaleDate))
+            if (_salesList.Any(x => x.SaleName == NewSaleDate))
             {
                 var messageBoxStandardWindow = MessageBox.Avalonia.MessageBoxManager
                     .GetMessageBoxStandardWindow("Warning", "Sprzedarz o takiej nazwie już istnieje");
@@ -71,7 +71,7 @@ namespace SaleManeger.ViewModels
             _dataBase.Add(new Sale()
             {
                 SaleID = ID,
-                SaleDate = NewSaleDate
+                SaleName = NewSaleDate
             });
             _dataBase.Save();
             return ID;

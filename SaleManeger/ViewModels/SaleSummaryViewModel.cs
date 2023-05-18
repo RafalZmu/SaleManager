@@ -93,13 +93,14 @@ namespace SaleManeger.ViewModels
                     if (client.Products.Any(x => x.IsReserved == false))
                         continue;
 
-                    sum += client.Products.Where(x => x.ID == product.ID).Sum(x => long.Parse(x.Value));
+                    sum += client.Products.Where(x => x.ID == product.ID).Sum(x => double.Parse(x.Value.Split(" ")[0]));
                 }
                 OrdersLeft += $"{product.Name}: {sum}{Environment.NewLine}";
+
                 SoldAll += $"{product.Name}: {_dataBase.GetAll<ClientOrder>()
                     .Where(x => x.ProductID == product.ID && x.IsReserved == false && x.SaleID == SaleName)
                     .ToList()
-                    .Sum(x => long.Parse(x.Value.Split(' ')[0]))}{Environment.NewLine}";
+                    .Sum(x => double.Parse(x.Value.Split(' ')[0]))}{Environment.NewLine}";
             }
         }
 

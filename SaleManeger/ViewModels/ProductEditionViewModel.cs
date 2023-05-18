@@ -2,6 +2,7 @@
 using SaleManeger.Models;
 using SaleManeger.Repositories;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
@@ -31,7 +32,7 @@ namespace SaleManeger.ViewModels
         {
             _dataBase = db;
             Products = new ObservableCollection<Product>(db.GetAll<Product>().OrderBy(x => x.Code).ToList());
-            SaveToDataBaseCommand = ReactiveCommand.Create(SaveToDataBase);
+            SaveToDataBaseCommand = ReactiveCommand.Create(() => SaveToDataBase(_dataBase, Products));
         }
 
         #endregion Public Constructors
@@ -49,16 +50,16 @@ namespace SaleManeger.ViewModels
             });
         }
 
-        public async void SaveToDataBase()
+        public void SaveToDataBase(IProjectRepository dataBase, ObservableCollection<Product> productsList)
         {
             //Clear products table and replace it with updated products
             var random = new Random();
             const string chars = "abcdefghijklmnopqrstuvwxyz0123456789";
 
             // Remove products with empty name and code
-            Products = new ObservableCollection<Product>(Products.Where(x => !string.IsNullOrWhiteSpace(x.Name) && !string.IsNullOrWhiteSpace(x.Code)));
+            productsList = new ObservableCollection<Product>(productsList.Where(x => !string.IsNullOrWhiteSpace(x.Name) && !string.IsNullOrWhiteSpace(x.Code)));
 
-            foreach (var item in Products)
+            foreach (var item in productsList)
             {
                 if (item.PricePerKg <= 0)
                     item.PricePerKg = 1;
@@ -67,14 +68,14 @@ namespace SaleManeger.ViewModels
                     item.Name = "Podaj nazwe przedmiotu";
 
                 // Check if there are two products with the same code if there are, generate a new code
-                if (Products.Where(x => x.Code == item.Code).Count() > 1)
+                if (productsList.Where(x => x.Code == item.Code).Count() > 1)
                 {
                     // Generate a random two-character string
                     string code = new string(Enumerable.Repeat(chars, 2)
                         .Select(s => s[random.Next(s.Length)]).ToArray());
 
                     // Check if the code already exists in the database
-                    while (Products.Any(p => p.Code == code))
+                    while (productsList.Any(p => p.Code == code))
                     {
                         // If the code already exists, generate a new one
                         code = new string(Enumerable.Repeat(chars, 2)
@@ -84,18 +85,18 @@ namespace SaleManeger.ViewModels
                 }
             }
 
-            foreach (var product in _dataBase.GetAll<Product>().ToList())
+            foreach (var product in dataBase.GetAll<Product>().ToList())
             {
-                _dataBase.Delete(product);
+                dataBase.Delete(product);
             }
-            await _dataBase.SaveAsync();
+            dataBase.Save();
 
-            foreach (var product in Products)
+            foreach (var product in productsList)
             {
-                _dataBase.Add(product);
+                dataBase.Add(product);
             }
 
-            await _dataBase.SaveAsync();
+            dataBase.Save();
         }
 
         #endregion Public Methods

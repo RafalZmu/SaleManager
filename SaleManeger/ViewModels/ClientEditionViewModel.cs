@@ -102,7 +102,37 @@ namespace SaleManeger.ViewModels
 
         #region Private Methods
 
-        private static List<Product> GetProductsFromText(List<Product> products, string text, bool IsReserved)
+        public static void SaveClientOrder(IProjectRepository dataBase, Client client, string saleID)
+        {
+            //Delete old client orders
+            foreach (var item in dataBase.GetAll<ClientOrder>().Where(x => x.ClientID == client.ID && x.SaleID == saleID))
+            {
+                dataBase.Delete(item);
+            }
+            dataBase.Save();
+
+            //Add new client orders
+            foreach (var order in client.Products)
+            {
+                if (order.ID == "")
+                {
+                    order.ID = "Comment";
+                }
+                dataBase.Add(new ClientOrder()
+                {
+                    ClientID = client.ID,
+                    ClientOrderID = Guid.NewGuid().ToString(),
+                    ProductID = order.ID,
+                    SaleID = saleID,
+                    Date = DateTime.Now,
+                    Value = order.Value,
+                    IsReserved = order.IsReserved
+                });
+                dataBase.Save();
+            }
+        }
+
+        public List<Product> GetProductsFromText(List<Product> products, string text, bool IsReserved)
         {
             var productsList = new List<Product>();
             if (string.IsNullOrWhiteSpace(text))
@@ -169,32 +199,7 @@ namespace SaleManeger.ViewModels
             else
                 _dataBase.Update(Client);
 
-            //Delete old client orders
-            foreach (var item in _dataBase.GetAll<ClientOrder>().Where(x => x.ClientID == Client.ID && x.SaleID == _saleID))
-            {
-                _dataBase.Delete(item);
-            }
-            _dataBase.Save();
-
-            //Add new client orders
-            foreach (var order in Client.Products)
-            {
-                if (order.ID == "")
-                {
-                    order.ID = "Comment";
-                }
-                _dataBase.Add(new ClientOrder()
-                {
-                    ClientID = Client.ID,
-                    ClientOrderID = Guid.NewGuid().ToString(),
-                    ProductID = order.ID,
-                    SaleID = _saleID,
-                    Date = DateTime.Now,
-                    Value = order.Value,
-                    IsReserved = order.IsReserved
-                });
-                _dataBase.Save();
-            }
+            SaveClientOrder(_dataBase, Client, _saleID);
         }
 
         private void UpdateSaleSum()
