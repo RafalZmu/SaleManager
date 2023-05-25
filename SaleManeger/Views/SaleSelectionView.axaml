@@ -16,7 +16,7 @@
 					<ItemsControl.ItemTemplate>
 						<DataTemplate>
 							<Grid Margin="5" ColumnDefinitions="*, Auto, Auto">
-								<TextBlock Grid.Column="0" FontSize="40" Text="{Binding SaleDate}" Name="saleName" />
+								<TextBlock Grid.Column="0" FontSize="40" Text="{Binding SaleName}" Name="saleName" />
 								<Button HorizontalAlignment="Right" Grid.Column="1" Command="{Binding DataContext.OpenSaleCommand, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" CommandParameter="{Binding SaleID}" HorizontalContentAlignment="Center" FontSize="20" Content="Otwórz" />
 								<Button Margin="5,0,0,0" Command="{Binding $parent[UserControl].DataContext.DeleteSaleCommand}" CommandParameter="{Binding SaleID}" HorizontalContentAlignment="Center" FontSize="20" Grid.Column="2" HorizontalAlignment="Right" Content="Usuń" />
 							</Grid>

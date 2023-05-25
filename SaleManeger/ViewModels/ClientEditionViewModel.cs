@@ -4,6 +4,7 @@ using SaleManeger.Models;
 using SaleManeger.Repositories;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Reactive;
@@ -11,54 +12,19 @@ using System.Reactive.Linq;
 
 namespace SaleManeger.ViewModels
 {
-    public class ClientEditionViewModel : ViewModelBase
+    public class ClientEditionViewModel : ViewModelBase, INotifyPropertyChanged
     {
-        #region Private properties
+        #region Fields
 
         private string _order;
         private List<Product> _products;
         private string _sale;
         private string _saleID;
         private string _saleSum;
-        private IProjectRepository _dataBase { get; set; }
 
-        #endregion Private properties
+        #endregion Fields
 
-        #region Public Constructors
-
-        public ClientEditionViewModel(IProjectRepository db, Client client, string saleID)
-        {
-            _dataBase = db;
-            _saleID = saleID;
-            Name = client.Name;
-            Number = client.PhoneNumber;
-            ClientID = client.ID;
-            Client = client;
-
-            OpenClientSelectionCommand = ReactiveCommand.Create(OpenClientSelection);
-
-            _products = _dataBase.GetAll<Product>().AsNoTracking().ToList();
-            _products.ForEach(p =>
-            {
-                Codes += $"{p.Code}-{p.Name}{Environment.NewLine}";
-            });
-
-            foreach (var item in client.Products)
-            {
-                if (item.IsReserved)
-                {
-                    Order += $"{item.Name}{(string.IsNullOrEmpty(item.Name) ? "" : ": ")}{item.Value}{Environment.NewLine}";
-                }
-                else
-                {
-                    Sale += $"{item.Name}{(string.IsNullOrEmpty(item.Name) ? "" : ": ")}{item.Value}{Environment.NewLine}";
-                }
-            }
-        }
-
-        #endregion Public Constructors
-
-        #region Public properties
+        #region Properties
 
         public Client Client { get; set; }
         public string ClientID { get; set; }
@@ -98,9 +64,45 @@ namespace SaleManeger.ViewModels
             }
         }
 
-        #endregion Public properties
+        private IProjectRepository _dataBase { get; set; }
 
-        #region Private Methods
+        #endregion Properties
+
+        #region Public Constructors
+
+        public ClientEditionViewModel(IProjectRepository db, Client client, string saleID)
+        {
+            _dataBase = db;
+            _saleID = saleID;
+            Name = client.Name;
+            Number = client.PhoneNumber;
+            ClientID = client.ID;
+            Client = client;
+
+            OpenClientSelectionCommand = ReactiveCommand.Create(OpenClientSelection);
+
+            _products = _dataBase.GetAll<Product>().AsNoTracking().ToList();
+            _products.ForEach(p =>
+            {
+                Codes += $"{p.Code}-{p.Name}{Environment.NewLine}";
+            });
+
+            foreach (var item in client.Products)
+            {
+                if (item.IsReserved)
+                {
+                    Order += $"{item.Name}{(string.IsNullOrEmpty(item.Name) ? "" : ": ")}{item.Value}{Environment.NewLine}";
+                }
+                else
+                {
+                    Sale += $"{item.Name}{(string.IsNullOrEmpty(item.Name) ? "" : ": ")}{item.Value}{Environment.NewLine}";
+                }
+            }
+        }
+
+        #endregion Public Constructors
+
+        #region Public Methods
 
         public static void SaveClientOrder(IProjectRepository dataBase, Client client, string saleID)
         {
@@ -169,6 +171,10 @@ namespace SaleManeger.ViewModels
             }
             return productsList;
         }
+
+        #endregion Public Methods
+
+        #region Private Methods
 
         private string OpenClientSelection()
         {
