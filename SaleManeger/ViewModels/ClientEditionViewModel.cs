@@ -9,6 +9,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Text.RegularExpressions;
 
 namespace SaleManeger.ViewModels
 {
@@ -121,6 +122,9 @@ namespace SaleManeger.ViewModels
 				{
 					order.ID = "Comment";
 				}
+				order.Value = order.Value.TrimStart();
+				order.Value = Regex.Replace(order.Value, @"(\d)([a-zA-Z])", "$1 $2");
+
 				dataBase.Add(new ClientOrder()
 				{
 					ClientID = client.ID,
