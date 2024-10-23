@@ -44,6 +44,9 @@
     <Compile Update="Views\ClientDeletionConfirmationView.axaml.cs">
       <DependentUpon>ClientDeletionConfirmationView.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\MoreSettingsView.axaml.cs">
+      <DependentUpon>MoreSettingsView.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\SaleSelectionView.axaml.cs">
       <DependentUpon>SaleSelectionView.axaml</DependentUpon>
     </Compile>

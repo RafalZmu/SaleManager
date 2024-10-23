@@ -60,6 +60,7 @@ namespace SaleManeger.ViewModels
 
         public ReactiveCommand<string, string> DeleteClientCommand { get; }
         public ReactiveCommand<string, Client> OpenClientEditionCommand { get; }
+        public ReactiveCommand<Unit, string> OpenMoreSettingsCommand { get; }
         public ReactiveCommand<Unit, Unit> OpenProjectSelectionCommand { get; }
         public ReactiveCommand<Unit, string> OpenSaleSummaryCommand { get; }
 
@@ -94,6 +95,7 @@ namespace SaleManeger.ViewModels
             OpenSaleSummaryCommand = ReactiveCommand.Create(() => { return saleID; });
             UpdateClientsCommand = ReactiveCommand.Create<List<bool>>(FiltrClients);
             DeleteClientCommand = ReactiveCommand.Create((string clientID) => { return clientID; });
+            OpenMoreSettingsCommand = ReactiveCommand.Create(() => { return saleID; });
 
             AllClients = new ObservableCollection<Client>();
             ProductsList = _dataBase.GetAll<Product>().AsNoTracking().ToList();

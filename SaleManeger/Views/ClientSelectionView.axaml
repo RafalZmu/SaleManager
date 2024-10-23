@@ -7,7 +7,7 @@
              x:Class="SaleManeger.Views.ClientSelectionView">
 
 	<Grid RowDefinitions="Auto, *">
-		<Grid Margin="10,30,10,10" MinHeight="50" Grid.Row="0" ColumnDefinitions="Auto,Auto,*,Auto,Auto,Auto">
+		<Grid Margin="10,30,10,10" MinHeight="50" Grid.Row="0" ColumnDefinitions="Auto,Auto,*,Auto,Auto,Auto,Auto">
 			<Button Margin="0,0,5,0" FontSize="25" VerticalAlignment="Stretch" VerticalContentAlignment="Center" Grid.Column="0" Content="Cofnij" Command="{Binding	OpenProjectSelectionCommand}" />
 			<Button FontSize="25" VerticalAlignment="Stretch" VerticalContentAlignment="Center" Grid.Column="1" Content="Podsumowanie sprzedaży" Command="{Binding OpenSaleSummaryCommand}" />
 			<TextBox Margin="5,0" FontSize="20" Name="clientName" Text="{Binding ClientName}" VerticalAlignment="Stretch" VerticalContentAlignment="Center"  Grid.Column="2" Watermark="Wprowadz imie, nazwisko lub numer telefonu" />
@@ -41,6 +41,8 @@
 				</Button.Flyout>
 			</Button>
 			<Button Margin="5,0" FontSize="25"  VerticalAlignment="Stretch" VerticalContentAlignment="Center"  Grid.Column="4" Content="Add client" Command="{Binding $parent[UserControl].DataContext.OpenClientEditionCommand}" CommandParameter="{Binding	#clientName.Text}" />
+			<Button Margin="5,0" FontSize="25"  VerticalAlignment="Stretch" VerticalContentAlignment="Center"  Grid.Column="5" Content="Więcej" Command="{Binding $parent[UserControl].DataContext.OpenMoreSettingsCommand}">
+			</Button>
 		</Grid>
 
 		<Border BorderBrush="Gray" Margin="10,0,10,10" Grid.Row="1" BorderThickness="2">

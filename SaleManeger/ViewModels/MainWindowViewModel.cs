@@ -80,6 +80,7 @@ namespace SaleManeger.ViewModels
             clientSelectionViewModel.OpenClientEditionCommand.Subscribe(OpenClientEdition);
             clientSelectionViewModel.DeleteClientCommand.Subscribe(OpenClientDeletion);
             clientSelectionViewModel.OpenSaleSummaryCommand.Subscribe(OpenSaleSummary);
+            clientSelectionViewModel.OpenMoreSettingsCommand.Subscribe(OpenMoreSettingView);
             clientSelectionViewModel.OpenProjectSelectionCommand.Subscribe(model =>
             {
                 OpenProjectSelection();
@@ -122,6 +123,16 @@ namespace SaleManeger.ViewModels
             {
                 OpenClientSelection(saleName);
             });
+        }
+
+        public void OpenMoreSettingView(string saleId)
+        {
+            var moreSettingViewModel = new MoreSettingsViewModel(saleId);
+            Content = moreSettingViewModel;
+            //moreSettingViewModel.OpenMoreOption.OpenMoreSettingsViewCommand(model =>
+            //{
+             //   OpenProjectSelection();
+            //});
         }
 
         #endregion Public Methods
