@@ -6,28 +6,48 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="SaleManeger.Views.SaleSummaryView">
 
-	<Grid Margin="5,30,5,5" ColumnDefinitions="Auto, *" RowDefinitions="50, *">
-		<Button FontSize="25" Content="Cofnij" Margin="5" Command="{Binding OpenClientSelectionCommand}" />
-		<TextBlock Grid.Column="1" TextAlignment="Center" FontSize="25" VerticalAlignment="Center" Text="{Binding ClientsLeft, StringFormat='Pozostało {0} klientów z zamówieniami'}}" />
 
-		<Grid Grid.Row="1" Grid.ColumnSpan="2" ColumnDefinitions="*,*,*">
-			<Expander Grid.Column="0" VerticalAlignment="Stretch" FontSize="20"  Header="Pozostałe zamówienia" HorizontalContentAlignment="Stretch" ExpandDirection="Down">
-				<ScrollViewer VerticalScrollBarVisibility="Hidden">
-					<TextBlock Text="{Binding OrdersLeft}" />
-				</ScrollViewer>
-			</Expander>
+	<Grid>
+		<Grid Margin="5,30,5,5" ColumnDefinitions="Auto, *" RowDefinitions="50, *">
+			<Button FontSize="25" Content="Cofnij" Margin="5" Command="{Binding OpenClientSelectionCommand}" />
+			<TextBlock Grid.Column="1" TextAlignment="Center" FontSize="25" VerticalAlignment="Center" Text="{Binding ClientsLeft, StringFormat='Pozostało {0} klientów z zamówieniami'}}" />
 
-			<Expander Grid.Column="1" FontSize="20" Header="Zamówione ogólnie" HorizontalContentAlignment="Stretch" ExpandDirection="Down">
-				<ScrollViewer VerticalScrollBarVisibility="Hidden">
-					<TextBlock Text="{Binding AllOrders}" />
-				</ScrollViewer>
-			</Expander>
+			<Grid Grid.Row="1" Grid.ColumnSpan="2" ColumnDefinitions="*,*,*">
+				<Expander Grid.Column="0" VerticalAlignment="Stretch" FontSize="20"  Header="Pozostałe zamówienia" HorizontalContentAlignment="Stretch" ExpandDirection="Down">
+					<ScrollViewer VerticalScrollBarVisibility="Hidden">
+						<TextBlock Text="{Binding OrdersLeft}" />
+					</ScrollViewer>
+				</Expander>
 
-			<Expander Grid.Column="2" FontSize="20" Header="Sprzedane ogólnie" ExpandDirection="Down" HorizontalContentAlignment="Stretch">
-				<ScrollViewer VerticalScrollBarVisibility="Hidden">
-					<TextBlock Text="{Binding SoldAll}" />
-				</ScrollViewer>
-			</Expander>
+				<Expander Grid.Column="1" FontSize="20" Header="Zamówione ogólnie" HorizontalContentAlignment="Stretch" ExpandDirection="Down">
+					<ScrollViewer VerticalScrollBarVisibility="Hidden">
+						<TextBlock Text="{Binding AllOrders}" />
+					</ScrollViewer>
+
+				</Expander>
+
+				<Expander Grid.Column="2" FontSize="20" Header="Sprzedane ogólnie" ExpandDirection="Down" HorizontalContentAlignment="Stretch">
+					<ScrollViewer VerticalScrollBarVisibility="Hidden">
+						<TextBlock Text="{Binding SoldAll}" />
+					</ScrollViewer>
+				</Expander>
+			</Grid>
 		</Grid>
+		<Border IsVisible="{Binding IsError}" Background="Black" Padding="20">
+			<Grid>
+				<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
+					<ItemsControl Items="{Binding Errors}">
+						<ItemsControl.ItemTemplate>
+							<DataTemplate>
+								<!-- Display each error message in a TextBlock -->
+								<TextBlock Text="{Binding}" FontSize="20" Foreground="White" TextAlignment="Center"/>
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
+					<Button Content="Zamknij" FontSize="20" Padding="10,5" Command="{Binding CloseErrorCommand}" />
+				</StackPanel>
+			</Grid>
+		</Border>
+
 	</Grid>
 </UserControl>

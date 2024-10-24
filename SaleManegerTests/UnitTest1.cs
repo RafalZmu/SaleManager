@@ -113,7 +113,7 @@ internal class Tests
         //Arrange
         CreateSale();
         _dataBase.Save();
-        string clientOrderText = "Product1: 3\nProduct1: 2 inline comment\nComment in single line\nProduct1: 0.1";
+        string clientOrderText = "Product1: 3\nProduct1: 2 inline comment\nComment in single line\nProduct1: 0.1\n Product1: b";
         var clientEditionViewModel = new ClientEditionViewModel(_dataBase, new Client()
         {
             ID = Guid.NewGuid().ToString(),

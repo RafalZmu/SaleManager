@@ -162,7 +162,13 @@ namespace SaleManeger.ViewModels
 				}
 				var name = item.Split(":")[0].Trim();
 				var value = item.Split(':')[1].Trim();
-				var code = products.First(x => x.Name == name).Code;
+
+                if (double.TryParse(value.Split(" ")[0], out _) == false)
+                {
+                    value = "0";
+                }
+
+                var code = products.First(x => x.Name == name).Code;
 				var ID = products.First(x => x.Code == code).ID;
 				Product product = new()
 				{
@@ -203,6 +209,7 @@ namespace SaleManeger.ViewModels
 
 			//Get sold products
 			Client.Products.AddRange(GetProductsFromText(_products, Sale, false));
+
 
 			//Save client
 			if (!_dataBase.GetAll<Client>().AsNoTracking().Any(x => x.ID == Client.ID))
