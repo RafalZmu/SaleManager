@@ -11,8 +11,8 @@ using SaleManeger.Models;
 namespace SaleManeger.Migrations
 {
     [DbContext(typeof(SaleContext))]
-    [Migration("20230505075648_ClientOrderChange")]
-    partial class ClientOrderChange
+    [Migration("20241028200833_saleProdutsCodes")]
+    partial class saleProdutsCodes
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -72,9 +72,6 @@ namespace SaleManeger.Migrations
                     b.Property<string>("ID")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("ClientID")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Code")
                         .HasColumnType("TEXT");
 
@@ -92,8 +89,6 @@ namespace SaleManeger.Migrations
 
                     b.HasKey("ID");
 
-                    b.HasIndex("ClientID");
-
                     b.ToTable("Products");
                 });
 
@@ -102,7 +97,7 @@ namespace SaleManeger.Migrations
                     b.Property<string>("SaleID")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("SaleID")
+                    b.Property<string>("SaleName")
                         .HasColumnType("TEXT");
 
                     b.HasKey("SaleID");
@@ -110,16 +105,32 @@ namespace SaleManeger.Migrations
                     b.ToTable("Sales");
                 });
 
-            modelBuilder.Entity("SaleManeger.Models.Product", b =>
+            modelBuilder.Entity("SaleManeger.Models.SaleProduct", b =>
                 {
-                    b.HasOne("SaleManeger.Models.Client", null)
-                        .WithMany("Products")
-                        .HasForeignKey("ClientID");
-                });
+                    b.Property<string>("ID")
+                        .HasColumnType("TEXT");
 
-            modelBuilder.Entity("SaleManeger.Models.Client", b =>
-                {
-                    b.Navigation("Products");
+                    b.Property<double>("Amount")
+                        .HasColumnType("REAL");
+
+                    b.Property<double>("PricePerKg")
+                        .HasColumnType("REAL");
+
+                    b.Property<string>("ProductCode")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ProductID")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ProductName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SaleID")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("SalesProducts");
                 });
 #pragma warning restore 612, 618
         }

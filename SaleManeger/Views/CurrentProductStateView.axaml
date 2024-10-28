@@ -1,0 +1,26 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="SaleManeger.Views.CurrentProductStateView">
+
+	
+	<Grid Margin="5" MaxHeight="1000" RowDefinitions="50, *" ColumnDefinitions="Auto, *, Auto">
+		<Button Margin="0,0,5,0" FontSize="25" Content="Cofnij" Command="{Binding OpenMoreSettingsCommand}"/>
+		<Label Grid.Column="1" FontSize="30" VerticalAlignment="Center" HorizontalContentAlignment="Center">Aktualny stan Produktów</Label>
+		<ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Row="1" Grid.ColumnSpan="3">
+			<ItemsControl Items="{Binding saleProducts}">
+				<ItemsControl.ItemTemplate>
+					<DataTemplate>
+						<Grid ColumnDefinitions="Auto, 300*, 300*" RowDefinitions="*">
+							<Label Margin="10,0,15,0" Grid.Column="0" Content="{Binding ProductCode, Mode=TwoWay}" FontSize="20"/>
+							<Label Grid.Column="1" Content="{Binding ProductName, Mode=TwoWay}" FontSize="20"/>
+							<TextBox Watermark="Aktualna ilość" Margin="5,0,5,0" Grid.Column="2" Text="{Binding Amount, Mode=TwoWay}" FontSize="20"/>
+						</Grid>
+					</DataTemplate>
+				</ItemsControl.ItemTemplate>
+			</ItemsControl>
+		</ScrollViewer>
+	</Grid>
+</UserControl>

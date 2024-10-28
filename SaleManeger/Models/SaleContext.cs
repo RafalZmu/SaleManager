@@ -13,6 +13,7 @@ namespace SaleManeger.Models
         public string DbPath { get; }
         public DbSet<Product> Products { get; set; }
         public DbSet<Sale> Sales { get; set; }
+        public DbSet<SaleProduct> SalesProducts { get; set; }
 
         #endregion Public Properties
 

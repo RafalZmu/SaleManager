@@ -101,6 +101,34 @@ namespace SaleManeger.Migrations
 
                     b.ToTable("Sales");
                 });
+
+            modelBuilder.Entity("SaleManeger.Models.SaleProduct", b =>
+                {
+                    b.Property<string>("ID")
+                        .HasColumnType("TEXT");
+
+                    b.Property<double>("Amount")
+                        .HasColumnType("REAL");
+
+                    b.Property<double>("PricePerKg")
+                        .HasColumnType("REAL");
+
+                    b.Property<string>("ProductCode")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ProductID")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ProductName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SaleID")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("SalesProducts");
+                });
 #pragma warning restore 612, 618
         }
     }

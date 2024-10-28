@@ -6,9 +6,17 @@
 			 xmlns:commands="clr-namespace:SaleManeger.ViewModels"
              x:Class="SaleManeger.Views.MoreSettingsView">
 
-	<Grid>
-		<TextBlock Text="{Binding saleID}" FontSize="40" />
-		<TextBlock Text="Text" FontSize="40" />
-	</Grid>
+	<UniformGrid Columns="1" Rows="6" HorizontalAlignment="Center" VerticalAlignment="Center">
+		<Button Margin="10" Content="Import z SMS" />
+		<Button Margin="10" Content="Import z Email" />
+		<Button Margin="10" Content="Import z Messanger" />
+		<Button Margin="10" Content="Sprawdzanie zamówień SMS" />
+		<Button Margin="10" Content="Sprawdzanie zamówień Email" />
+		<Button Margin="10" Content="Sprawdzanie zamówień Messengera" />
+		<Button Margin="10" Content="Aktualny stan produktu" Command="{Binding OpenCurrentProductStateCommand}" />
+		<Button Margin="10" Content="Cofnij" Command="{Binding OpenClientSelectionCommand}" />
+
+	</UniformGrid>
+
 
 </UserControl>

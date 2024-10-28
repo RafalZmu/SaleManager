@@ -5,14 +5,20 @@
 namespace SaleManeger.Migrations
 {
     /// <inheritdoc />
-    public partial class SaleDateCHange : Migration
+    public partial class saleProdutsCodes : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
-                name: "SaleName",
-                table: "Sales",
+                name: "ProductCode",
+                table: "SalesProducts",
+                type: "TEXT",
+                nullable: true);
+
+            migrationBuilder.AddColumn<string>(
+                name: "ProductName",
+                table: "SalesProducts",
                 type: "TEXT",
                 nullable: true);
         }
@@ -21,8 +27,12 @@ namespace SaleManeger.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "SaleName",
-                table: "Sales");
+                name: "ProductCode",
+                table: "SalesProducts");
+
+            migrationBuilder.DropColumn(
+                name: "ProductName",
+                table: "SalesProducts");
         }
     }
 }

@@ -33,7 +33,7 @@
 				</Expander>
 			</Grid>
 		</Grid>
-		<Border IsVisible="{Binding IsError}" Background="Black" Padding="20">
+		<Border IsVisible="{Binding IsError}" Background="#90000000" Padding="20">
 			<Grid>
 				<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
 					<ItemsControl Items="{Binding Errors}">

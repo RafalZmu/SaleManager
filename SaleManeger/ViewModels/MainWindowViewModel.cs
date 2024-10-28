@@ -129,10 +129,15 @@ namespace SaleManeger.ViewModels
         {
             var moreSettingViewModel = new MoreSettingsViewModel(saleId);
             Content = moreSettingViewModel;
-            //moreSettingViewModel.OpenMoreOption.OpenMoreSettingsViewCommand(model =>
-            //{
-             //   OpenProjectSelection();
-            //});
+            moreSettingViewModel.OpenCurrentProductStateCommand.Subscribe(OpenCurrentProductState);
+            moreSettingViewModel.OpenClientSelectionCommand.Subscribe(OpenClientSelection);
+        }
+
+        public void OpenCurrentProductState(string saleId)
+        {
+            var currentProductStateViewModel = new CurrentProductStateViewModel(_dataBase, saleId);
+            Content = currentProductStateViewModel;
+            currentProductStateViewModel.OpenMoreSettingsCommand.Subscribe(OpenMoreSettingView);
         }
 
         #endregion Public Methods
