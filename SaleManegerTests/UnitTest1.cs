@@ -23,7 +23,7 @@ internal class Tests
     [SetUp]
     public void Setup()
     {
-        _dataBase = new ProjectRepository(new SaleContext(@"D:\Szko³a\Sem 4\Programowanie"));
+        _dataBase = new ProjectRepository(new SaleContext(Environment.CurrentDirectory));
         _faker = new Faker();
         _testHelpers = new TestHelpers();
     }
