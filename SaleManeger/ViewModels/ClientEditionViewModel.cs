@@ -139,7 +139,7 @@ namespace SaleManeger.ViewModels
 			}
 		}
 
-		public List<Product> GetProductsFromText(List<Product> products, string text, bool IsReserved)
+		public static List<Product> GetProductsFromText(List<Product> products, string text, bool IsReserved)
 		{
 			var productsList = new List<Product>();
 			if (string.IsNullOrWhiteSpace(text))

@@ -14,6 +14,8 @@ internal class Tests
     private IProjectRepository _dataBase { get; set; }
     private Faker _faker { get; set; }
 
+    private TestHelpers _testHelpers { get; set; }
+
     #endregion Public Properties
 
     #region Public Methods
@@ -23,6 +25,7 @@ internal class Tests
     {
         _dataBase = new ProjectRepository(new SaleContext(@"D:\Szko³a\Sem 4\Programowanie"));
         _faker = new Faker();
+        _testHelpers = new TestHelpers();
     }
 
     [Test]
@@ -111,8 +114,7 @@ internal class Tests
     public void ReadingProductsFromText()
     {
         //Arrange
-        CreateSale();
-        _dataBase.Save();
+        TestHelpers.DeleteAllSalesAndCreteNewOne(_dataBase);
         string clientOrderText = "Product1: 3\nProduct1: 2 inline comment\nComment in single line\nProduct1: 0.1\n Product1: b";
         var clientEditionViewModel = new ClientEditionViewModel(_dataBase, new Client()
         {
@@ -123,7 +125,7 @@ internal class Tests
         }, "Sale1");
 
         //Act
-        var productsFromText = clientEditionViewModel.GetProductsFromText(_dataBase.GetAll<Product>().ToList(), clientOrderText, true);
+        var productsFromText = ClientEditionViewModel.GetProductsFromText(_dataBase.GetAll<Product>().ToList(), clientOrderText, true);
 
         double sumOfProduct = 0;
         productsFromText.ForEach(x =>
@@ -147,7 +149,7 @@ internal class Tests
         {
             _dataBase.Delete(clientToDelete);
         }
-        var saleID = CreateSale();
+        var saleID = TestHelpers.DeleteAllSalesAndCreteNewOne(_dataBase);
         var clientID = Guid.NewGuid().ToString();
         var client = new Client()
         {
@@ -174,24 +176,7 @@ internal class Tests
         ClientDeletionConfirmationViewModel.DeleteClient(_dataBase, client.ID, saleID);
 
         //Assert
-        Assert.That(_dataBase.GetAll<Client>().ToList().Count, Is.EqualTo(0));
-    }
-
-    private string CreateSale()
-    {
-        foreach (var sale in _dataBase.GetAll<Sale>().ToList())
-        {
-            _dataBase.Delete<Sale>(sale);
-        }
-        _dataBase.Save();
-
-        string saleID = Guid.NewGuid().ToString();
-        _dataBase.Add(new Sale()
-        {
-            SaleID = saleID,
-            SaleName = "Sale1"
-        });
-        return saleID;
+        Assert.That(_dataBase.GetAll<Client>().ToList(), Is.Empty);
     }
 
     #endregion Public Methods
