@@ -13,7 +13,6 @@ namespace SaleManeger.ViewModels
 {
 	public class SaleSummaryViewModel : ViewModelBase
 	{
-		private List<Client> _clients;
 		private List<Product> _products;
 
 		#region Public Constructors
@@ -26,37 +25,16 @@ namespace SaleManeger.ViewModels
 
 			// Get all clients and their orders.
 			var ProductsList = _dataBase.GetAll<Product>().ToList();
-			var clients = _dataBase.GetAll<Client>().ToList();
-			var clientsOrders = _dataBase.GetAll<ClientOrder>().Where(x => x.SaleID == SaleName).ToList();
-			var clientsOrdersList = clientsOrders.GroupBy(x => x.ClientID).Select(y => y.ToList()).ToList();
-			foreach (var clientOrder in clientsOrdersList)
-			{
-				ObservableCollection<Product> orders = new();
-				foreach (var order in clientOrder)
-				{
-					if (order.ProductID == "Comment")
-						continue;
-					Product product = ProductsList.FirstOrDefault(x => order.ProductID == x.ID);
-
-					orders.Add(new Product()
-					{
-						Name = product.Name,
-						ID = product.ID,
-						IsReserved = order.IsReserved,
-						PricePerKg = product.PricePerKg,
-						Value = order.Value,
-						Code = product.Code,
-					});
-				}
-				clients.Where(x => x.ID == clientOrder[0].ClientID).FirstOrDefault().Products = orders;
-			}
-			clients.ForEach(x => x.Products ??= new ObservableCollection<Product>());
-			_clients = clients;
 
 			_products = _dataBase.GetAll<Product>().ToList();
 			_products = _products.OrderBy(x => x.Code).ToList();
-			ClientsLeft = _clients.Count(x => (x.Products.Any(y => (y.IsReserved == true))) && (!x.Products.Any(y => y.IsReserved == false)));
+			List<Product> productsLeftToSale = GetSumOfOrdersLeft(_dataBase, SaleName);
 			GetProducts();
+
+			var ordersByClient = _dataBase.GetAll<ClientOrder>().Where(x => x.SaleID ==SaleName).GroupBy(x => x.ClientID).Select(y => y.ToList()).ToList();
+			ordersByClient.ForEach(x => x.RemoveAll(y => y.ProductID == "Comment"));
+			var ordersLeft = ordersByClient.Where(x => x.Any(y => y.IsReserved == false) == false).ToList();
+			ClientsLeft = ordersLeft.Count;
 
 			OpenClientSelectionCommand = ReactiveCommand.Create(() => { return SaleName; });
 			CloseErrorCommand = ReactiveCommand.Create(() => { IsError=false; });
@@ -86,6 +64,7 @@ namespace SaleManeger.ViewModels
 		private void GetProducts()
 		{
 			CultureInfo culture = new CultureInfo("en-US");
+			var ProductsLeft = GetSumOfOrdersLeft(_dataBase, SaleName);
 			// Get all orders, orders left and all sold products
 			foreach (var product in _products)
 			{
@@ -103,15 +82,7 @@ namespace SaleManeger.ViewModels
                 AllOrders += $"{product.Name}: {AllOrdersList.Sum(x => double.Parse(x.Value.Split(' ')[0], culture))}{Environment.NewLine}";
 
 				// Orders left
-				var sum = 0.0;
-				foreach (var client in _clients)
-				{
-					if (client.Products.Any(x => x.IsReserved == false))
-						continue;
-
-					sum += client.Products.Where(x => x.ID == product.ID).Sum(x => double.Parse(x.Value.Split(" ")[0], culture));
-				}
-				OrdersLeft += $"{product.Name}: {sum}{Environment.NewLine}";
+				OrdersLeft += $"{product.Name}: {ProductsLeft.First(x => x.ID == product.ID).Value}{Environment.NewLine}";
 
 				// All sold products
 				var SoldAllList = _dataBase.GetAll<ClientOrder>().Where(x => x.ProductID == product.ID && x.IsReserved == false && x.SaleID == SaleName).ToList();
@@ -127,6 +98,24 @@ namespace SaleManeger.ViewModels
 
                 SoldAll += $"{product.Name}: {SoldAllList.Sum(x => double.Parse(x.Value.Split(' ')[0], culture))}{Environment.NewLine}";
 			}
+
+		}
+		public static List<Product> GetSumOfOrdersLeft(IProjectRepository database, string saleID)
+		{
+			var culture = new CultureInfo("en-US");
+			var ordersByClient = database.GetAll<ClientOrder>().Where(x => x.SaleID ==saleID).GroupBy(x => x.ClientID).Select(y => y.ToList()).ToList();
+			ordersByClient.ForEach(x => x.RemoveAll(y => y.ProductID == "Comment"));
+			var ordersLeft = ordersByClient.Where(x => x.Any(y => y.IsReserved == false) == false).ToList();
+			List<ClientOrder> ordersLeftList = ordersLeft.SelectMany(x => x).ToList();
+
+			var products = database.GetAll<Product>().ToList();
+			products.ForEach(products => products.Value = "0");
+            foreach (var product in products)
+            {
+				product.Value = ordersLeftList.Where(x => x.ProductID == product.ID).Sum(x => double.Parse(x.Value.Split(" ")[0], culture)).ToString(); 
+            }
+
+            return products;
 		}
 
 		#endregion Private Methods

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
+using System.Globalization;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -32,6 +33,7 @@ namespace SaleManeger.ViewModels
 		public string Codes { get; set; }
 		public string Name { get; set; }
 		public string Number { get; set; }
+		private List<SaleProduct> _curruntlyAvailableProducts; 
 		public ReactiveCommand<Unit, string> OpenClientSelectionCommand { get; }
 
 		public string Order
@@ -82,11 +84,19 @@ namespace SaleManeger.ViewModels
 
 			OpenClientSelectionCommand = ReactiveCommand.Create(OpenClientSelection);
 
+			_curruntlyAvailableProducts = new List<SaleProduct>(_dataBase.GetAll<SaleProduct>().Where(x => x.SaleID == _saleID));
+
 			_products = _dataBase.GetAll<Product>().AsNoTracking().ToList();
+
+			List<Product> requiredProducts = new();
+			requiredProducts = SaleSummaryViewModel.GetSumOfOrdersLeft(_dataBase, _saleID);
+
 			_products = _products.OrderBy(x => x.Code).ToList();
 			_products.ForEach(p =>
 			{
-				Codes += $"{p.Code}-{p.Name}{Environment.NewLine}";
+                var required = requiredProducts.First(x => x.Code == p.Code);
+				var available = _curruntlyAvailableProducts.FirstOrDefault(x => x.ProductID == p.ID);
+				Codes += $"{p.Code}-{p.Name}: Wolne = [{available.Amount -double.Parse(required.Value)}]{Environment.NewLine}";
 			});
 
 			foreach (var item in client.Products)
@@ -102,11 +112,21 @@ namespace SaleManeger.ViewModels
 			}
 		}
 
-		#endregion Public Constructors
+        private static Dictionary<string, double> GetStillRequiredProducts(List<Product> products, IProjectRepository database, string saleID, string clientID)
+        {
+			var stillRequiredProducts = new Dictionary<string, double>();
+			foreach (var product in products)
+			{
+				stillRequiredProducts.Add(product.Code, database.GetAll<ClientOrder>().Where(x => x.ProductID == product.ID && x.SaleID == saleID && database.GetAll<ClientOrder>().Any(x => x.SaleID == saleID && x.ClientID == clientID && x.IsReserved == false) == false).ToList().Sum(x => double.Parse(x.Value, CultureInfo.InvariantCulture)));
+			}
+			return stillRequiredProducts;
+        }
 
-		#region Public Methods
+        #endregion Public Constructors
 
-		public static void SaveClientOrder(IProjectRepository dataBase, Client client, string saleID)
+        #region Public Methods
+
+        public static void SaveClientOrder(IProjectRepository dataBase, Client client, string saleID)
 		{
 			//Delete old client orders
 			foreach (var item in dataBase.GetAll<ClientOrder>().Where(x => x.ClientID == client.ID && x.SaleID == saleID))
@@ -162,8 +182,9 @@ namespace SaleManeger.ViewModels
 				}
 				var name = item.Split(":")[0].Trim();
 				var value = item.Split(':')[1].Trim();
+				var parsedValue = value.Split(" ")[0];
 
-                if (double.TryParse(value.Split(" ")[0], out _) == false)
+                if (double.TryParse(value.Split(" ")[0],CultureInfo.InvariantCulture, out _) == false)
                 {
                     value = "0";
                 }

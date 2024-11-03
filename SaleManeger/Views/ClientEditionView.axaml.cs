@@ -40,7 +40,7 @@ public partial class ClientEditionView : UserControl
                 _products.Add(new Product()
                 {
                     Code = code.Split("-")[0].Trim(),
-                    Name = code.Split("-")[1].Trim(),
+                    Name = code.Split("-")[1].Trim().Split(":")[0],
                 });
             }
         }
@@ -84,7 +84,7 @@ public partial class ClientEditionView : UserControl
                 _products.Add(new Product()
                 {
                     Code = code.Split("-")[0].Trim(),
-                    Name = code.Split("-")[1].Trim(),
+                    Name = code.Split("-")[1].Trim().Split(":")[0],
                 });
             }
         }

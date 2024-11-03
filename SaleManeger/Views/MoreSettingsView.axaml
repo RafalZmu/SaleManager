@@ -6,15 +6,15 @@
 			 xmlns:commands="clr-namespace:SaleManeger.ViewModels"
              x:Class="SaleManeger.Views.MoreSettingsView">
 
-	<UniformGrid Columns="1" Rows="6" HorizontalAlignment="Center" VerticalAlignment="Center">
-		<Button Margin="10" Content="Import z SMS" />
-		<Button Margin="10" Content="Import z Email" />
-		<Button Margin="10" Content="Import z Messanger" />
-		<Button Margin="10" Content="Sprawdzanie zamówień SMS" />
-		<Button Margin="10" Content="Sprawdzanie zamówień Email" />
-		<Button Margin="10" Content="Sprawdzanie zamówień Messengera" />
-		<Button Margin="10" Content="Aktualny stan produktu" Command="{Binding OpenCurrentProductStateCommand}" />
-		<Button Margin="10" Content="Cofnij" Command="{Binding OpenClientSelectionCommand}" />
+	<UniformGrid Columns="2" Rows="6" HorizontalAlignment="Center" VerticalAlignment="Center">
+		<Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" FontSize="30" Margin="10" Content="Import z SMS" />
+		<Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" FontSize="30" Margin="10" Content="Import z Email" />
+		<Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" FontSize="30" Margin="10" Content="Import z Messanger" />
+		<Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" FontSize="30" Margin="10" Content="Sprawdzanie zamówień SMS" />
+		<Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" FontSize="30" Margin="10" Content="Sprawdzanie zamówień Email" />
+		<Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" FontSize="30" Margin="10" Content="Sprawdzanie zamówień Messengera" />
+		<Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" FontSize="30" Margin="10" Content="Aktualny stan produktu" Command="{Binding OpenCurrentProductStateCommand}" />
+		<Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" FontSize="30" Margin="10" Content="Cofnij" Command="{Binding OpenClientSelectionCommand}" />
 
 	</UniformGrid>
 

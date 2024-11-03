@@ -1,6 +1,7 @@
 ﻿using ReactiveUI;
 using SaleManeger.Models;
 using SaleManeger.Repositories;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -23,7 +24,7 @@ namespace SaleManeger.ViewModels
             _database = database;
             _saleId = saleId;
 
-            OpenMoreSettingsCommand = ReactiveCommand.Create(() => { return saleId; });
+            OpenMoreSettingsCommand = ReactiveCommand.Create(OpenOptions);
 
             _products = new List<Product>(_database.GetAll<Product>());
 
@@ -31,6 +32,23 @@ namespace SaleManeger.ViewModels
 
             saleProducts = CreateSaleItems(_products, saleId, saleProducts, database);
 
+        }
+
+        private string OpenOptions()
+        {
+            SaveSaleProducts();
+
+            return _saleId;
+        }
+
+        private void SaveSaleProducts()
+        {
+            foreach (var item in saleProducts)
+            {
+                _database.Update(item);
+            }
+            _database.Save();
+            
         }
 
         private static ObservableCollection<SaleProduct> CreateSaleItems(List<Product> products, string saleID, ObservableCollection<SaleProduct> saleProducts, IProjectRepository database)
