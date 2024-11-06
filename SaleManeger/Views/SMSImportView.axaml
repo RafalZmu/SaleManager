@@ -7,13 +7,29 @@
              x:Class="SaleManeger.Views.SMSImportView">
 
 
-	<Grid ColumnDefinitions="*,*" RowDefinitions="Auto,*" Margin="10,30,10,10">
+	<Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,*,*" Margin="10,30,10,10">
 		<Button Margin="0,0,5,0" FontSize="25" VerticalAlignment="Stretch" VerticalContentAlignment="Center"
 				Content="Cofnij" Command="{Binding OpenMoreSettingsCommand}" />
 
-		<Border Grid.Row="1" Grid.ColumnSpan="2" BorderBrush="Gray" BorderThickness="3" DragDrop.AllowDrop="True" Background="Black">
+		<Border Grid.Row="1" Grid.Column="0" BorderBrush="Gray" BorderThickness="3" DragDrop.AllowDrop="True" Background="ForestGreen">
+			<TextBlock HorizontalAlignment="Center" Grid.Column="0" Grid.Row="1">SMS Import</TextBlock>
+		</Border>
+		<Border Grid.Row="2" Grid.Column="0" BorderBrush="Gray" BorderThickness="3" DragDrop.AllowDrop="True" Background="ForestGreen">
 			<TextBlock Name="DropState" HorizontalAlignment="Center" VerticalAlignment="Center">Przeciągnij tutaj plik</TextBlock>
 		</Border>
 
+		<Border Grid.Row="1" Grid.Column="1" BorderBrush="Gray" BorderThickness="3" DragDrop.AllowDrop="True" Background="ForestGreen">
+			<TextBlock HorizontalAlignment="Center" Grid.Column="0" Grid.Row="1">SMS Import</TextBlock>
+		</Border>
+		<Border Grid.Row="2" Grid.Column="1" BorderBrush="Gray" BorderThickness="3" DragDrop.AllowDrop="True" Background="ForestGreen">
+			<TextBlock Name="DropState1" HorizontalAlignment="Center" VerticalAlignment="Center">Przeciągnij tutaj plik</TextBlock>
+		</Border>
+
+		<Border Grid.Row="1" Grid.Column="2" BorderBrush="Gray" BorderThickness="3" DragDrop.AllowDrop="True" Background="ForestGreen">
+			<TextBlock HorizontalAlignment="Center" Grid.Column="0" Grid.Row="1">SMS Import</TextBlock>
+		</Border>
+		<Border Grid.Row="2" Grid.Column="2" BorderBrush="Gray" BorderThickness="3" DragDrop.AllowDrop="True" Background="ForestGreen">
+			<TextBlock Name="DropState2" HorizontalAlignment="Center" VerticalAlignment="Center">Przeciągnij tutaj plik</TextBlock>
+		</Border>
 	</Grid>
 </UserControl>
