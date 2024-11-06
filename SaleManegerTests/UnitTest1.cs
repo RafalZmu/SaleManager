@@ -29,6 +29,12 @@ internal class Tests
         _testHelpers = new TestHelpers();
     }
 
+    [TearDown]
+    public void TearDown()
+    {
+        TestHelpers.ClearWholeDatabase(_dataBase);
+    }
+
     [Test]
     public void AddingNewClient()
     {
@@ -128,7 +134,7 @@ internal class Tests
         {
             ID = Guid.NewGuid().ToString(),
             Code = "00",
-            Name = "Products1",
+            Name = "Product1",
             PricePerKg = 3
         };
         _dataBase.Add<Product>(product);
@@ -193,7 +199,6 @@ internal class Tests
     public void CheckSummaryProducts()
     {
         //Arange
-        TestHelpers.ClearWholeDatabase(_dataBase);
         var saleID = TestHelpers.DeleteAllSalesAndCreteNewOne(_dataBase);
         var clients = TestHelpers.CreateClients(_dataBase,_faker, 10);
         var product = new Product()
