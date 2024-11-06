@@ -4,6 +4,7 @@ using SaleManeger.Repositories;
 using SaleManeger.ViewModels;
 using SaleManeger.Views;
 using System.Collections.ObjectModel;
+using System.Globalization;
 
 namespace SaleManegerTests;
 
@@ -114,15 +115,24 @@ internal class Tests
     public void ReadingProductsFromText()
     {
         //Arrange
-        TestHelpers.DeleteAllSalesAndCreteNewOne(_dataBase);
-        string clientOrderText = "Product1: 3\nProduct1: 2 inline comment\nComment in single line\nProduct1: 0.1\n Product1: b";
+        var saleID = TestHelpers.DeleteAllSalesAndCreteNewOne(_dataBase);
+        string clientOrderText = "Product1: 3\nProduct1: 2 inline comment\nComment in single line\nProduct1: 0.1\n Product1: b\nProduct1:3";
         var clientEditionViewModel = new ClientEditionViewModel(_dataBase, new Client()
         {
             ID = Guid.NewGuid().ToString(),
             Name = "Client1",
             PhoneNumber = "123456789",
             Products = new ObservableCollection<Product>(),
-        }, "Sale1");
+        }, saleID);
+        var product = new Product()
+        {
+            ID = Guid.NewGuid().ToString(),
+            Code = "00",
+            Name = "Products1",
+            PricePerKg = 3
+        };
+        _dataBase.Add<Product>(product);
+        _dataBase.Save();
 
         //Act
         var productsFromText = ClientEditionViewModel.GetProductsFromText(_dataBase.GetAll<Product>().ToList(), clientOrderText, true);
@@ -130,15 +140,15 @@ internal class Tests
         double sumOfProduct = 0;
         productsFromText.ForEach(x =>
         {
-            double.TryParse(x.Value.Split(" ")[0], out double y);
+            double.TryParse(x.Value.Split(" ")[0], CultureInfo.InvariantCulture, out double y);
             sumOfProduct += y;
         });
 
         //Assert
-        Assert.That(productsFromText.Count, Is.EqualTo(4));
+        Assert.That(productsFromText.Count, Is.EqualTo(6));
         Assert.That(productsFromText[1].Value, Is.EqualTo("2 inline comment"));
         Assert.That(productsFromText[2].Value, Is.EqualTo("Comment in single line"));
-        Assert.That(sumOfProduct, Is.EqualTo(5.1));
+        Assert.That(sumOfProduct, Is.EqualTo(8.1));
     }
 
     [Test]
@@ -177,6 +187,106 @@ internal class Tests
 
         //Assert
         Assert.That(_dataBase.GetAll<Client>().ToList(), Is.Empty);
+    }
+
+    [Test]
+    public void CheckSummaryProducts()
+    {
+        //Arange
+        TestHelpers.ClearWholeDatabase(_dataBase);
+        var saleID = TestHelpers.DeleteAllSalesAndCreteNewOne(_dataBase);
+        var clients = TestHelpers.CreateClients(_dataBase,_faker, 10);
+        var product = new Product()
+        {
+            ID = Guid.NewGuid().ToString(),
+            Code = "00",
+            PricePerKg = 1 ,
+            IsReserved = true,
+            Name = "Product1"
+        };
+        _dataBase.Add<Product>(product);
+
+        //Client 1
+        var client1Order = new ClientOrder()
+        {
+            ClientOrderID = Guid.NewGuid().ToString(),
+            IsReserved = true,
+            ClientID = clients[0].ID,
+            ProductID = product.ID,
+            Value = "5",
+            SaleID = saleID,
+            Date = DateTime.Now
+        };
+        var client1Order1 = new ClientOrder()
+        {
+            ClientOrderID = Guid.NewGuid().ToString(),
+            IsReserved = true,
+            ClientID = clients[0].ID,
+            ProductID = product.ID,
+            Value = "2",
+            SaleID = saleID,
+            Date = DateTime.Now
+        };
+        _dataBase.Add(client1Order);
+        _dataBase.Add(client1Order1);
+
+        //Client 2
+        var client2Order = new ClientOrder()
+        {
+            ClientOrderID = Guid.NewGuid().ToString(),
+            IsReserved = false,
+            ClientID = clients[0].ID,
+            ProductID = product.ID,
+            Value = "5",
+            SaleID = saleID,
+            Date = DateTime.Now
+        };
+        var client2Order1 = new ClientOrder()
+        {
+            ClientOrderID = Guid.NewGuid().ToString(),
+            IsReserved = true,
+            ClientID = clients[0].ID,
+            ProductID = product.ID,
+            Value = "2",
+            SaleID = saleID,
+            Date = DateTime.Now
+        };
+        _dataBase.Add(client2Order);
+        _dataBase.Add(client2Order1);
+
+        //Client 2
+        var client3Order = new ClientOrder()
+        {
+            ClientOrderID = Guid.NewGuid().ToString(),
+            IsReserved = false,
+            ClientID = clients[0].ID,
+            ProductID = product.ID,
+            Value = "5",
+            SaleID = saleID,
+            Date = DateTime.Now
+        };
+        var client3Order1 = new ClientOrder()
+        {
+            ClientOrderID = Guid.NewGuid().ToString(),
+            IsReserved = false,
+            ClientID = clients[0].ID,
+            ProductID = product.ID,
+            Value = "2",
+            SaleID = saleID,
+            Date = DateTime.Now
+        };
+        _dataBase.Add(client3Order);
+        _dataBase.Add(client3Order1);
+
+        _dataBase.Save();
+
+        //Act
+        var saleSummaryViewModel = new SaleSummaryViewModel(_dataBase, saleID);
+
+        //Assert
+        Assert.That(double.Parse(saleSummaryViewModel.AllOrders.Split(": ")[1], CultureInfo.InvariantCulture), Is.EqualTo(9));
+        Assert.That(double.Parse(saleSummaryViewModel.OrdersLeft.Split(": ")[1], CultureInfo.InvariantCulture), Is.EqualTo(7));
+        Assert.That(double.Parse(saleSummaryViewModel.SoldAll.Split(": ")[1], CultureInfo.InvariantCulture), Is.EqualTo(12));
     }
 
     #endregion Public Methods

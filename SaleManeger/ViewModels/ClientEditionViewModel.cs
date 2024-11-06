@@ -96,7 +96,16 @@ namespace SaleManeger.ViewModels
 			{
                 var required = requiredProducts.First(x => x.Code == p.Code);
 				var available = _curruntlyAvailableProducts.FirstOrDefault(x => x.ProductID == p.ID);
-				Codes += $"{p.Code}-{p.Name}: Wolne = [{available.Amount -double.Parse(required.Value)}]{Environment.NewLine}";
+				double productsToSale;
+				if (available == null)
+				{
+					productsToSale = 0;
+				}
+				else
+				{
+					productsToSale = available.Amount - double.Parse(required.Value, CultureInfo.InvariantCulture);
+				}
+				Codes += $"{p.Code}-{p.Name}: Wolne = [{productsToSale}]{Environment.NewLine}";
 			});
 
 			foreach (var item in client.Products)
