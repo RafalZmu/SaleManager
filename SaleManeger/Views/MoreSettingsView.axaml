@@ -7,7 +7,7 @@
              x:Class="SaleManeger.Views.MoreSettingsView">
 
 	<UniformGrid Columns="2" Rows="6" HorizontalAlignment="Center" VerticalAlignment="Center">
-		<Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" FontSize="30" Margin="10" Content="Import z SMS" />
+		<Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" FontSize="30" Margin="10" Content="Import z SMS" Command="{Binding OpenSMSImportCommand}"/>
 		<Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" FontSize="30" Margin="10" Content="Import z Email" />
 		<Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" FontSize="30" Margin="10" Content="Import z Messanger" />
 		<Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" FontSize="30" Margin="10" Content="Sprawdzanie zamówień SMS" />

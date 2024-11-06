@@ -131,6 +131,14 @@ namespace SaleManeger.ViewModels
             Content = moreSettingViewModel;
             moreSettingViewModel.OpenCurrentProductStateCommand.Subscribe(OpenCurrentProductState);
             moreSettingViewModel.OpenClientSelectionCommand.Subscribe(OpenClientSelection);
+            moreSettingViewModel.OpenSMSImportCommand.Subscribe(OpenSMSImport);
+        }
+
+        private void OpenSMSImport(string saleId)
+        {
+            var SMSImportViewModel = new SMSImportViewModel(_dataBase, saleId);
+            Content = SMSImportViewModel;
+            SMSImportViewModel.OpenMoreSettingsCommand.Subscribe(OpenMoreSettingView);
         }
 
         public void OpenCurrentProductState(string saleId)
