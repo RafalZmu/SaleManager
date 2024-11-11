@@ -51,9 +51,9 @@ namespace SaleManeger.ViewModels
             
         }
 
-        private static ObservableCollection<SaleProduct> CreateSaleItems(List<Product> products, string saleID, ObservableCollection<SaleProduct> saleProducts, IProjectRepository database)
+        public static ObservableCollection<SaleProduct> CreateSaleItems(List<Product> products, string saleID, ObservableCollection<SaleProduct> saleProducts, IProjectRepository database)
         {
-            if (saleProducts.Count != products.Count)
+            if (saleProducts == null || saleProducts.Count != products.Count)
             {
                 foreach (var product in products)
                 {
@@ -63,7 +63,7 @@ namespace SaleManeger.ViewModels
                     }
                     SaleProduct saleProduct = new SaleProduct()
                     {
-                        ID = product.ID,
+                        ID = Guid.NewGuid().ToString(),
                         ProductID = product.ID,
                         ProductName = product.Name,
                         ProductCode = product.Code,

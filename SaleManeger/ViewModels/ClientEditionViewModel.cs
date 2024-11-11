@@ -4,6 +4,7 @@ using SaleManeger.Models;
 using SaleManeger.Repositories;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Globalization;
@@ -88,6 +89,13 @@ namespace SaleManeger.ViewModels
 
 			_products = _dataBase.GetAll<Product>().AsNoTracking().ToList();
 
+			if (_curruntlyAvailableProducts.Count == 0)
+			{
+				var saleProducts = new ObservableCollection<SaleProduct>();
+				CurrentProductStateViewModel.CreateSaleItems(_products, _saleID, saleProducts, _dataBase);
+                _curruntlyAvailableProducts = new List<SaleProduct>(_dataBase.GetAll<SaleProduct>().Where(x => x.SaleID == _saleID));
+			}
+
 			List<Product> requiredProducts = new();
 			requiredProducts = SaleSummaryViewModel.GetSumOfOrdersLeft(_dataBase, _saleID);
 
@@ -120,16 +128,6 @@ namespace SaleManeger.ViewModels
 				}
 			}
 		}
-
-        private static Dictionary<string, double> GetStillRequiredProducts(List<Product> products, IProjectRepository database, string saleID, string clientID)
-        {
-			var stillRequiredProducts = new Dictionary<string, double>();
-			foreach (var product in products)
-			{
-				stillRequiredProducts.Add(product.Code, database.GetAll<ClientOrder>().Where(x => x.ProductID == product.ID && x.SaleID == saleID && database.GetAll<ClientOrder>().Any(x => x.SaleID == saleID && x.ClientID == clientID && x.IsReserved == false) == false).ToList().Sum(x => double.Parse(x.Value, CultureInfo.InvariantCulture)));
-			}
-			return stillRequiredProducts;
-        }
 
         #endregion Public Constructors
 
@@ -276,7 +274,7 @@ namespace SaleManeger.ViewModels
 			SaleSum = string.Join(" + ", sumOfOrderSections);
 
 			// Get sum of all orders
-			double allSaleSum = SaleSum.Split("+").Sum(x => double.Parse(x));
+			double allSaleSum = SaleSum.Split("+").Sum(x => double.Parse(x, CultureInfo.InvariantCulture));
 			SaleSum += $"{Environment.NewLine}Suma: {allSaleSum}";
 
 			if (allSaleSum != 0)

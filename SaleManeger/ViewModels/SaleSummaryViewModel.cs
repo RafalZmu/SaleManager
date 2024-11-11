@@ -14,6 +14,7 @@ namespace SaleManeger.ViewModels
 	public class SaleSummaryViewModel : ViewModelBase
 	{
 		private List<Product> _products;
+		private List<Product> _productsLeftToSale;
 
 		#region Public Constructors
 
@@ -28,14 +29,30 @@ namespace SaleManeger.ViewModels
 
 			_products = _dataBase.GetAll<Product>().ToList();
 			_products = _products.OrderBy(x => x.Code).ToList();
-			List<Product> productsLeftToSale = GetSumOfOrdersLeft(_dataBase, SaleName);
+			_productsLeftToSale = GetSumOfOrdersLeft(_dataBase, SaleName);
 			GetProducts();
 
-			var ordersByClient = _dataBase.GetAll<ClientOrder>().Where(x => x.SaleID ==SaleName).GroupBy(x => x.ClientID).Select(y => y.ToList()).ToList();
-			ordersByClient.ForEach(x => x.RemoveAll(y => y.ProductID == "Comment"));
-			var ordersLeft = ordersByClient.Where(x => x.Any(y => y.IsReserved == false) == false).ToList();
-			ClientsLeft = ordersLeft.Count;
+            var startTime = DateTime.Now;
 
+            var unreservedClients = new HashSet<string>();
+            var allClientIDs = new HashSet<string>();
+
+            foreach (var order in _dataBase.GetAll<ClientOrder>()
+                                            .Where(x => x.SaleID == SaleName && x.ProductID != "Comment"))
+            {
+                allClientIDs.Add(order.ClientID);
+
+                if (!order.IsReserved)
+                {
+                    unreservedClients.Add(order.ClientID);
+                }
+            }
+
+            // Count clients who have only reserved orders by checking those not in `unreservedClients`
+            ClientsLeft = allClientIDs.Count(clientId => !unreservedClients.Contains(clientId));
+
+            var endTime = DateTime.Now;
+            var time = endTime - startTime;
 			OpenClientSelectionCommand = ReactiveCommand.Create(() => { return SaleName; });
 			CloseErrorCommand = ReactiveCommand.Create(() => { IsError=false; });
 		}
@@ -63,61 +80,85 @@ namespace SaleManeger.ViewModels
 
 		private void GetProducts()
 		{
-			CultureInfo culture = new CultureInfo("en-US");
-			var ProductsLeft = GetSumOfOrdersLeft(_dataBase, SaleName);
-			// Get all orders, orders left and all sold products
-			foreach (var product in _products)
-			{
-				//All orders
-				// 0 means that the order is wrong
-				var AllOrdersList = _dataBase.GetAll<ClientOrder>().Where(x => x.ProductID == product.ID && x.IsReserved == true && x.SaleID == SaleName).ToList();
-				var wrongOrders = AllOrdersList.Where(x => x.Value == "0").ToList();
-				foreach(var order in wrongOrders)
-                {
-                    var wrongClient = _dataBase.GetAll<Client>().FirstOrDefault(x => x.ID == order.ClientID);
-                    Errors.Add($"Problem w zamówieniu: {wrongClient.Name} {wrongClient.PhoneNumber}");
-					IsError = true;
-                    AllOrdersList.Remove(order);
-                }
-                AllOrders += $"{product.Name}: {AllOrdersList.Sum(x => double.Parse(x.Value.Split(' ')[0], culture))}{Environment.NewLine}";
+            CultureInfo culture = new CultureInfo("en-US");
 
-				// Orders left
-				OrdersLeft += $"{product.Name}: {ProductsLeft.First(x => x.ID == product.ID).Value}{Environment.NewLine}";
+            // Fetch all necessary data upfront to reduce database calls
+            var allOrders = _dataBase.GetAll<ClientOrder>().Where(x => x.SaleID == SaleName).ToList();
+            var clients = _dataBase.GetAll<Client>().ToDictionary(x => x.ID); // Use a dictionary for faster lookup
 
-				// All sold products
-				var SoldAllList = _dataBase.GetAll<ClientOrder>().Where(x => x.ProductID == product.ID && x.IsReserved == false && x.SaleID == SaleName).ToList();
-				wrongOrders = SoldAllList.Where(x => x.Value == "-1").ToList();
-
-				foreach(var order in wrongOrders)
-				{
-                    var wrongClient = _dataBase.GetAll<Client>().FirstOrDefault(x => x.ID == order.ClientID);
-                    Errors.Add($"Problem w zamówieniu: {wrongClient.Name} {wrongClient.PhoneNumber}");
-					IsError = true;
-					SoldAllList.Remove(order);
-                }
-
-                SoldAll += $"{product.Name}: {SoldAllList.Sum(x => double.Parse(x.Value.Split(' ')[0], culture))}{Environment.NewLine}";
-			}
-
-		}
-		public static List<Product> GetSumOfOrdersLeft(IProjectRepository database, string saleID)
-		{
-			var culture = new CultureInfo("en-US");
-			var ordersByClient = database.GetAll<ClientOrder>().Where(x => x.SaleID ==saleID).GroupBy(x => x.ClientID).Select(y => y.ToList()).ToList();
-			ordersByClient.ForEach(x => x.RemoveAll(y => y.ProductID == "Comment"));
-			var ordersLeft = ordersByClient.Where(x => x.Any(y => y.IsReserved == false) == false).ToList();
-			List<ClientOrder> ordersLeftList = ordersLeft.SelectMany(x => x).ToList();
-
-			var products = database.GetAll<Product>().ToList();
-			products.ForEach(products => products.Value = "0");
-            foreach (var product in products)
+            foreach (var product in _products)
             {
-				product.Value = ordersLeftList.Where(x => x.ProductID == product.ID).Sum(x => double.Parse(x.Value.Split(" ")[0], culture)).ToString(); 
+                // Filter orders for the current product
+                var productOrders = allOrders.Where(x => x.ProductID == product.ID).ToList();
+
+                // Process All Orders
+                var reservedOrders = productOrders.Where(x => x.IsReserved).ToList();
+                var wrongOrders = reservedOrders.Where(x => x.Value == "0").ToList();
+
+                // Log errors for wrong orders and remove them from reserved orders
+                foreach (var order in wrongOrders)
+                {
+                    if (clients.TryGetValue(order.ClientID, out var wrongClient))
+                    {
+                        Errors.Add($"Problem w zamówieniu: {wrongClient.Name} {wrongClient.PhoneNumber}");
+                    }
+                    IsError = true;
+                    reservedOrders.Remove(order);
+                }
+
+                AllOrders += $"{product.Name}: {reservedOrders.Sum(x => double.Parse(x.Value.Split(' ')[0], culture))}{Environment.NewLine}";
+
+                // Orders Left
+                var ordersLeft = _productsLeftToSale.FirstOrDefault(x => x.ID == product.ID)?.Value ?? "0";
+                OrdersLeft += $"{product.Name}: {ordersLeft}{Environment.NewLine}";
+
+                // Process Sold Products
+                var soldOrders = productOrders.Where(x => !x.IsReserved).ToList();
+                var wrongSoldOrders = soldOrders.Where(x => x.Value == "0").ToList();
+
+                foreach (var order in wrongSoldOrders)
+                {
+                    if (clients.TryGetValue(order.ClientID, out var wrongClient))
+                    {
+                        Errors.Add($"Problem w zamówieniu: {wrongClient.Name} {wrongClient.PhoneNumber}");
+                    }
+                    IsError = true;
+                    soldOrders.Remove(order);
+                }
+
+                SoldAll += $"{product.Name}: {soldOrders.Sum(x => double.Parse(x.Value.Split(' ')[0], culture))}{Environment.NewLine}";
             }
+        }
+        public static List<Product> GetSumOfOrdersLeft(IProjectRepository database, string saleID)
+		{
+            var culture = new CultureInfo("en-US");
+
+            // Step 1: Filter and group by ClientID
+            var ordersByClient = database.GetAll<ClientOrder>()
+                                         .Where(x => x.SaleID == saleID && x.ProductID != "Comment")
+                                         .GroupBy(x => x.ClientID)
+                                         .ToList();
+
+            // Step 2: Filter out clients with unreserved items
+            var ordersLeftList = ordersByClient
+                                    .Where(group => group.All(order => order.IsReserved))
+                                    .SelectMany(group => group)
+                                    .ToList();
+
+            // Step 3: Group by ProductID to get sums
+            var productSums = ordersLeftList.GroupBy(x => x.ProductID)
+                                            .ToDictionary(g => g.Key, g => g.Sum(x => double.Parse(x.Value.Split(" ")[0], culture)));
+
+            // Step 4: Initialize Products and set values based on calculated sums
+            var products = database.GetAll<Product>().ToList();
+            products.ForEach(product =>
+            {
+                product.Value = productSums.TryGetValue(product.ID, out var sum) ? sum.ToString(culture) : "0";
+            });
 
             return products;
-		}
+        }
 
-		#endregion Private Methods
-	}
+        #endregion Private Methods
+    }
 }

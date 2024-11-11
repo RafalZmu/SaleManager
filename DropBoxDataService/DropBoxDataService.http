@@ -1,0 +1,6 @@
+@DropBoxDataService_HostAddress = http://localhost:5111
+
+GET {{DropBoxDataService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
