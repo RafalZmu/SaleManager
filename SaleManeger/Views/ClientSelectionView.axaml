@@ -15,10 +15,12 @@
 				<Button.Flyout>
 					<Flyout Placement="Bottom">
 						<StackPanel Orientation="Vertical">
-							<ItemsControl Items="{Binding Products}">
-								<ItemsControl.ItemsPanel>
+							<TextBox Text="{Binding ProductSearchText}" Watermark="Szukaj produktu..." Margin="0,0,0,5" FontSize="18" />
+							<ScrollViewer MaxHeight="500">
+								<ItemsControl Items="{Binding FilteredProducts}">
+									<ItemsControl.ItemsPanel>
 									<ItemsPanelTemplate>
-										<WrapPanel Orientation="Vertical" MaxHeight="500" />
+										<StackPanel Orientation="Vertical" />
 									</ItemsPanelTemplate>
 								</ItemsControl.ItemsPanel>
 								<ItemsControl.ItemTemplate>
@@ -29,6 +31,7 @@
 									</DataTemplate>
 								</ItemsControl.ItemTemplate>
 							</ItemsControl>
+							</ScrollViewer>
 							<Border BorderBrush="Gray" BorderThickness="0,3,0,0" Padding="2">
 								<StackPanel Orientation="Vertical">
 									<CheckBox Command="{Binding UpdateClientsCommand}" IsChecked="{Binding AreClientsWithOrderShowing}">Ma zamówienie</CheckBox>

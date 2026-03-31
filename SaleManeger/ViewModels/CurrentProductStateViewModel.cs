@@ -1,4 +1,4 @@
-﻿using ReactiveUI;
+using ReactiveUI;
 using SaleManeger.Models;
 using SaleManeger.Repositories;
 using System;
@@ -31,7 +31,7 @@ namespace SaleManeger.ViewModels
             saleProducts = new ObservableCollection<SaleProduct>(_database.GetAll<SaleProduct>().Where(x => x.SaleID == _saleId));
 
             saleProducts = CreateSaleItems(_products, saleId, saleProducts, database);
-
+            saleProducts = new ObservableCollection<SaleProduct>(saleProducts.OrderBy(x => x.ProductCode));
         }
 
         private string OpenOptions()

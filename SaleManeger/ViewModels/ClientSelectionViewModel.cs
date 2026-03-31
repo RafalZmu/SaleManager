@@ -1,4 +1,4 @@
-﻿using ReactiveUI;
+using ReactiveUI;
 using SaleManeger.Models;
 using SaleManeger.Repositories;
 using System;
@@ -23,6 +23,8 @@ namespace SaleManeger.ViewModels
 
         private IProjectRepository _dataBase;
         private ObservableCollection<Product> _products;
+        private string _productSearchText;
+        private ObservableCollection<Product> _filteredProducts;
 
         #endregion Private Fields
 
@@ -73,8 +75,28 @@ namespace SaleManeger.ViewModels
                 {
                     this.RaiseAndSetIfChanged(ref _products, value);
                     FiltrClients();
+                    FiltrProducts();
                 }
             }
+        }
+
+        public string ProductSearchText
+        {
+            get => _productSearchText;
+            set
+            {
+                if (_productSearchText != value)
+                {
+                    this.RaiseAndSetIfChanged(ref _productSearchText, value);
+                    FiltrProducts();
+                }
+            }
+        }
+
+        public ObservableCollection<Product> FilteredProducts
+        {
+            get => _filteredProducts;
+            set => this.RaiseAndSetIfChanged(ref _filteredProducts, value);
         }
 
         public List<Product> ProductsList { get; }
@@ -164,6 +186,7 @@ namespace SaleManeger.ViewModels
                     client.Products.Any(x => x.IsReserved == true) ? "Red" : "White";
             }
             FiltrClients();
+            FiltrProducts();
         }
 
         #endregion Public Constructors
@@ -205,24 +228,58 @@ namespace SaleManeger.ViewModels
             return tempList;
         }
 
+        private void FiltrProducts()
+        {
+            if (Products == null) return;
+
+            if (string.IsNullOrWhiteSpace(ProductSearchText))
+            {
+                FilteredProducts = new ObservableCollection<Product>(Products.OrderBy(x => x.Code));
+            }
+            else
+            {
+                var lowerSearch = ProductSearchText.ToLower();
+                FilteredProducts = new ObservableCollection<Product>(
+                    Products.Where(p => 
+                        (p.Name != null && p.Name.ToLower().Contains(lowerSearch)) || 
+                        (p.Code != null && p.Code.ToLower().Contains(lowerSearch))
+                    ).OrderBy(x => x.Code)
+                );
+            }
+        }
+
         private ObservableCollection<Client> NameAndNumberFiltr(ObservableCollection<Client> clients)
         {
             return string.IsNullOrWhiteSpace(ClientName) ?
                  clients : new ObservableCollection<Client>(clients.Where(x => x.Name.ToLower().Contains(ClientName.ToLower()) || x.PhoneNumber.Contains(ClientName)));
         }
 
+        private int GetClientPriority(Client client)
+        {
+            bool hasOrder = client.Products.Any(y => y.IsReserved == true);
+            bool hasSale = client.Products.Any(y => y.IsReserved == false);
+
+            if (hasOrder && !hasSale) return 1;
+            if (hasSale) return 2;
+            return 3;
+        }
+
         private ObservableCollection<Client> OrderAndSaleFiltr(ObservableCollection<Client> clients)
         {
-            if (AreAllClientsShowing)
-                return clients;
+            IEnumerable<Client> filteredClients = clients;
 
-            return (AreClientsWithOrderShowing, AreClientsWithSaleShowing) switch
+            if (!AreAllClientsShowing)
             {
-                (true, true) => new ObservableCollection<Client>(clients.Where(x => x.Products.Any(y => y.IsReserved == false) && x.Products.Any(y => y.IsReserved == true)).OrderByDescending(x => x.Products.Count)),
-                (true, false) => new ObservableCollection<Client>(clients.Where(x => x.Products.All(y => y.IsReserved == true) && x.Products.Count != 0).OrderByDescending(x => x.Products.Count)),
-                (false, true) => new ObservableCollection<Client>(clients.Where(x => x.Products.All(y => y.IsReserved == false) && x.Products.Count != 0).OrderByDescending(x => x.Products.Count)),
-                _ => new ObservableCollection<Client>(),
-            };
+                filteredClients = (AreClientsWithOrderShowing, AreClientsWithSaleShowing) switch
+                {
+                    (true, true) => clients.Where(x => x.Products.Any(y => y.IsReserved == false) && x.Products.Any(y => y.IsReserved == true)),
+                    (true, false) => clients.Where(x => x.Products.All(y => y.IsReserved == true) && x.Products.Count != 0),
+                    (false, true) => clients.Where(x => x.Products.All(y => y.IsReserved == false) && x.Products.Count != 0),
+                    _ => Enumerable.Empty<Client>()
+                };
+            }
+
+            return new ObservableCollection<Client>(filteredClients.OrderBy(GetClientPriority).ThenByDescending(x => x.Products.Count));
         }
 
         private ObservableCollection<Client> ProductFiltr(ObservableCollection<Client> clients)

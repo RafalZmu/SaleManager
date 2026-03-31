@@ -1,4 +1,5 @@
-﻿using SaleManeger.Models;
+using Microsoft.EntityFrameworkCore;
+using SaleManeger.Models;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -17,6 +18,20 @@ namespace SaleManeger.Repositories
         public ProjectRepository(SaleContext context)
         {
             context.Database.EnsureCreated();
+            
+            // Ensure the SalesProducts table exists for older databases that have already been EnsureCreated() previously
+            context.Database.ExecuteSqlRaw(@"
+                CREATE TABLE IF NOT EXISTS ""SalesProducts"" (
+                    ""ID"" TEXT NOT NULL CONSTRAINT ""PK_SalesProducts"" PRIMARY KEY,
+                    ""ProductID"" TEXT NULL,
+                    ""ProductName"" TEXT NULL,
+                    ""ProductCode"" TEXT NULL,
+                    ""SaleID"" TEXT NULL,
+                    ""Amount"" REAL NOT NULL,
+                    ""PricePerKg"" REAL NOT NULL
+                );
+            ");
+
             _context = context;
         }
 
