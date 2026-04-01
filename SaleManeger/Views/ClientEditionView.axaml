@@ -2,6 +2,7 @@
 			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:avedit="https://github.com/avaloniaui/avaloniaedit"
 			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 			 x:Class="SaleManeger.Views.ClientEditionView">
 
@@ -13,8 +14,14 @@
 			<TextBox Grid.Column="2" FontSize="25" Text="{Binding	Number}" Watermark="Numer Telefonu" />
 		</Grid>
 		<Grid Grid.Row="1" RowDefinitions="*, Auto" ColumnDefinitions="*,*,Auto">
-			<TextBox Grid.Column="0" FontSize="20" Grid.RowSpan="2" Name="order" CaretIndex="{Binding OrderCaretIndex}" UseFloatingWatermark="True" AcceptsReturn="True"  Text="{Binding	Order, Mode=TwoWay}" Watermark="Zamówienie" />
-			<TextBox Grid.Column="1" FontSize="20" Name="sale" UseFloatingWatermark="True" AcceptsReturn="True" Text="{Binding	Sale, Mode=TwoWay}" Watermark="Kupione" />
+            <Grid Grid.Column="0" Grid.RowSpan="2" Margin="0,0,5,0">
+                <avedit:TextEditor Name="order" FontSize="20" ShowLineNumbers="False" WordWrap="True" Background="Black" Foreground="White" BorderBrush="Gray" BorderThickness="2" Padding="5" />
+                <TextBlock Name="orderWatermark" Text="Zamówienie" Foreground="DimGray" FontSize="20" Margin="7,7,0,0" IsHitTestVisible="False" />
+            </Grid>
+            <Grid Grid.Column="1" Grid.Row="0" Margin="5,0,0,5">
+                <avedit:TextEditor Name="sale" FontSize="20" ShowLineNumbers="False" WordWrap="True" Background="Black" Foreground="White" BorderBrush="Gray" BorderThickness="2" Padding="5" />
+                <TextBlock Name="saleWatermark" Text="Kupione" Foreground="DimGray" FontSize="20" Margin="7,7,0,0" IsHitTestVisible="False" />
+            </Grid>
 			<TextBox Grid.Column="2" Grid.RowSpan="2" Name="codes" IsReadOnly="True" UseFloatingWatermark="True" AcceptsReturn="True" Text="{Binding	Codes}" Watermark="Codes" />
 			<TextBox Grid.Column="1" Grid.Row="1" IsReadOnly="True" Name="saleSum"  FontSize="20" Text="{Binding SaleSum, Mode=TwoWay}" />
 		</Grid>

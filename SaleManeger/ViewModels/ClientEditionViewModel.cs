@@ -1,4 +1,4 @@
-﻿using AvaloniaEdit.Utils;
+using AvaloniaEdit.Utils;
 using ReactiveUI;
 using SaleManeger.Models;
 using SaleManeger.Repositories;
@@ -21,6 +21,7 @@ namespace SaleManeger.ViewModels
 
 		private string _order;
 		private List<Product> _products;
+        public List<Product> ProductsList => _products;
 		private string _sale;
 		private string _saleID;
 		private string _saleSum;
@@ -257,24 +258,34 @@ namespace SaleManeger.ViewModels
 			List<string> sumOfOrderSections = new();
 			double sum = 0;
 			// Get sum of each order
-			foreach (var line in Sale.Split("\n"))
+			foreach (var line in Sale.Split('\n'))
 			{
 				// If line contains ':' it means that it is a product
 				if (line.Contains(':'))
 				{
-					double.TryParse(line.Split(":")[1].Trim().Replace(",", ".").Split(" ")[0], out double productCost);
+					double.TryParse(line.Split(':')[1].Trim().Replace(",", ".").Split(' ')[0], NumberStyles.Any, CultureInfo.InvariantCulture, out double productCost);
 					sum += productCost;
 				}
 				else
 				{
-					sumOfOrderSections.Add(sum.ToString());
+					sumOfOrderSections.Add(sum.ToString(CultureInfo.InvariantCulture));
 					sum = 0;
 				}
 			}
+			
+			// Always add the trailing sum if the text didn't end with a newline comment break
+			if (sum != 0 || sumOfOrderSections.Count == 0)
+			{
+			    sumOfOrderSections.Add(sum.ToString(CultureInfo.InvariantCulture));
+			}
+			
 			SaleSum = string.Join(" + ", sumOfOrderSections);
 
-			// Get sum of all orders
-			double allSaleSum = SaleSum.Split("+").Sum(x => double.Parse(x, CultureInfo.InvariantCulture));
+			// Get sum of all orders safely
+			double allSaleSum = SaleSum.Split('+')
+			                           .Where(x => !string.IsNullOrWhiteSpace(x))
+			                           .Sum(x => { double.TryParse(x.Replace(",", "."), NumberStyles.Any, CultureInfo.InvariantCulture, out double val); return val; });
+			                           
 			SaleSum += $"{Environment.NewLine}Suma: {allSaleSum}";
 
 			if (allSaleSum != 0)

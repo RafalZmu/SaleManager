@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.ReactiveUI;
 using System;
 
@@ -19,8 +19,23 @@ namespace SaleManeger
         // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
         // yet and stuff might break.
         [STAThread]
-        public static void Main(string[] args) => BuildAvaloniaApp()
-            .StartWithClassicDesktopLifetime(args);
+        public static void Main(string[] args) 
+        {
+            AppDomain.CurrentDomain.UnhandledException += (s, e) =>
+            {
+                System.IO.File.WriteAllText("crash.log", e.ExceptionObject.ToString());
+            };
+            
+            try 
+            {
+                BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+            }
+            catch (Exception ex)
+            {
+                System.IO.File.WriteAllText("crash.log", ex.ToString());
+                throw;
+            }
+        }
 
         #endregion Public Methods
     }
