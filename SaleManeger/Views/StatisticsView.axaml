@@ -1,0 +1,63 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             x:Class="SaleManeger.Views.StatisticsView">
+	<Grid RowDefinitions="Auto, *">
+		<!-- Top Navigation -->
+		<Button Content="Wróć" Margin="10" FontSize="20" HorizontalAlignment="Left" Command="{Binding ReturnCommand}" />
+
+		<!-- Tabs Area -->
+		<TabControl Grid.Row="1" Margin="10,0,10,10">
+			
+			<!-- TAB 1: Trafność zamówień -->
+			<TabItem>
+				<TabItem.Header>
+					<TextBlock Text="Trafność zamówień" FontSize="24" FontWeight="Bold" Margin="10,5"/>
+				</TabItem.Header>
+				<Grid RowDefinitions="Auto, *" Margin="0,15,0,0">
+					<!-- Sale scope selector -->
+					<StackPanel Orientation="Horizontal" Spacing="15" Margin="0,0,0,15">
+						<TextBlock Text="Wybierz projekt:" VerticalAlignment="Center" FontSize="20" FontWeight="SemiBold"/>
+						<ComboBox Items="{Binding SaleScopes}" SelectedItem="{Binding SelectedSaleScope, Mode=TwoWay}" FontSize="20" Width="300" >
+							<ComboBox.ItemTemplate>
+								<DataTemplate>
+									<TextBlock Text="{Binding DisplayName}" />
+								</DataTemplate>
+							</ComboBox.ItemTemplate>
+						</ComboBox>
+					</StackPanel>
+
+					<!-- Data Grid for Metrics -->
+					<Grid Grid.Row="1" RowDefinitions="Auto, *">
+						<!-- Table Header -->
+						<Border Background="#2D2D30" BorderBrush="#3E3E42" BorderThickness="1" CornerRadius="5,5,0,0" Padding="15,10,15,10">
+							<Grid ColumnDefinitions="*, 1.5*">
+								<TextBlock Grid.Column="0" Text="Produkt" FontWeight="Bold" FontSize="18" Foreground="#E0E0E0"/>
+								<TextBlock Grid.Column="1" Text="Różnica (Sprzedane vs Zamówione)" FontWeight="Bold" FontSize="18" Foreground="#E0E0E0" TextAlignment="Left"/>
+							</Grid>
+						</Border>
+
+						<!-- Table Rows -->
+						<ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+							<ItemsControl Items="{Binding AccuracyMetrics}">
+								<ItemsControl.ItemTemplate>
+									<DataTemplate>
+										<Border BorderBrush="#3E3E42" BorderThickness="1,0,1,1" Padding="15,10,15,10" Background="Transparent">
+											<Grid ColumnDefinitions="*, 1.5*">
+												<TextBlock Grid.Column="0" Text="{Binding ProductName}" FontWeight="SemiBold" FontSize="20" Foreground="White" />
+												<TextBlock Grid.Column="1" Text="{Binding PercentageString}" FontSize="20" FontWeight="Bold" TextAlignment="Left" Foreground="{Binding PercentageColor}"/>
+											</Grid>
+										</Border>
+									</DataTemplate>
+								</ItemsControl.ItemTemplate>
+							</ItemsControl>
+						</ScrollViewer>
+					</Grid>
+				</Grid>
+			</TabItem>
+
+		</TabControl>
+	</Grid>
+</UserControl>

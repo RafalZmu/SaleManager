@@ -5,12 +5,13 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="SaleManeger.Views.SaleSelectionView">
 
-	<Grid Margin="10,30,10,10" ColumnDefinitions="Auto,Auto,*, Auto" RowDefinitions="Auto,*">
+	<Grid Margin="10,30,10,10" ColumnDefinitions="Auto,Auto,Auto,*, Auto" RowDefinitions="Auto,*">
 		<Button Margin ="0,0,5,0" FontSize="25" Command="{Binding $parent[Window].DataContext.OpenEditProductsView}" Content="Produkty" VerticalAlignment="Stretch" VerticalContentAlignment="Center" />
 		<Button Margin="0,0,5,0" Content="Podsumowanie" Command="{Binding OpenAllSalesSummaryCommand}" Grid.Column="1" FontSize="25" VerticalAlignment="Stretch" VerticalContentAlignment="Center" />
-		<TextBox Grid.Column="2" Text="{Binding NewSaleDate}" TextAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" Watermark="Wybierz projekt z listy lub wprowadz nazwe nowego projektu" />
-		<Button Grid.Column="3" Margin="5,0,0,0" FontSize="30" Command="{Binding CreateNewSaleCommand, }" Content="+" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
-		<Border Margin="0,5,0,0" BorderBrush="Gray" BorderThickness="2" Grid.Row="1" Grid.ColumnSpan="4">
+		<Button Margin="0,0,5,0" Content="Statystyki" Command="{Binding OpenStatisticsCommand}" Grid.Column="2" FontSize="25" VerticalAlignment="Stretch" VerticalContentAlignment="Center" />
+		<TextBox Grid.Column="3" Text="{Binding NewSaleDate}" TextAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" Watermark="Wybierz projekt z listy lub wprowadz nazwe nowego projektu" />
+		<Button Grid.Column="4" Margin="5,0,0,0" FontSize="30" Command="{Binding CreateNewSaleCommand, }" Content="+" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
+		<Border Margin="0,5,0,0" BorderBrush="Gray" BorderThickness="2" Grid.Row="1" Grid.ColumnSpan="5">
 			<ScrollViewer>
 				<ItemsControl Items="{Binding _salesList}">
 					<ItemsControl.ItemTemplate>

@@ -1,4 +1,4 @@
-﻿using ReactiveUI;
+using ReactiveUI;
 using SaleManeger.Models;
 using SaleManeger.Repositories;
 using System;
@@ -29,6 +29,7 @@ namespace SaleManeger.ViewModels
         }
 
         public ReactiveCommand<Unit, Unit> OpenAllSalesSummaryCommand { get; }
+        public ReactiveCommand<Unit, Unit> OpenStatisticsCommand { get; }
         public ReactiveCommand<string, string> OpenSaleCommand { get; }
 
         #endregion Public Properties
@@ -48,6 +49,7 @@ namespace SaleManeger.ViewModels
             _salesList = new ObservableCollection<Sale>(_dataBase.GetAll<Sale>().ToList());
             CreateNewSaleCommand = ReactiveCommand.Create(CreateNewSale, this.WhenAnyValue(x => x.NewSaleDate, text => !string.IsNullOrWhiteSpace(text)));
             OpenAllSalesSummaryCommand = ReactiveCommand.Create(() => { });
+            OpenStatisticsCommand = ReactiveCommand.Create(() => { });
             OpenSaleCommand = ReactiveCommand.Create((string saleID) => { return saleID; });
             DeleteSaleCommand = ReactiveCommand.Create((string saleID) => { return saleID; });
         }

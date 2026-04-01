@@ -119,6 +119,10 @@ namespace SaleManeger.ViewModels
             {
                 OpenAllSalesSummary();
             });
+            projectViewModel.OpenStatisticsCommand.Subscribe(model =>
+            {
+                OpenStatistics();
+            });
         }
 
         public void OpenSaleSummary(string saleName)
@@ -163,6 +167,16 @@ namespace SaleManeger.ViewModels
             var allSalesSummaryViewModel = new AllSalesSummaryViewModel(_dataBase);
             Content = allSalesSummaryViewModel;
             allSalesSummaryViewModel.OpenProjectSelectionCommand.Subscribe(model =>
+            {
+                OpenProjectSelection();
+            });
+        }
+
+        private void OpenStatistics()
+        {
+            var statisticsViewModel = new StatisticsViewModel(_dataBase);
+            Content = statisticsViewModel;
+            statisticsViewModel.ReturnCommand.Subscribe(model =>
             {
                 OpenProjectSelection();
             });
