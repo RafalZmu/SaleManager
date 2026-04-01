@@ -25,6 +25,7 @@ namespace SaleManeger.ViewModels
 		private string _sale;
 		private string _saleID;
 		private string _saleSum;
+		private string _warningMessage;
 
 		#endregion Fields
 
@@ -66,6 +67,15 @@ namespace SaleManeger.ViewModels
 			set
 			{
 				this.RaiseAndSetIfChanged(ref _saleSum, value);
+			}
+		}
+
+		public string WarningMessage
+		{
+			get => _warningMessage;
+			set
+			{
+				this.RaiseAndSetIfChanged(ref _warningMessage, value);
 			}
 		}
 
@@ -218,8 +228,39 @@ namespace SaleManeger.ViewModels
 
 		private string OpenClientSelection()
 		{
+			if (!ValidateText(Order) || !ValidateText(Sale))
+			{
+				return string.Empty;
+			}
+			WarningMessage = string.Empty;
 			SaveClient();
 			return _saleID;
+		}
+
+		private bool ValidateText(string text)
+		{
+			if (string.IsNullOrWhiteSpace(text)) return true;
+
+			foreach (var item in text.Trim().Split('\n'))
+			{
+				if (!item.Contains(':')) continue;
+				
+				var parts = item.Split(':');
+				var name = parts[0].Trim();
+				if (parts.Length < 2 || string.IsNullOrWhiteSpace(parts[1]))
+				{
+					WarningMessage = $"Błąd: Brak wagi dla produktu '{name}'!";
+					return false;
+				}
+				
+				var valueStr = parts[1].Trim().Split(' ')[0];
+				if (!double.TryParse(valueStr.Replace(",", "."), NumberStyles.Any, CultureInfo.InvariantCulture, out _))
+				{
+					WarningMessage = $"Błąd: '{valueStr}' nie jest poprawną wagą dla '{name}'!";
+					return false;
+				}
+			}
+			return true;
 		}
 
 		private void SaveClient()

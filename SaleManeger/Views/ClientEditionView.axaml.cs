@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace SaleManeger.Views;
 
@@ -136,6 +137,10 @@ public partial class ClientEditionView : UserControl
         {
             var cleanLine = line.Trim('\r');
             if (string.IsNullOrEmpty(cleanLine)) continue;
+            
+            // Auto-fix missing spaces after valid colons (Product1:1 -> Product1: 1)
+            cleanLine = Regex.Replace(cleanLine, @"^([^:]+):(?=\S)", "$1: ");
+            
             if (cleanLine.Length == 2 && _products.Any(x => x.Code == cleanLine))
             {
                 var replacement = _products.Where(x => x.Code == cleanLine).First().Name;
@@ -195,6 +200,10 @@ public partial class ClientEditionView : UserControl
         {
             var cleanLine = line.Trim('\r');
             if (string.IsNullOrEmpty(cleanLine)) continue;
+            
+            // Auto-fix missing spaces after valid colons (Product1:1 -> Product1: 1)
+            cleanLine = Regex.Replace(cleanLine, @"^([^:]+):(?=\S)", "$1: ");
+            
             if (cleanLine.Length == 2 && _products.Any(x => x.Code == cleanLine))
             {
                 var replacement = _products.Where(x => x.Code == cleanLine).First().Name;

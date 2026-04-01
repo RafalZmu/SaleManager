@@ -1,4 +1,4 @@
-﻿using ReactiveUI;
+using ReactiveUI;
 using SaleManeger.Models;
 using SaleManeger.Repositories;
 using SQLitePCL;
@@ -68,7 +68,13 @@ namespace SaleManeger.ViewModels
             var clientEditionViewModel = new ClientEditionViewModel(_dataBase, client, _saleName);
             Content = clientEditionViewModel;
 
-            clientEditionViewModel.OpenClientSelectionCommand.Subscribe(OpenClientSelection);
+            clientEditionViewModel.OpenClientSelectionCommand.Subscribe(x => 
+            {
+                if (!string.IsNullOrWhiteSpace(x))
+                {
+                    OpenClientSelection(x);
+                }
+            });
         }
 
         public void OpenClientSelection(string saleName)
