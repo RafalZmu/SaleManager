@@ -8,29 +8,46 @@
 
 
 	<Grid>
-		<Grid Margin="5,30,5,5" ColumnDefinitions="Auto, *" RowDefinitions="50, *">
+		<Grid Margin="5,30,5,5" ColumnDefinitions="Auto, *" RowDefinitions="50, Auto, *">
 			<Button FontSize="25" Content="Cofnij" Margin="5" Command="{Binding OpenClientSelectionCommand}" />
-			<TextBlock Grid.Column="1" TextAlignment="Center" FontSize="25" VerticalAlignment="Center" Text="{Binding ClientsLeft, StringFormat='Pozostało {0} klientów z zamówieniami'}}" />
+			<TextBlock Grid.Column="1" TextAlignment="Center" FontSize="25" VerticalAlignment="Center" Text="{Binding ClientsLeft, StringFormat='Pozostało {0} klientów z zamówieniami'}" />
 
-			<Grid Grid.Row="1" Grid.ColumnSpan="2" ColumnDefinitions="*,*,*">
-				<Expander Grid.Column="0" VerticalAlignment="Stretch" FontSize="20"  Header="Pozostałe zamówienia" HorizontalContentAlignment="Stretch" ExpandDirection="Down">
-					<ScrollViewer VerticalScrollBarVisibility="Hidden">
-						<TextBlock Text="{Binding OrdersLeft}" />
-					</ScrollViewer>
-				</Expander>
+			<!-- Search Bar -->
+			<TextBox Grid.Row="1" Grid.ColumnSpan="2" Margin="5,10,5,10" FontSize="20" 
+			         Watermark="Szukaj produktu... (np. Grube)" Text="{Binding SearchText, Mode=TwoWay}" />
 
-				<Expander Grid.Column="1" FontSize="20" Header="Zamówione ogólnie" HorizontalContentAlignment="Stretch" ExpandDirection="Down">
-					<ScrollViewer VerticalScrollBarVisibility="Hidden">
-						<TextBlock Text="{Binding AllOrders}" />
-					</ScrollViewer>
+			<!-- Data Table -->
+			<Grid Grid.Row="2" Grid.ColumnSpan="2" RowDefinitions="Auto, *">
+				
+				<!-- Table Header -->
+				<Border Background="#2D2D30" BorderBrush="#3E3E42" BorderThickness="1" CornerRadius="5,5,0,0" Padding="15,10,15,10" Margin="5,0,5,0">
+					<Grid ColumnDefinitions="*, 2.5*, 1.5*, 1.5*, 1.5*">
+						<TextBlock Grid.Column="0" Text="Kod" FontWeight="Bold" FontSize="18" Foreground="#E0E0E0"/>
+						<TextBlock Grid.Column="1" Text="Produkt" FontWeight="Bold" FontSize="18" Foreground="#E0E0E0"/>
+						<TextBlock Grid.Column="2" Text="Pozostałe zamówienia" FontWeight="Bold" FontSize="18" Foreground="#E0E0E0" TextAlignment="Left"/>
+						<TextBlock Grid.Column="3" Text="Zamówione ogólnie" FontWeight="Bold" FontSize="18" Foreground="#E0E0E0" TextAlignment="Left"/>
+						<TextBlock Grid.Column="4" Text="Sprzedane ogólnie" FontWeight="Bold" FontSize="18" Foreground="#E0E0E0" TextAlignment="Left"/>
+					</Grid>
+				</Border>
 
-				</Expander>
-
-				<Expander Grid.Column="2" FontSize="20" Header="Sprzedane ogólnie" ExpandDirection="Down" HorizontalContentAlignment="Stretch">
-					<ScrollViewer VerticalScrollBarVisibility="Hidden">
-						<TextBlock Text="{Binding SoldAll}" />
-					</ScrollViewer>
-				</Expander>
+				<!-- Table Rows -->
+				<ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="5,0,5,5">
+					<ItemsControl Items="{Binding FilteredSummaryItems}">
+						<ItemsControl.ItemTemplate>
+							<DataTemplate>
+								<Border BorderBrush="#3E3E42" BorderThickness="1,0,1,1" Padding="15,10,15,10" Background="Transparent">
+									<Grid ColumnDefinitions="*, 2.5*, 1.5*, 1.5*, 1.5*">
+										<TextBlock Grid.Column="0" Text="{Binding Code}" FontWeight="SemiBold" FontSize="20" Foreground="White" TextWrapping="Wrap"/>
+										<TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="SemiBold" FontSize="20" Foreground="White" TextWrapping="Wrap"/>
+										<TextBlock Grid.Column="2" Text="{Binding OrdersLeft}" FontSize="20" Foreground="#BBBBBB" TextAlignment="Left" TextWrapping="Wrap"/>
+										<TextBlock Grid.Column="3" Text="{Binding AllOrders}" FontSize="20" Foreground="#BBBBBB" TextAlignment="Left" TextWrapping="Wrap"/>
+										<TextBlock Grid.Column="4" Text="{Binding SoldAll}" FontSize="20" Foreground="#BBBBBB" TextAlignment="Left" TextWrapping="Wrap"/>
+									</Grid>
+								</Border>
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
+				</ScrollViewer>
 			</Grid>
 		</Grid>
 		<Border IsVisible="{Binding IsError}" Background="#90000000" Padding="20">

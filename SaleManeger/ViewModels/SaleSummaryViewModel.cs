@@ -1,4 +1,4 @@
-﻿using ReactiveUI;
+using ReactiveUI;
 using SaleManeger.Models;
 using SaleManeger.Repositories;
 using System;
@@ -11,6 +11,15 @@ using System.Reactive;
 
 namespace SaleManeger.ViewModels
 {
+    public class ProductSummaryItem
+    {
+        public string Code { get; set; }
+        public string Name { get; set; }
+        public string OrdersLeft { get; set; }
+        public string AllOrders { get; set; }
+        public string SoldAll { get; set; }
+    }
+
 	public class SaleSummaryViewModel : ViewModelBase
 	{
 		private List<Product> _products;
@@ -60,14 +69,32 @@ namespace SaleManeger.ViewModels
 		#endregion Public Constructors
 
 		public IProjectRepository _dataBase { get; set; }
-		public string AllOrders { get; set; }
+
+		public ObservableCollection<ProductSummaryItem> SummaryItems { get; set; } = new ObservableCollection<ProductSummaryItem>();
+		
+		private ObservableCollection<ProductSummaryItem> _filteredSummaryItems;
+		public ObservableCollection<ProductSummaryItem> FilteredSummaryItems
+		{
+			get => _filteredSummaryItems;
+			set => this.RaiseAndSetIfChanged(ref _filteredSummaryItems, value);
+		}
+		
+		private string _searchText;
+		public string SearchText
+		{
+			get => _searchText;
+			set
+			{
+				this.RaiseAndSetIfChanged(ref _searchText, value);
+				FilterProducts();
+			}
+		}
+
 		public int ClientsLeft { get; set; }
 		public ReactiveCommand<Unit, string> OpenClientSelectionCommand { get; set; }
 
 		public ReactiveCommand<Unit, Unit> CloseErrorCommand { get; set; }
-		public string OrdersLeft { get; set; }
 		public string SaleName { get; set; }
-		public string SoldAll { get; set; }
 		public ObservableCollection<string> Errors { get; set; }
 		private bool _IsError;
 		public bool IsError
@@ -77,6 +104,21 @@ namespace SaleManeger.ViewModels
 		}
 
 		#region Private Methods
+		
+		private void FilterProducts()
+		{
+			if (string.IsNullOrWhiteSpace(SearchText))
+			{
+				FilteredSummaryItems = new ObservableCollection<ProductSummaryItem>(SummaryItems);
+			}
+			else
+			{
+				FilteredSummaryItems = new ObservableCollection<ProductSummaryItem>(
+					SummaryItems.Where(x => x.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) || 
+					                        (!string.IsNullOrEmpty(x.Code) && x.Code.Contains(SearchText, StringComparison.OrdinalIgnoreCase)))
+				);
+			}
+		}
 
 		private void GetProducts()
 		{
@@ -106,11 +148,11 @@ namespace SaleManeger.ViewModels
                     reservedOrders.Remove(order);
                 }
 
-                AllOrders += $"{product.Name}: {reservedOrders.Sum(x => double.Parse(x.Value.Split(' ')[0], culture))}{Environment.NewLine}";
+                // Calculate All Orders
+                var allOrdersVal = reservedOrders.Sum(x => double.Parse(x.Value.Split(' ')[0], culture));
 
                 // Orders Left
-                var ordersLeft = _productsLeftToSale.FirstOrDefault(x => x.ID == product.ID)?.Value ?? "0";
-                OrdersLeft += $"{product.Name}: {ordersLeft}{Environment.NewLine}";
+                var ordersLeftVal = _productsLeftToSale.FirstOrDefault(x => x.ID == product.ID)?.Value ?? "0";
 
                 // Process Sold Products
                 var soldOrders = productOrders.Where(x => !x.IsReserved).ToList();
@@ -126,8 +168,18 @@ namespace SaleManeger.ViewModels
                     soldOrders.Remove(order);
                 }
 
-                SoldAll += $"{product.Name}: {soldOrders.Sum(x => double.Parse(x.Value.Split(' ')[0], culture))}{Environment.NewLine}";
+                var soldOrdersVal = soldOrders.Sum(x => double.Parse(x.Value.Split(' ')[0], culture));
+
+                SummaryItems.Add(new ProductSummaryItem
+                {
+                    Code = product.Code ?? "",
+                    Name = product.Name,
+                    AllOrders = allOrdersVal.ToString(culture),
+                    OrdersLeft = double.Parse(ordersLeftVal, culture).ToString(culture),
+                    SoldAll = soldOrdersVal.ToString(culture)
+                });
             }
+            FilterProducts();
         }
         public static List<Product> GetSumOfOrdersLeft(IProjectRepository database, string saleID)
 		{
