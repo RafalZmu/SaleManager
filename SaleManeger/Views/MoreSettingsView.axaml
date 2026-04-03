@@ -14,6 +14,9 @@
 		<Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" FontSize="30" Margin="10" Content="Sprawdzanie zamówień Email" />
 		<Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" FontSize="30" Margin="10" Content="Sprawdzanie zamówień Messengera" />
 		<Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" FontSize="30" Margin="10" Content="Aktualny stan produktu" Command="{Binding OpenCurrentProductStateCommand}" />
+        <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" FontSize="30" Margin="10" Background="#1E1E1E" BorderBrush="Gray" BorderThickness="1" Content="Planowanie Sprzedaży" Command="{Binding OpenSalePlanningCommand}" />
+        <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" FontSize="30" Margin="10" Content="Test Bramki SMS" Command="{Binding OpenSmsTestCommand}" />
+        <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" FontSize="30" Margin="10" Content="Masowa Wysyłka SMS" Command="{Binding OpenSmsBroadcastCommand}" />
 		<Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" FontSize="30" Margin="10" Content="Cofnij" Command="{Binding OpenClientSelectionCommand}" />
 
 	</UniformGrid>

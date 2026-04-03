@@ -1,0 +1,63 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="SaleManeger.Views.SalePlanningView">
+
+    <Grid RowDefinitions="Auto, *, Auto" Margin="20">
+        <!-- Header -->
+        <Border Grid.Row="0" Margin="0,0,0,10" BorderBrush="Gray" BorderThickness="0,0,0,2" Padding="0,0,0,10">
+            <Grid ColumnDefinitions="Auto, *">
+                <Button Command="{Binding GoBackCommand}" Content="Cofnij" FontSize="20" Padding="15,5" />
+                <TextBlock Grid.Column="1" Text="Planowanie Sprzedaży" FontSize="30" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Grid>
+        </Border>
+
+        <!-- Main Content -->
+        <Grid Grid.Row="1" ColumnDefinitions="2*, 1*" Margin="0,10,0,0">
+            
+            <!-- Left Side: Day Bounds Configuration -->
+            <Border Grid.Column="0" BorderBrush="#3D3D40" BorderThickness="1" Background="#1E1E1E" CornerRadius="5" Padding="15" Margin="0,0,15,0">
+                <Grid RowDefinitions="Auto, *, Auto">
+                    <TextBlock Text="Przedziały Czasowe Sprzedaży" FontSize="24" FontWeight="SemiBold" Margin="0,0,0,15" />
+                    
+                    <ScrollViewer Grid.Row="1">
+                        <ItemsControl Items="{Binding DayPlans}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="0,0,0,10" Background="#2D2D30" Padding="10">
+                                        <Grid ColumnDefinitions="Auto, Auto, Auto, Auto, Auto" RowDefinitions="Auto, Auto">
+                                            <DatePicker SelectedDate="{Binding SelectedDate}" Margin="5" HorizontalAlignment="Left" Grid.ColumnSpan="3" />
+                                            <TimePicker SelectedTime="{Binding StartTimeTimeSpan}" Grid.Row="1" Margin="5" Grid.Column="0" ClockIdentifier="24HourClock" />
+                                            <TextBlock Grid.Row="1" Grid.Column="1" Text=" - " VerticalAlignment="Center" FontSize="20" Margin="5,0"/>
+                                            <TimePicker Grid.Row="1" Grid.Column="2" SelectedTime="{Binding EndTimeTimeSpan}" Margin="5" ClockIdentifier="24HourClock" />
+                                            
+                                            <Button Grid.Row="1" Grid.Column="4" HorizontalAlignment="Right" Content="Usuń" Command="{Binding $parent[ItemsControl].DataContext.RemoveDayPlanCommand}" CommandParameter="{Binding}" Foreground="Red" Margin="20,0,0,0" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                    
+                    <Button Grid.Row="2" Command="{Binding AddDayPlanCommand}" Content="+ Dodaj Przedział" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" FontSize="18" Padding="10" Margin="0,10,0,0" Background="#2D2D30" />
+                </Grid>
+            </Border>
+
+            <!-- Right Side: Algorithm Configuration -->
+            <Border Grid.Column="1" BorderBrush="#3D3D40" BorderThickness="1" Background="#1E1E1E" CornerRadius="5" Padding="15">
+                <StackPanel Spacing="15">
+                    <TextBlock Text="Algorytm Automatyczny" FontSize="24" FontWeight="SemiBold" Margin="0,0,0,10" />
+                    
+                    <TextBlock Text="Czas obsługi 1 produktu (min)" FontSize="18" />
+                    <NumericUpDown Value="{Binding MinutesPerProduct}" Minimum="0" Increment="1" Margin="0,5,0,15" />
+                    
+                    <TextBlock Text="Ilość kg obsłużonych w 1 min" FontSize="18" />
+                    <NumericUpDown Value="{Binding KgPerMinute}" Minimum="0" Increment="1" Margin="0,5,0,15" />
+                    
+                    <Button Command="{Binding AutoScheduleCommand}" Content="Automatycznie Generuj Odbiory" Background="Green" Foreground="White" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" FontSize="20" Padding="10" Margin="0,20,0,0" />
+                    <TextBlock Text="{Binding WarningMessage}" Foreground="Red" FontSize="16" FontWeight="Bold" IsVisible="{Binding WarningMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+        </Grid>
+    </Grid>
+</UserControl>

@@ -32,6 +32,26 @@ namespace SaleManeger.Repositories
                 );
             ");
 
+            context.Database.ExecuteSqlRaw(@"
+                CREATE TABLE IF NOT EXISTS ""ClientSaleInfos"" (
+                    ""ID"" TEXT NOT NULL CONSTRAINT ""PK_ClientSaleInfos"" PRIMARY KEY,
+                    ""ClientID"" TEXT NULL,
+                    ""SaleID"" TEXT NULL,
+                    ""FirstPurchaseTime"" TEXT NULL,
+                    ""FirstOrderTime"" TEXT NULL,
+                    ""ExpectedArrivalTime"" TEXT NULL
+                );
+            ");
+
+            context.Database.ExecuteSqlRaw(@"
+                CREATE TABLE IF NOT EXISTS ""SaleDayPlans"" (
+                    ""ID"" TEXT NOT NULL CONSTRAINT ""PK_SaleDayPlans"" PRIMARY KEY,
+                    ""SaleID"" TEXT NULL,
+                    ""StartTime"" TEXT NOT NULL,
+                    ""EndTime"" TEXT NOT NULL
+                );
+            ");
+
             _context = context;
         }
 

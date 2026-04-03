@@ -30,6 +30,7 @@ namespace SaleManeger.ViewModels
 
         public ReactiveCommand<Unit, Unit> OpenAllSalesSummaryCommand { get; }
         public ReactiveCommand<Unit, Unit> OpenStatisticsCommand { get; }
+        public ReactiveCommand<Unit, Unit> OpenGlobalSmsBroadcastCommand { get; }
         public ReactiveCommand<string, string> OpenSaleCommand { get; }
 
         #endregion Public Properties
@@ -50,6 +51,7 @@ namespace SaleManeger.ViewModels
             CreateNewSaleCommand = ReactiveCommand.Create(CreateNewSale, this.WhenAnyValue(x => x.NewSaleDate, text => !string.IsNullOrWhiteSpace(text)));
             OpenAllSalesSummaryCommand = ReactiveCommand.Create(() => { });
             OpenStatisticsCommand = ReactiveCommand.Create(() => { });
+            OpenGlobalSmsBroadcastCommand = ReactiveCommand.Create(() => { });
             OpenSaleCommand = ReactiveCommand.Create((string saleID) => { return saleID; });
             DeleteSaleCommand = ReactiveCommand.Create((string saleID) => { return saleID; });
         }

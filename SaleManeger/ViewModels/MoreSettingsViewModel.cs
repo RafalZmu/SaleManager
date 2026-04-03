@@ -1,4 +1,4 @@
-﻿using ReactiveUI;
+using ReactiveUI;
 using System.Reactive;
 
 namespace SaleManeger.ViewModels
@@ -10,6 +10,10 @@ namespace SaleManeger.ViewModels
         public ReactiveCommand<Unit, string> OpenCurrentProductStateCommand { get; set; }
         public ReactiveCommand<Unit, string> OpenClientSelectionCommand{ get; set; }
         public ReactiveCommand<Unit, string> OpenSMSImportCommand{ get; set; }
+        public ReactiveCommand<Unit, string> OpenSalePlanningCommand { get; set; }
+        public ReactiveCommand<Unit, string> OpenSmsTestCommand { get; set; }
+        public ReactiveCommand<Unit, string> OpenSmsBroadcastCommand { get; set; }
+
         public MoreSettingsViewModel(string saleID)
         {
             this.saleID = saleID;
@@ -18,6 +22,9 @@ namespace SaleManeger.ViewModels
             OpenCurrentProductStateCommand = ReactiveCommand.Create(() => {return saleID;});
             OpenClientSelectionCommand = ReactiveCommand.Create(() => { return saleID;});
             OpenSMSImportCommand = ReactiveCommand.Create(() => { return saleID; });
+            OpenSalePlanningCommand = ReactiveCommand.Create(() => { return saleID; });
+            OpenSmsTestCommand = ReactiveCommand.Create(() => { return saleID; });
+            OpenSmsBroadcastCommand = ReactiveCommand.Create(() => { return saleID; });
 
         }
 

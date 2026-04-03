@@ -102,7 +102,10 @@ public partial class ClientEditionView : UserControl
         if (DataContext is ClientEditionViewModel vm && vm.ProductsList != null)
         {
             var matched = OrderSaleMatcher.GetMatchedOrderLines(order.Text, sale.Text, vm.ProductsList);
+            var orangeLines = OrderSaleMatcher.GetLowStockOrderLines(order.Text, vm.ProductsList, vm.LowStockProductIDs);
+            
             _colorizer.GreenLines = matched;
+            _colorizer.OrangeLines = orangeLines;
             order.TextArea.TextView.Redraw();
         }
     }
@@ -132,29 +135,48 @@ public partial class ClientEditionView : UserControl
             
         string newText = "";
         var cursorPostion = 0;
+        bool textChangedBySystem = false;
+        
+        var normalizedText = Regex.Replace(text, @"(\r?\n){2,}", "\n");
+        if (normalizedText != text.Replace("\r", "")) 
+        {
+            textChangedBySystem = true;
+            text = normalizedText;
+        }
+
         var lines = text.Split('\n');
+        
         foreach (var line in lines)
         {
             var cleanLine = line.Trim('\r');
-            if (string.IsNullOrEmpty(cleanLine)) continue;
-            
-            // Auto-fix missing spaces after valid colons (Product1:1 -> Product1: 1)
-            cleanLine = Regex.Replace(cleanLine, @"^([^:]+):(?=\S)", "$1: ");
-            
-            if (cleanLine.Length == 2 && _products.Any(x => x.Code == cleanLine))
+            string processLine = cleanLine;
+
+            if (!string.IsNullOrWhiteSpace(cleanLine))
             {
-                var replacement = _products.Where(x => x.Code == cleanLine).First().Name;
-                newText += $"{replacement}: ";
-                cursorPostion = newText.Length;
+                // Auto-fix missing spaces po valid colons (Product1:1 -> Product1: 1)
+                var fixedLine = Regex.Replace(cleanLine, @"^([^:]+):(?=\S)", "$1: ");
+                if (fixedLine != cleanLine)
+                {
+                    processLine = fixedLine;
+                    textChangedBySystem = true;
+                }
+
+                if (processLine.Length == 2 && _products.Any(x => x.Code == processLine))
+                {
+                    var replacement = _products.Where(x => x.Code == processLine).First().Name;
+                    processLine = $"{replacement}: ";
+                    cursorPostion = newText.Length + processLine.Length;
+                    textChangedBySystem = true;
+                }
             }
-            else
-            {
-                newText += $"{cleanLine}\n";
-            }
+
+            newText += $"{processLine}\n";
         }
         
-        string finalNewText = newText.TrimEnd('\r', '\n') + "\n";
-        if (originalText != finalNewText)
+        string finalNewText = newText.Substring(0, newText.Length - 1);
+        if (originalText != text) textChangedBySystem = true; // triggered if comma was stripped
+
+        if (textChangedBySystem)
         {
             int oldCaret = order.CaretOffset;
             order.Text = finalNewText;
@@ -194,35 +216,51 @@ public partial class ClientEditionView : UserControl
             
         string newText = "";
         var cursorPostion = 0;
-        var codeConverted = false;
+        bool textChangedBySystem = false;
+
+        var normalizedText = Regex.Replace(text, @"(\r?\n){2,}", "\n");
+        if (normalizedText != text.Replace("\r", "")) 
+        {
+            textChangedBySystem = true;
+            text = normalizedText;
+        }
+
         var lines = text.Split('\n');
+        
         foreach (var line in lines)
         {
             var cleanLine = line.Trim('\r');
-            if (string.IsNullOrEmpty(cleanLine)) continue;
-            
-            // Auto-fix missing spaces after valid colons (Product1:1 -> Product1: 1)
-            cleanLine = Regex.Replace(cleanLine, @"^([^:]+):(?=\S)", "$1: ");
-            
-            if (cleanLine.Length == 2 && _products.Any(x => x.Code == cleanLine))
+            string processLine = cleanLine;
+
+            if (!string.IsNullOrWhiteSpace(cleanLine))
             {
-                var replacement = _products.Where(x => x.Code == cleanLine).First().Name;
-                newText += $"{replacement}: ";
-                cursorPostion = newText.Length;
-                codeConverted = true;
+                var fixedLine = Regex.Replace(cleanLine, @"^([^:]+):(?=\S)", "$1: ");
+                if (fixedLine != cleanLine)
+                {
+                    processLine = fixedLine;
+                    textChangedBySystem = true;
+                }
+
+                if (processLine.Length == 2 && _products.Any(x => x.Code == processLine))
+                {
+                    var replacement = _products.Where(x => x.Code == processLine).First().Name;
+                    processLine = $"{replacement}: ";
+                    cursorPostion = newText.Length + processLine.Length;
+                    textChangedBySystem = true;
+                }
             }
-            else
-            {
-                newText += $"{cleanLine}\n";
-            }
+
+            newText += $"{processLine}\n";
         }
         
-        string finalNewText = newText.TrimEnd('\r', '\n') + "\n";
-        if (originalText != finalNewText)
+        string finalNewText = newText.Substring(0, newText.Length - 1);
+        if (originalText != text) textChangedBySystem = true;
+
+        if (textChangedBySystem)
         {
             int oldCaret = sale.CaretOffset;
             sale.Text = finalNewText;
-            if (codeConverted == true && cursorPostion != 0)
+            if (cursorPostion != 0)
             {
                 sale.CaretOffset = cursorPostion;
             }
@@ -237,6 +275,7 @@ public partial class ClientEditionView : UserControl
 public class OrderColorizer : DocumentColorizingTransformer
 {
     public HashSet<int> GreenLines { get; set; } = new HashSet<int>();
+    public HashSet<int> OrangeLines { get; set; } = new HashSet<int>();
 
     protected override void ColorizeLine(AvaloniaEdit.Document.DocumentLine line)
     {
@@ -244,7 +283,14 @@ public class OrderColorizer : DocumentColorizingTransformer
         {
             ChangeLinePart(line.Offset, line.EndOffset, element =>
             {
-                element.TextRunProperties.ForegroundBrush = Brushes.Green;
+                element.TextRunProperties.ForegroundBrush = Brushes.LightGreen;
+            });
+        }
+        else if (OrangeLines.Contains(line.LineNumber))
+        {
+            ChangeLinePart(line.Offset, line.EndOffset, element =>
+            {
+                element.TextRunProperties.ForegroundBrush = Brushes.Orange;
             });
         }
     }
@@ -252,6 +298,23 @@ public class OrderColorizer : DocumentColorizingTransformer
 
 public class OrderSaleMatcher
 {
+    public static HashSet<int> GetLowStockOrderLines(string orderText, List<Product> products, HashSet<string> lowStockProductIDs)
+    {
+        var orangeLines = new HashSet<int>();
+        if (string.IsNullOrWhiteSpace(orderText) || lowStockProductIDs == null || lowStockProductIDs.Count == 0)
+            return orangeLines;
+
+        var orderItems = ParseLines(orderText, products);
+        foreach (var item in orderItems)
+        {
+            if (lowStockProductIDs.Contains(item.ProductID))
+            {
+                orangeLines.Add(item.LineIndex);
+            }
+        }
+        return orangeLines;
+    }
+
     public static HashSet<int> GetMatchedOrderLines(string orderText, string saleText, List<Product> products)
     {
         var matchedOrderLines = new HashSet<int>();

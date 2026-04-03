@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls.Shapes;
+using Avalonia.Controls.Shapes;
 using Microsoft.EntityFrameworkCore;
 using System;
 
@@ -14,6 +14,8 @@ namespace SaleManeger.Models
         public DbSet<Product> Products { get; set; }
         public DbSet<Sale> Sales { get; set; }
         public DbSet<SaleProduct> SalesProducts { get; set; }
+        public DbSet<ClientSaleInfo> ClientSaleInfos { get; set; }
+        public DbSet<SaleDayPlan> SaleDayPlans { get; set; }
 
         #endregion Public Properties
 

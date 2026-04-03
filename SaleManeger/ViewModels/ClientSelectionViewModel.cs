@@ -180,10 +180,14 @@ namespace SaleManeger.ViewModels
             }
 
             // Get all clients for the current sale and set their colors based on their product reservations.
+            var saleInfos = _dataBase.GetAll<ClientSaleInfo>().Where(x => x.SaleID == SaleID).ToList();
             foreach (var client in AllClients)
             {
                 client.Color = client.Products.Any(x => x.IsReserved == false) ? "Green" :
                     client.Products.Any(x => x.IsReserved == true) ? "Red" : "White";
+                
+                var info = saleInfos.FirstOrDefault(x => x.ClientID == client.ID);
+                client.ExpectedArrivalTime = info?.ExpectedArrivalTime;
             }
             FiltrClients();
             FiltrProducts();
@@ -279,7 +283,12 @@ namespace SaleManeger.ViewModels
                 };
             }
 
-            return new ObservableCollection<Client>(filteredClients.OrderBy(GetClientPriority).ThenByDescending(x => x.Products.Count));
+            var sortedClients = filteredClients
+                .OrderBy(GetClientPriority)
+                .ThenBy(x => x.ExpectedArrivalTime.HasValue ? Math.Abs((x.ExpectedArrivalTime.Value - DateTime.Now).Ticks) : long.MaxValue)
+                .ThenByDescending(x => x.Products.Count);
+                
+            return new ObservableCollection<Client>(sortedClients);
         }
 
         private ObservableCollection<Client> ProductFiltr(ObservableCollection<Client> clients)

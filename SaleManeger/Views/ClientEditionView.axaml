@@ -7,11 +7,15 @@
 			 x:Class="SaleManeger.Views.ClientEditionView">
 
 	<Grid Margin="10,30,10,10" RowDefinitions="Auto, Auto, *">
-		<Grid Margin="5" ColumnDefinitions="Auto, *,*">
+		<Grid Margin="5" ColumnDefinitions="Auto, *,*,Auto">
 			<Button Margin="0,0,5,0" FontSize="25" VerticalAlignment="Stretch" VerticalContentAlignment="Center"
 					Content="Cofnij" Command="{Binding OpenClientSelectionCommand}" />
 			<TextBox Grid.Column="1" FontSize="25" Text="{Binding	Name}" Watermark="Imie" />
 			<TextBox Grid.Column="2" FontSize="25" Text="{Binding	Number}" Watermark="Numer Telefonu" />
+            <Grid Grid.Column="3" ColumnDefinitions="Auto, Auto" Margin="5,0,0,0">
+                <DatePicker Grid.Column="0" SelectedDate="{Binding ExpectedArrivalDate}" FontSize="25" VerticalAlignment="Stretch" MinHeight="0" />
+                <TimePicker Grid.Column="1" SelectedTime="{Binding ExpectedArrivalTime}" Margin="5,0,0,0" FontSize="30" VerticalAlignment="Stretch" MinHeight="0" ClockIdentifier="24HourClock" />
+            </Grid>
 		</Grid>
 		
 		<TextBlock Grid.Row="1" Text="{Binding WarningMessage}" Foreground="Red" FontSize="18" FontWeight="Bold" Margin="10,0,10,5" IsVisible="{Binding WarningMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
@@ -25,7 +29,10 @@
                 <avedit:TextEditor Name="sale" FontSize="20" ShowLineNumbers="False" WordWrap="True" Background="Black" Foreground="White" BorderBrush="Gray" BorderThickness="2" Padding="5" />
                 <TextBlock Name="saleWatermark" Text="Kupione" Foreground="DimGray" FontSize="20" Margin="7,7,0,0" IsHitTestVisible="False" />
             </Grid>
-			<TextBox Grid.Column="2" Grid.RowSpan="2" Name="codes" IsReadOnly="True" UseFloatingWatermark="True" AcceptsReturn="True" Text="{Binding	Codes}" Watermark="Codes" />
+            <Grid Grid.Column="2" Grid.RowSpan="2" RowDefinitions="Auto, *" Margin="5,0,0,0">
+                <Button Content="{Binding DisplayModeText}" Command="{Binding ToggleDisplayModeCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,0,0,5" FontSize="20" FontWeight="SemiBold" Background="#2D2D30"/>
+                <TextBox Grid.Row="1" Name="codes" IsReadOnly="True" UseFloatingWatermark="True" AcceptsReturn="True" Text="{Binding Codes}" Watermark="Kody" />
+            </Grid>
 			<TextBox Grid.Column="1" Grid.Row="1" IsReadOnly="True" Name="saleSum"  FontSize="20" Text="{Binding SaleSum, Mode=TwoWay}" />
 		</Grid>
 	</Grid>

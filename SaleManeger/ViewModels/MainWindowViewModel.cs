@@ -123,6 +123,10 @@ namespace SaleManeger.ViewModels
             {
                 OpenStatistics();
             });
+            projectViewModel.OpenGlobalSmsBroadcastCommand.Subscribe(model =>
+            {
+                OpenGlobalSmsBroadcast();
+            });
         }
 
         public void OpenSaleSummary(string saleName)
@@ -142,6 +146,9 @@ namespace SaleManeger.ViewModels
             moreSettingViewModel.OpenCurrentProductStateCommand.Subscribe(OpenCurrentProductState);
             moreSettingViewModel.OpenClientSelectionCommand.Subscribe(OpenClientSelection);
             moreSettingViewModel.OpenSMSImportCommand.Subscribe(OpenSMSImport);
+            moreSettingViewModel.OpenSalePlanningCommand.Subscribe(OpenSalePlanning);
+            moreSettingViewModel.OpenSmsTestCommand.Subscribe(OpenSmsTestView);
+            moreSettingViewModel.OpenSmsBroadcastCommand.Subscribe(OpenSmsBroadcastView);
         }
 
         private void OpenSMSImport(string saleId)
@@ -156,6 +163,27 @@ namespace SaleManeger.ViewModels
             var currentProductStateViewModel = new CurrentProductStateViewModel(_dataBase, saleId);
             Content = currentProductStateViewModel;
             currentProductStateViewModel.OpenMoreSettingsCommand.Subscribe(OpenMoreSettingView);
+        }
+
+        private void OpenSalePlanning(string saleId)
+        {
+            var salePlanningViewModel = new SalePlanningViewModel(_dataBase, saleId);
+            Content = salePlanningViewModel;
+            salePlanningViewModel.GoBackCommand.Subscribe(OpenMoreSettingView);
+        }
+
+        private void OpenSmsTestView(string saleId)
+        {
+            var smsTestViewModel = new SmsTestViewModel(saleId);
+            Content = smsTestViewModel;
+            smsTestViewModel.GoBackCommand.Subscribe(OpenMoreSettingView);
+        }
+
+        private void OpenSmsBroadcastView(string saleId)
+        {
+            var smsBroadcastViewModel = new SmsBroadcastViewModel(saleId, _dataBase);
+            Content = smsBroadcastViewModel;
+            smsBroadcastViewModel.GoBackCommand.Subscribe(OpenMoreSettingView);
         }
 
         #endregion Public Methods
@@ -177,6 +205,16 @@ namespace SaleManeger.ViewModels
             var statisticsViewModel = new StatisticsViewModel(_dataBase);
             Content = statisticsViewModel;
             statisticsViewModel.ReturnCommand.Subscribe(model =>
+            {
+                OpenProjectSelection();
+            });
+        }
+
+        private void OpenGlobalSmsBroadcast()
+        {
+            var globalSmsBroadcastViewModel = new GlobalSmsBroadcastViewModel(_dataBase);
+            Content = globalSmsBroadcastViewModel;
+            globalSmsBroadcastViewModel.GoBackCommand.Subscribe(model =>
             {
                 OpenProjectSelection();
             });

@@ -26,6 +26,9 @@ namespace SaleManeger.ViewModels
 		private string _saleID;
 		private string _saleSum;
 		private string _warningMessage;
+        private DateTimeOffset? _expectedArrivalDate;
+        private TimeSpan? _expectedArrivalTime;
+        private bool _hasIgnoredTimeWarning = false;
 
 		#endregion Fields
 
@@ -38,6 +41,12 @@ namespace SaleManeger.ViewModels
 		public string Number { get; set; }
 		private List<SaleProduct> _curruntlyAvailableProducts; 
 		public ReactiveCommand<Unit, string> OpenClientSelectionCommand { get; }
+        public ReactiveCommand<Unit, Unit> ToggleDisplayModeCommand { get; }
+        
+        private bool _isShowingWolne = true;
+        public string DisplayModeText => _isShowingWolne ? "Pokaż: Zamówione" : "Pokaż: Wolne";
+        
+        private List<Product> _requiredProducts;
 
 		public string Order
 		{
@@ -60,6 +69,28 @@ namespace SaleManeger.ViewModels
 				UpdateSaleSum();
 			}
 		}
+        
+        public DateTimeOffset? ExpectedArrivalDate
+        {
+            get => _expectedArrivalDate;
+            set 
+            {
+                this.RaiseAndSetIfChanged(ref _expectedArrivalDate, value);
+                _hasIgnoredTimeWarning = false; 
+            }
+        }
+
+        public TimeSpan? ExpectedArrivalTime
+        {
+            get => _expectedArrivalTime;
+            set 
+            {
+                this.RaiseAndSetIfChanged(ref _expectedArrivalTime, value);
+                _hasIgnoredTimeWarning = false; 
+            }
+        }
+
+        public HashSet<string> LowStockProductIDs { get; set; } = new HashSet<string>();
 
 		public string SaleSum
 		{
@@ -107,25 +138,17 @@ namespace SaleManeger.ViewModels
                 _curruntlyAvailableProducts = new List<SaleProduct>(_dataBase.GetAll<SaleProduct>().Where(x => x.SaleID == _saleID));
 			}
 
-			List<Product> requiredProducts = new();
-			requiredProducts = SaleSummaryViewModel.GetSumOfOrdersLeft(_dataBase, _saleID);
+			_requiredProducts = SaleSummaryViewModel.GetSumOfOrdersLeft(_dataBase, _saleID);
 
 			_products = _products.OrderBy(x => x.Code).ToList();
-			_products.ForEach(p =>
-			{
-                var required = requiredProducts.First(x => x.Code == p.Code);
-				var available = _curruntlyAvailableProducts.FirstOrDefault(x => x.ProductID == p.ID);
-				double productsToSale;
-				if (available == null)
-				{
-					productsToSale = 0;
-				}
-				else
-				{
-					productsToSale = available.Amount - double.Parse(required.Value, CultureInfo.InvariantCulture);
-				}
-				Codes += $"{p.Code}-{p.Name}: Wolne = [{productsToSale}]{Environment.NewLine}";
-			});
+            
+            ToggleDisplayModeCommand = ReactiveCommand.Create(() => 
+            {
+                _isShowingWolne = !_isShowingWolne;
+                RefreshCodesText();
+            });
+
+            RefreshCodesText();
 
 			foreach (var item in client.Products)
 			{
@@ -138,6 +161,15 @@ namespace SaleManeger.ViewModels
 					Sale += $"{item.Name}{(string.IsNullOrEmpty(item.Name) ? "" : ": ")}{item.Value}{Environment.NewLine}";
 				}
 			}
+
+            var clientSaleInfo = _dataBase.GetAll<ClientSaleInfo>().FirstOrDefault(x => x.ClientID == client.ID && x.SaleID == _saleID);
+            if (clientSaleInfo != null && clientSaleInfo.ExpectedArrivalTime.HasValue)
+            {
+                _expectedArrivalDate = clientSaleInfo.ExpectedArrivalTime.Value.Date;
+                _expectedArrivalTime = clientSaleInfo.ExpectedArrivalTime.Value.TimeOfDay;
+                this.RaisePropertyChanged(nameof(ExpectedArrivalDate));
+                this.RaisePropertyChanged(nameof(ExpectedArrivalTime));
+            }
 		}
 
         #endregion Public Constructors
@@ -226,12 +258,61 @@ namespace SaleManeger.ViewModels
 
 		#region Private Methods
 
+        private void RefreshCodesText()
+        {
+            Codes = "";
+            LowStockProductIDs.Clear();
+
+            _products.ForEach(p =>
+            {
+                var required = _requiredProducts.First(x => x.Code == p.Code);
+                var available = _curruntlyAvailableProducts.FirstOrDefault(x => x.ProductID == p.ID);
+
+                // Always calculate the buffer mathematics to safely trigger Orange Highlighting natively without relying on the UI state!
+                double productsToSale = 0;
+                if (available != null)
+                {
+                    productsToSale = available.Amount - double.Parse(required.Value, CultureInfo.InvariantCulture);
+                    if (productsToSale < 0 && available.Amount > 0)
+                    {
+                        LowStockProductIDs.Add(p.ID);
+                    }
+                }
+
+                if (_isShowingWolne)
+                {
+                    Codes += $"{p.Code}-{p.Name}: Wolne = [{productsToSale}]{Environment.NewLine}";
+                }
+                else
+                {
+                    Codes += $"{p.Code}-{p.Name}: Zamówione = [{required.Value}]{Environment.NewLine}";
+                }
+            });
+
+            this.RaisePropertyChanged(nameof(Codes));
+            this.RaisePropertyChanged(nameof(DisplayModeText));
+        }
+
 		private string OpenClientSelection()
 		{
 			if (!ValidateText(Order) || !ValidateText(Sale))
 			{
 				return string.Empty;
 			}
+            
+            if (ExpectedArrivalTime.HasValue && ExpectedArrivalDate.HasValue && !_hasIgnoredTimeWarning)
+            {
+                var targetTime = ExpectedArrivalDate.Value.Date.Add(ExpectedArrivalTime.Value);
+                var existingInfo = _dataBase.GetAll<ClientSaleInfo>().FirstOrDefault(x => x.SaleID == _saleID && x.ClientID != ClientID && x.ExpectedArrivalTime == targetTime);
+                
+                if (existingInfo != null)
+                {
+                    WarningMessage = $"Uwaga: Inny klient ma przypisaną tę samą godzinę odbioru! Kliknij Cofnij ponownie, aby wymusić zapis.";
+                    _hasIgnoredTimeWarning = true;
+                    return string.Empty;
+                }
+            }
+
 			WarningMessage = string.Empty;
 			SaveClient();
 			return _saleID;
@@ -286,6 +367,40 @@ namespace SaleManeger.ViewModels
 				_dataBase.Add(Client);
 			else
 				_dataBase.Update(Client);
+
+            // Time Tracking Mechanics for ClientSaleInfo
+            var info = _dataBase.GetAll<ClientSaleInfo>().FirstOrDefault(x => x.ClientID == Client.ID && x.SaleID == _saleID);
+            bool isNew = false;
+            if (info == null)
+            {
+                info = new ClientSaleInfo { ID = Guid.NewGuid().ToString(), ClientID = Client.ID, SaleID = _saleID };
+                isNew = true;
+            }
+
+            // Track First Order
+            if (!info.FirstOrderTime.HasValue && Client.Products.Any(x => x.IsReserved))
+            {
+                info.FirstOrderTime = DateTime.Now;
+            }
+            
+            // Track First Purchase
+            if (!info.FirstPurchaseTime.HasValue && Client.Products.Any(x => !x.IsReserved))
+            {
+                info.FirstPurchaseTime = DateTime.Now;
+            }
+
+            // Apply Expected Arrival Time
+            if (ExpectedArrivalTime.HasValue && ExpectedArrivalDate.HasValue)
+            {
+                info.ExpectedArrivalTime = ExpectedArrivalDate.Value.Date.Add(ExpectedArrivalTime.Value);
+            }
+            else
+            {
+                info.ExpectedArrivalTime = null;
+            }
+
+            if (isNew) _dataBase.Add(info);
+            else _dataBase.Update(info);
 
 			SaveClientOrder(_dataBase, Client, _saleID);
 		}
