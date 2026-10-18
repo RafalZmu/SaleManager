@@ -146,6 +146,9 @@ namespace SaleManeger.ViewModels
                         continue;
                     }
                     Product product = ProductsList.FirstOrDefault(x => order.ProductID == x.ID);
+                    // The product was removed after this order was created.
+                    if (product == null)
+                        continue;
 
                     orders.Add(new Product()
                     {
@@ -157,7 +160,9 @@ namespace SaleManeger.ViewModels
                         Code = product.Code,
                     });
                 }
-                clients.Where(x => x.ID == clientOrder[0].ClientID).FirstOrDefault().Products = orders;
+                var orderOwner = clients.FirstOrDefault(x => x.ID == clientOrder[0].ClientID);
+                if (orderOwner != null)
+                    orderOwner.Products = orders;
             }
             clients.ForEach(x => x.Products ??= new ObservableCollection<Product>());
             AllClients = new ObservableCollection<Client>(clients);

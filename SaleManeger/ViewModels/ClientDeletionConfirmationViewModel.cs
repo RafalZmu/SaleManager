@@ -43,7 +43,8 @@ namespace SaleManeger.ViewModels
         {
             Client client = dataBase.GetAll<Client>().Where(x => x.ID == clientID).FirstOrDefault();
             dataBase.Delete(client);
-            dataBase.GetAll<ClientOrder>().Where(x => x.ClientID == clientID && x.SaleID == saleID).ToList().ForEach(x => dataBase.Delete(x));
+            dataBase.GetAll<ClientOrder>().Where(x => x.ClientID == clientID).ToList().ForEach(x => dataBase.Delete(x));
+            dataBase.GetAll<ClientSaleInfo>().Where(x => x.ClientID == clientID).ToList().ForEach(x => dataBase.Delete(x));
             dataBase.Save();
         }
 

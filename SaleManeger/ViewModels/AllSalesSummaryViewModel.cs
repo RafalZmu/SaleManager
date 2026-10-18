@@ -64,16 +64,17 @@ namespace SaleManeger.ViewModels
                 var sumOfProductsWeight = 0.0;
                 foreach (var product in _dataBase.GetAll<Product>().ToList())
                 {
-                    saleProfit += _dataBase.GetAll<ClientOrder>()
+                    var productWeight = _dataBase.GetAll<ClientOrder>()
                         .Where(x => x.ProductID == product.ID && x.SaleID == sale.SaleID && x.IsReserved == false)
                         .ToList()
-                        .Sum(x => long.Parse(x.Value.Split(' ')[0]));
-                    sumOfProductsWeight += saleProfit / product.PricePerKg;
+                        .Sum(x => double.TryParse(x.Value.Split(' ')[0].Replace(',', '.'), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double val) ? val : 0);
+                    saleProfit += productWeight * product.PricePerKg;
+                    sumOfProductsWeight += productWeight;
                 }
                 saleProfitPerSale.Add(saleProfit);
                 weightOfSoldProductsPerSale.Add(sumOfProductsWeight);
                 var clients = _dataBase.GetAll<ClientOrder>()
-                    .Where(x => x.IsReserved == false)
+                    .Where(x => x.SaleID == sale.SaleID && x.IsReserved == false)
                     .GroupBy(x => x.ClientID)
                     .ToList();
                 clientsWhoBoughtPerSale.Add(clients.Count);
