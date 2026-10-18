@@ -43,6 +43,7 @@ namespace SaleManeger.ViewModels
         public int ActiveFilterCount =>
             (Products?.Count(p => p.IsReserved) ?? 0)
             + (AreAllClientsShowing ? 0 : 1)
+            + (AreSmsPendingShowing ? 1 : 0)
             + AdvancedFilters.Count(x => x.IsActive);
 
         public bool HasActiveFilters => ActiveFilterCount > 0;
@@ -52,6 +53,9 @@ namespace SaleManeger.ViewModels
         public bool AreAllClientsShowing { get; set; } = true;
         public bool AreClientsWithOrderShowing { get; set; } = true;
         public bool AreClientsWithSaleShowing { get; set; } = false;
+
+        // Show only clients marked "Dodać do wysyłki SMS" that have a phone number.
+        public bool AreSmsPendingShowing { get; set; } = false;
 
         public string ClientName
         {
@@ -79,6 +83,7 @@ namespace SaleManeger.ViewModels
         }
 
         public ReactiveCommand<string, string> DeleteClientCommand { get; }
+        public ReactiveCommand<string, Unit> ToggleSmsGroupCommand { get; }
         public ReactiveCommand<string, Client> OpenClientEditionCommand { get; }
         public ReactiveCommand<Unit, string> OpenMoreSettingsCommand { get; }
         public ReactiveCommand<Unit, Unit> OpenProjectSelectionCommand { get; }
@@ -149,6 +154,7 @@ namespace SaleManeger.ViewModels
             OpenSaleSummaryCommand = ReactiveCommand.Create(() => { return saleID; });
             UpdateClientsCommand = ReactiveCommand.Create<List<bool>>(FiltrClients);
             DeleteClientCommand = ReactiveCommand.Create((string clientID) => { return clientID; });
+            ToggleSmsGroupCommand = ReactiveCommand.Create<string>(ToggleSmsGroup);
             OpenMoreSettingsCommand = ReactiveCommand.Create(() => { return saleID; });
 
             AllClients = new ObservableCollection<Client>();
@@ -224,6 +230,8 @@ namespace SaleManeger.ViewModels
                 AreClientsWithOrderShowing = selected[i];
                 AreClientsWithSaleShowing = selected[i + 1];
                 AreAllClientsShowing = selected[i + 2];
+                // Lists saved before this filter existed do not have the extra entry.
+                AreSmsPendingShowing = selected.Count > i + 3 && selected[i + 3];
             }
 
             // Get all clients for the current sale and set their colors based on their product reservations.
@@ -267,7 +275,7 @@ namespace SaleManeger.ViewModels
         // Filter the clients based on the current search term.
         private List<bool> FiltrClients()
         {
-            Clients = OrderAndSaleFiltr(AdvancedFiltr(ProductFiltr(NameAndNumberFiltr(AllClients))));
+            Clients = OrderAndSaleFiltr(AdvancedFiltr(ProductFiltr(SmsPendingFiltr(NameAndNumberFiltr(AllClients)))));
             var tempList = new List<bool>();
             foreach (var product in Products)
             {
@@ -276,6 +284,7 @@ namespace SaleManeger.ViewModels
             tempList.Add(AreClientsWithOrderShowing);
             tempList.Add(AreClientsWithSaleShowing);
             tempList.Add(AreAllClientsShowing);
+            tempList.Add(AreSmsPendingShowing);
             this.RaisePropertyChanged(nameof(ActiveFilterCount));
             this.RaisePropertyChanged(nameof(HasActiveFilters));
             return tempList;
@@ -299,6 +308,26 @@ namespace SaleManeger.ViewModels
                     ).OrderBy(x => x.Code)
                 );
             }
+        }
+
+        // Flips the "add to SMS group" mark of one client and saves it right away.
+        private void ToggleSmsGroup(string clientID)
+        {
+            var client = AllClients.FirstOrDefault(x => x.ID == clientID);
+            if (client == null)
+                return;
+
+            client.AddToSmsGroup = !client.AddToSmsGroup;
+            _dataBase.Update(client);
+            _dataBase.Save();
+            FiltrClients();
+        }
+
+        private ObservableCollection<Client> SmsPendingFiltr(ObservableCollection<Client> clients)
+        {
+            return AreSmsPendingShowing
+                ? new ObservableCollection<Client>(clients.Where(x => x.AddToSmsGroup && !string.IsNullOrWhiteSpace(x.PhoneNumber)))
+                : clients;
         }
 
         private ObservableCollection<Client> NameAndNumberFiltr(ObservableCollection<Client> clients)

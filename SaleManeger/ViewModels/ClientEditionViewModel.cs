@@ -40,6 +40,7 @@ namespace SaleManeger.ViewModels
 		public string Codes { get; set; }
 		public string Name { get; set; }
 		public string Number { get; set; }
+		public bool AddToSmsGroup { get; set; }
 		private List<SaleProduct> _curruntlyAvailableProducts; 
 		public ReactiveCommand<Unit, string> OpenClientSelectionCommand { get; }
         public ReactiveCommand<Unit, Unit> ToggleDisplayModeCommand { get; }
@@ -129,6 +130,7 @@ namespace SaleManeger.ViewModels
 			_saleID = saleID;
 			Name = client.Name;
 			Number = client.PhoneNumber;
+			AddToSmsGroup = client.AddToSmsGroup;
 			ClientID = client.ID;
 			Client = client;
 
@@ -364,6 +366,7 @@ namespace SaleManeger.ViewModels
 			}
 			Client.Name = string.IsNullOrWhiteSpace(Name) ? "" : Name;
 			Client.PhoneNumber = string.IsNullOrWhiteSpace(Number) ? "" : Number;
+			Client.AddToSmsGroup = AddToSmsGroup;
 
 			//Get ordered products
 			Client.Products.AddRange(GetProductsFromText(_products, Order, true));

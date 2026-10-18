@@ -52,10 +52,52 @@ namespace SaleManeger.Repositories
                 );
             ");
 
+            EnsureClientsHaveSmsGroupColumn(context);
+
             _context = context;
         }
 
         #endregion Public Constructors
+
+        #region Private Methods
+
+        // Databases created before this column existed are not touched by EnsureCreated(), so add it by hand.
+        // The column is only added when missing, existing rows keep their data and start unmarked (0).
+        private static void EnsureClientsHaveSmsGroupColumn(SaleContext context)
+        {
+            var connection = context.Database.GetDbConnection();
+            var wasClosed = connection.State != System.Data.ConnectionState.Open;
+            if (wasClosed)
+                connection.Open();
+            try
+            {
+                bool hasColumn = false;
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = "PRAGMA table_info(\"Clients\");";
+                    using var reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        if (reader.GetString(reader.GetOrdinal("name")) == "AddToSmsGroup")
+                            hasColumn = true;
+                    }
+                }
+
+                if (!hasColumn)
+                {
+                    using var alter = connection.CreateCommand();
+                    alter.CommandText = "ALTER TABLE \"Clients\" ADD COLUMN \"AddToSmsGroup\" INTEGER NOT NULL DEFAULT 0;";
+                    alter.ExecuteNonQuery();
+                }
+            }
+            finally
+            {
+                if (wasClosed)
+                    connection.Close();
+            }
+        }
+
+        #endregion Private Methods
 
         #region Public Methods
 

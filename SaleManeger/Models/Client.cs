@@ -13,6 +13,9 @@ namespace SaleManeger.Models
         public string Name { get; set; }
         public string PhoneNumber { get; set; }
 
+        // True while the client still has to be added to the SMS group (a reminder, it does not affect who gets SMS).
+        public bool AddToSmsGroup { get; set; }
+
         [NotMapped]
         public DateTime? ExpectedArrivalTime { get; set; }
 
