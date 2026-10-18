@@ -108,11 +108,11 @@ namespace SaleManeger.ViewModels
             IEnumerable<ClientOrder> relevantOrders;
             if (SelectedSaleScope.SaleID == "ALL")
             {
-                relevantOrders = allClientOrdersList.Where(x => x.ProductID != "Comment");
+                relevantOrders = allClientOrdersList.Where(x => x.ProductID != OrderValue.CommentProductId);
             }
             else
             {
-                relevantOrders = allClientOrdersList.Where(x => x.SaleID == SelectedSaleScope.SaleID && x.ProductID != "Comment");
+                relevantOrders = allClientOrdersList.Where(x => x.SaleID == SelectedSaleScope.SaleID && x.ProductID != OrderValue.CommentProductId);
             }
 
             var culture = new System.Globalization.CultureInfo("en-US");
@@ -124,17 +124,9 @@ namespace SaleManeger.ViewModels
                 var reservedOrders = productOrders.Where(x => x.IsReserved).ToList();
                 var soldOrders = productOrders.Where(x => !x.IsReserved).ToList();
 
-                double totalOrdered = reservedOrders.Sum(x => 
-                {
-                    double.TryParse(x.Value.Split(' ')[0].Replace(',', '.'), System.Globalization.NumberStyles.Any, culture, out double val);
-                    return val;
-                });
+                double totalOrdered = reservedOrders.Sum(x => OrderValue.Parse(x.Value));
 
-                double totalSold = soldOrders.Sum(x => 
-                {
-                    double.TryParse(x.Value.Split(' ')[0].Replace(',', '.'), System.Globalization.NumberStyles.Any, culture, out double val);
-                    return val;
-                });
+                double totalSold = soldOrders.Sum(x => OrderValue.Parse(x.Value));
                 
                 if (product.PricePerKg > 0)
                 {

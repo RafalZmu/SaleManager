@@ -103,9 +103,9 @@ namespace SaleManeger.ViewModels
                 int count = 0;
                 foreach (var o in orders)
                 {
-                    if (o.ProductID == "Comment") continue;
+                    if (OrderValue.IsComment(o)) continue;
                     
-                    if (double.TryParse(o.Value.Replace(",", "."), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double val))
+                    if (OrderValue.TryParse(o.Value, out double val))
                     {
                         if (KgPerMinute > 0)
                         {

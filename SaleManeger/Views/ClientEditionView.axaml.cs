@@ -360,8 +360,7 @@ public class OrderSaleMatcher
             {
                 var parts = line.Split(':');
                 var name = parts[0].Trim();
-                var valStr = parts[1].Trim().Split(' ')[0];
-                double.TryParse(valStr.Replace(",", "."), NumberStyles.Any, CultureInfo.InvariantCulture, out double val);
+                var val = OrderValue.Parse(parts[1]);
 
                 var prod = products.FirstOrDefault(p => p.Name == name);
                 if (prod != null)

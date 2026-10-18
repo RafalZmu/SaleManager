@@ -121,11 +121,7 @@ namespace SaleManeger.ViewModels
         // Order values look like "2,5" or "2.5 kg"; both separators are accepted.
         internal static bool TryParseNumber(string text, out double value)
         {
-            value = 0;
-            if (string.IsNullOrWhiteSpace(text))
-                return false;
-            var first = text.Trim().Split(' ')[0].Replace(',', '.');
-            return double.TryParse(first, NumberStyles.Float, CultureInfo.InvariantCulture, out value);
+            return OrderValue.TryParse(text, out value);
         }
     }
 }

@@ -178,7 +178,7 @@ namespace SaleManeger.ViewModels
                 ObservableCollection<Product> orders = new();
                 foreach (var order in clientOrder)
                 {
-                    if (order.ProductID == "Comment")
+                    if (OrderValue.IsComment(order))
                     {
                         orders.Add(new Product()
                         {

@@ -67,7 +67,7 @@ namespace SaleManeger.ViewModels
                     var productWeight = _dataBase.GetAll<ClientOrder>()
                         .Where(x => x.ProductID == product.ID && x.SaleID == sale.SaleID && x.IsReserved == false)
                         .ToList()
-                        .Sum(x => double.TryParse(x.Value.Split(' ')[0].Replace(',', '.'), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double val) ? val : 0);
+                        .Sum(x => OrderValue.Parse(x.Value));
                     saleProfit += productWeight * product.PricePerKg;
                     sumOfProductsWeight += productWeight;
                 }

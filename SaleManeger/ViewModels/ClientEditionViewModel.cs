@@ -347,7 +347,7 @@ namespace SaleManeger.ViewModels
 				}
 				
 				var valueStr = parts[1].Trim().Split(' ')[0];
-				if (!double.TryParse(valueStr.Replace(",", "."), NumberStyles.Any, CultureInfo.InvariantCulture, out _))
+				if (!OrderValue.TryParse(valueStr, out _))
 				{
 					WarningMessage = $"Błąd: '{valueStr}' nie jest poprawną wagą dla '{name}'!";
 					return false;
@@ -432,8 +432,7 @@ namespace SaleManeger.ViewModels
 				// If line contains ':' it means that it is a product
 				if (line.Contains(':'))
 				{
-					double.TryParse(line.Split(':')[1].Trim().Replace(",", ".").Split(' ')[0], NumberStyles.Any, CultureInfo.InvariantCulture, out double productCost);
-					sum += productCost;
+					sum += OrderValue.Parse(line.Split(':')[1]);
 				}
 				else
 				{

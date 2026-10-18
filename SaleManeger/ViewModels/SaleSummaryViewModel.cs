@@ -47,7 +47,7 @@ namespace SaleManeger.ViewModels
             var allClientIDs = new HashSet<string>();
 
             foreach (var order in _dataBase.GetAll<ClientOrder>()
-                                            .Where(x => x.SaleID == SaleName && x.ProductID != "Comment"))
+                                            .Where(x => x.SaleID == SaleName && x.ProductID != OrderValue.CommentProductId))
             {
                 allClientIDs.Add(order.ClientID);
 
@@ -149,7 +149,7 @@ namespace SaleManeger.ViewModels
                 }
 
                 // Calculate All Orders
-                var allOrdersVal = reservedOrders.Sum(x => double.Parse(x.Value.Split(' ')[0].Replace(',', '.'), culture));
+                var allOrdersVal = reservedOrders.Sum(x => OrderValue.Parse(x.Value));
 
                 // Orders Left
                 var ordersLeftVal = _productsLeftToSale.FirstOrDefault(x => x.ID == product.ID)?.Value ?? "0";
@@ -168,7 +168,7 @@ namespace SaleManeger.ViewModels
                     soldOrders.Remove(order);
                 }
 
-                var soldOrdersVal = soldOrders.Sum(x => double.Parse(x.Value.Split(' ')[0].Replace(',', '.'), culture));
+                var soldOrdersVal = soldOrders.Sum(x => OrderValue.Parse(x.Value));
 
                 SummaryItems.Add(new ProductSummaryItem
                 {
@@ -187,7 +187,7 @@ namespace SaleManeger.ViewModels
 
             // Step 1: Filter and group by ClientID
             var ordersByClient = database.GetAll<ClientOrder>()
-                                         .Where(x => x.SaleID == saleID && x.ProductID != "Comment")
+                                         .Where(x => x.SaleID == saleID && x.ProductID != OrderValue.CommentProductId)
                                          .GroupBy(x => x.ClientID)
                                          .ToList();
 
@@ -199,7 +199,7 @@ namespace SaleManeger.ViewModels
 
             // Step 3: Group by ProductID to get sums
             var productSums = ordersLeftList.GroupBy(x => x.ProductID)
-                                            .ToDictionary(g => g.Key, g => g.Sum(x => double.Parse(x.Value.Split(" ")[0].Replace(',', '.'), culture)));
+                                            .ToDictionary(g => g.Key, g => g.Sum(x => OrderValue.Parse(x.Value)));
 
             // Step 4: Initialize Products and set values based on calculated sums
             var products = database.GetAll<Product>().ToList();
