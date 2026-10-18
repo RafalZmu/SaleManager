@@ -83,7 +83,6 @@ namespace SaleManeger.ViewModels
         }
 
         public ReactiveCommand<string, string> DeleteClientCommand { get; }
-        public ReactiveCommand<string, Unit> ToggleSmsGroupCommand { get; }
         public ReactiveCommand<string, Client> OpenClientEditionCommand { get; }
         public ReactiveCommand<Unit, string> OpenMoreSettingsCommand { get; }
         public ReactiveCommand<Unit, Unit> OpenProjectSelectionCommand { get; }
@@ -154,7 +153,6 @@ namespace SaleManeger.ViewModels
             OpenSaleSummaryCommand = ReactiveCommand.Create(() => { return saleID; });
             UpdateClientsCommand = ReactiveCommand.Create<List<bool>>(FiltrClients);
             DeleteClientCommand = ReactiveCommand.Create((string clientID) => { return clientID; });
-            ToggleSmsGroupCommand = ReactiveCommand.Create<string>(ToggleSmsGroup);
             OpenMoreSettingsCommand = ReactiveCommand.Create(() => { return saleID; });
 
             AllClients = new ObservableCollection<Client>();
@@ -308,19 +306,6 @@ namespace SaleManeger.ViewModels
                     ).OrderBy(x => x.Code)
                 );
             }
-        }
-
-        // Flips the "add to SMS group" mark of one client and saves it right away.
-        private void ToggleSmsGroup(string clientID)
-        {
-            var client = AllClients.FirstOrDefault(x => x.ID == clientID);
-            if (client == null)
-                return;
-
-            client.AddToSmsGroup = !client.AddToSmsGroup;
-            _dataBase.Update(client);
-            _dataBase.Save();
-            FiltrClients();
         }
 
         private ObservableCollection<Client> SmsPendingFiltr(ObservableCollection<Client> clients)

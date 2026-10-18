@@ -173,28 +173,6 @@ internal class SmsGroupFlagTests
     }
 
     [Test]
-    public void ClientList_Toggle_SavesAndRemovesClientFromFilteredList()
-    {
-        using var db = new TempDb();
-        var sale = db.AddSale();
-        var client = db.AddClient("Marked", "111222333");
-        Tick(db, client);
-        var vm = new ClientSelectionViewModel(sale, db.Repo, null);
-        vm.AreSmsPendingShowing = true;
-        vm.UpdateClientsCommand.Execute().Subscribe();
-        Assert.That(vm.Clients.Count, Is.EqualTo(1));
-
-        vm.ToggleSmsGroupCommand.Execute(client.ID).Subscribe();
-
-        Assert.That(vm.Clients, Is.Empty);
-        Assert.That(db.Repo.GetAll<Client>().Single().AddToSmsGroup, Is.False);
-
-        vm.AreSmsPendingShowing = false;
-        vm.ToggleSmsGroupCommand.Execute(client.ID).Subscribe();
-        Assert.That(db.Repo.GetAll<Client>().Single().AddToSmsGroup, Is.True);
-    }
-
-    [Test]
     public void ClientList_FilterState_IsRestoredFromSavedSelection_AndOldSelectionsStillWork()
     {
         using var db = new TempDb();
