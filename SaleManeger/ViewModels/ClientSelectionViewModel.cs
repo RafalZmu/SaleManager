@@ -115,6 +115,8 @@ namespace SaleManeger.ViewModels
             }
         }
 
+        // Emits the client ID; the main window opens the history of that client.
+        public ReactiveCommand<string, string> OpenClientHistoryCommand { get; }
         public ReactiveCommand<string, string> DeleteClientCommand { get; }
         public ReactiveCommand<string, Client> OpenClientEditionCommand { get; }
         public ReactiveCommand<Unit, string> OpenMoreSettingsCommand { get; }
@@ -187,6 +189,7 @@ namespace SaleManeger.ViewModels
             OpenSaleSummaryCommand = ReactiveCommand.Create(() => { return saleID; });
             UpdateClientsCommand = ReactiveCommand.Create<List<bool>>(FiltrClients);
             DeleteClientCommand = ReactiveCommand.Create((string clientID) => { return clientID; });
+            OpenClientHistoryCommand = ReactiveCommand.Create((string clientID) => { return clientID; });
             OpenMoreSettingsCommand = ReactiveCommand.Create(() => { return saleID; });
 
             AllClients = new ObservableCollection<Client>();

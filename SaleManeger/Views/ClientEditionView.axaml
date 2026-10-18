@@ -18,8 +18,11 @@
                 <TimePicker Grid.Column="1" SelectedTime="{Binding ExpectedArrivalTime}" Margin="5,0,0,0" FontSize="30" VerticalAlignment="Stretch" MinHeight="0" ClockIdentifier="24HourClock" />
             </Grid>
             -->
-			<TextBlock Grid.Column="3" Margin="10,0,0,0" FontSize="14" Foreground="Gray" VerticalAlignment="Center" Text="{Binding AutoSaveStatus}"
+			<StackPanel Grid.Column="3" Margin="10,0,0,0" VerticalAlignment="Center">
+				<Button FontSize="16" Content="Historia klienta" Command="{Binding OpenHistoryCommand}" ToolTip.Tip="Zapisuje klienta i pokazuje jego poprzednie sprzedaże" />
+				<TextBlock FontSize="14" Foreground="Gray" Text="{Binding AutoSaveStatus}"
 			           ToolTip.Tip="Zmiany zapisują się same co 20 sekund. Ctrl+S zapisuje od razu, Esc wraca do listy (też zapisując)." />
+			</StackPanel>
 			<CheckBox Grid.Column="4" Margin="10,0,0,0" FontSize="20" VerticalAlignment="Center" IsChecked="{Binding AddToSmsGroup, Mode=TwoWay}" Content="Dodać do wysyłki SMS" />
 		</Grid>
 		

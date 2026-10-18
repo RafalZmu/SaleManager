@@ -122,15 +122,16 @@
 					</ItemsRepeater.Layout>
 					<ItemsRepeater.ItemTemplate>
 						<DataTemplate>
-							<Grid Margin="5" ColumnDefinitions="Auto,100*,Auto,Auto,Auto">
+							<Grid Margin="5" ColumnDefinitions="Auto,100*,Auto,Auto,Auto,Auto">
 								<StackPanel Grid.Column="0" Orientation="Vertical" ToolTip.Tip="{Binding Notes}">
 									<TextBlock Foreground ="{Binding Color}" FontSize="40" Text="{Binding Name}" />
 									<TextBlock IsVisible="{Binding Tags, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Foreground="Orange" FontSize="16" Text="{Binding Tags}" />
 								</StackPanel>
 								<TextBlock Grid.Column="1" Foreground ="{Binding Color}" Margin ="10,0,0,0" FontSize="40" Text="{Binding PhoneNumber}" />
 								<TextBlock Grid.Column="2" Foreground ="{Binding Color}" Margin ="20,0,20,0" FontSize="30" VerticalAlignment="Center" Text="{Binding ExpectedArrivalTime, StringFormat=\{0:dd.MM HH:mm\}}" />
-								<Button HorizontalAlignment="Right" Grid.Column="3" Command="{Binding $parent[UserControl].DataContext.OpenClientEditionCommand}" CommandParameter="{Binding ID}" HorizontalContentAlignment="Center" Width="80" FontSize="20" Content="Open" />
-								<Button HorizontalAlignment="Right" Grid.Column="4" Command="{Binding $parent[UserControl].DataContext.DeleteClientCommand}" Margin="10,0,0,0" CommandParameter="{Binding ID}" HorizontalContentAlignment="Center" Width="80" FontSize="20" Content="Delete" />
+								<Button HorizontalAlignment="Right" Grid.Column="3" Command="{Binding $parent[UserControl].DataContext.OpenClientHistoryCommand}" CommandParameter="{Binding ID}" Margin="0,0,10,0" HorizontalContentAlignment="Center" Width="100" FontSize="20" Content="Historia" ToolTip.Tip="Poprzednie sprzedaże, wydane pieniądze i ulubione produkty tego klienta" />
+								<Button HorizontalAlignment="Right" Grid.Column="4" Command="{Binding $parent[UserControl].DataContext.OpenClientEditionCommand}" CommandParameter="{Binding ID}" HorizontalContentAlignment="Center" Width="80" FontSize="20" Content="Open" />
+								<Button HorizontalAlignment="Right" Grid.Column="5" Command="{Binding $parent[UserControl].DataContext.DeleteClientCommand}" Margin="10,0,0,0" CommandParameter="{Binding ID}" HorizontalContentAlignment="Center" Width="80" FontSize="20" Content="Delete" />
 							</Grid>
 						</DataTemplate>
 					</ItemsRepeater.ItemTemplate>

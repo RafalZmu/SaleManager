@@ -84,6 +84,20 @@ namespace SaleManeger.ViewModels
                     OpenClientSelection(x);
                 }
             });
+            clientEditionViewModel.OpenHistoryCommand.Subscribe(clientId =>
+            {
+                if (!string.IsNullOrWhiteSpace(clientId))
+                {
+                    OpenClientHistory(clientId);
+                }
+            });
+        }
+
+        public void OpenClientHistory(string clientId)
+        {
+            var historyViewModel = new ClientHistoryViewModel(_dataBase, clientId, _saleName);
+            Content = historyViewModel;
+            historyViewModel.ReturnCommand.Subscribe(OpenClientSelection);
         }
 
         public void OpenClientSelection(string saleName)
@@ -96,6 +110,7 @@ namespace SaleManeger.ViewModels
 
             clientSelectionViewModel.OpenClientEditionCommand.Subscribe(OpenClientEdition);
             clientSelectionViewModel.DeleteClientCommand.Subscribe(OpenClientDeletion);
+            clientSelectionViewModel.OpenClientHistoryCommand.Subscribe(OpenClientHistory);
             clientSelectionViewModel.OpenSaleSummaryCommand.Subscribe(OpenSaleSummary);
             clientSelectionViewModel.OpenMoreSettingsCommand.Subscribe(OpenMoreSettingView);
             clientSelectionViewModel.OpenProjectSelectionCommand.Subscribe(model =>

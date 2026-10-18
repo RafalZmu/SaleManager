@@ -128,6 +128,9 @@ namespace SaleManeger.ViewModels
 		}
 
 		public ReactiveCommand<Unit, Unit> AddTagCommand { get; }
+
+		// Saves like Cofnij and then emits the client ID so the main window can show the client's history.
+		public ReactiveCommand<Unit, string> OpenHistoryCommand { get; }
 		private List<SaleProduct> _curruntlyAvailableProducts; 
 		public ReactiveCommand<Unit, string> OpenClientSelectionCommand { get; }
         public ReactiveCommand<Unit, Unit> ToggleDisplayModeCommand { get; }
@@ -229,6 +232,7 @@ namespace SaleManeger.ViewModels
 
 			OpenClientSelectionCommand = ReactiveCommand.Create(OpenClientSelection);
 			AddTagCommand = ReactiveCommand.Create(AddTag);
+			OpenHistoryCommand = ReactiveCommand.Create(() => string.IsNullOrEmpty(OpenClientSelection()) ? string.Empty : ClientID);
 
 			var ownTags = ClientTags.Parse(client.Tags);
 			var knownTags = ClientTags.AllKnown(_dataBase.GetAll<Client>().ToList());
