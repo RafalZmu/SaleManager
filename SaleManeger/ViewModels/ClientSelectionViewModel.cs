@@ -290,6 +290,22 @@ namespace SaleManeger.ViewModels
 
         #endregion Public Constructors
 
+        #region Public Methods
+
+        // Keyboard shortcuts: Enter in the search box, Ctrl+N and Esc.
+        public void OpenFirstClient()
+        {
+            var first = Clients?.FirstOrDefault();
+            if (first != null)
+                OpenClientEditionCommand.Execute(first.ID).Subscribe();
+        }
+
+        public void AddNewClient() => OpenClientEditionCommand.Execute("").Subscribe();
+
+        public void GoBack() => OpenProjectSelectionCommand.Execute().Subscribe();
+
+        #endregion Public Methods
+
         #region Private Methods
 
         // Create a new client with the given ID.

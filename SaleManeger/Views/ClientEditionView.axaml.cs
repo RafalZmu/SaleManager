@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Threading;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using AvaloniaEdit.Rendering;
@@ -17,16 +18,38 @@ public partial class ClientEditionView : UserControl
 {
     private List<Product> _products = null;
     private OrderColorizer _colorizer;
+    private readonly DispatcherTimer _autoSaveTimer = new() { Interval = TimeSpan.FromSeconds(20) };
 
     public ClientEditionView()
     {
         InitializeComponent();
+        _autoSaveTimer.Tick += (_, _) => (DataContext as ClientEditionViewModel)?.AutoSave();
+        AttachedToVisualTree += (_, _) => _autoSaveTimer.Start();
+        DetachedFromVisualTree += (_, _) => _autoSaveTimer.Stop();
+        // Ctrl+S saves and stays, Esc does the same as the Cofnij button (which saves too).
+        AddHandler(KeyDownEvent, Shortcut_KeyDown, RoutingStrategies.Tunnel);
         sale.AddHandler(KeyUpEvent, Sale_InputHandler, RoutingStrategies.Tunnel);
         order.AddHandler(KeyUpEvent, Order_InputHandler, RoutingStrategies.Tunnel);
         
         // Prevent AvaloniaEdit 0.10.x crash on Ctrl+Backspace on empty lines
         sale.AddHandler(KeyDownEvent, Editor_KeyDown, RoutingStrategies.Tunnel);
         order.AddHandler(KeyDownEvent, Editor_KeyDown, RoutingStrategies.Tunnel);
+    }
+
+    private void Shortcut_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (DataContext is not ClientEditionViewModel vm) return;
+
+        if (e.Key == Key.S && e.KeyModifiers == KeyModifiers.Control)
+        {
+            vm.SaveNow();
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Escape && e.KeyModifiers == KeyModifiers.None)
+        {
+            vm.OpenClientSelectionCommand.Execute().Subscribe();
+            e.Handled = true;
+        }
     }
 
     private void Editor_KeyDown(object sender, KeyEventArgs e)

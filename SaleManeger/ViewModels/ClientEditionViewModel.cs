@@ -50,9 +50,44 @@ namespace SaleManeger.ViewModels
 		public Client Client { get; set; }
 		public string ClientID { get; set; }
 		public string Codes { get; set; }
-		public string Name { get; set; }
-		public string Number { get; set; }
-		public bool AddToSmsGroup { get; set; }
+		private string _name;
+		private string _number;
+		private bool _addToSmsGroup;
+		private bool _isDirty;
+		private bool _closeWarned;
+		private string _autoSaveStatus;
+
+		public string Name
+		{
+			get => _name;
+			set { if (_name != value) { this.RaiseAndSetIfChanged(ref _name, value); MarkDirty(); } }
+		}
+
+		public string Number
+		{
+			get => _number;
+			set { if (_number != value) { this.RaiseAndSetIfChanged(ref _number, value); MarkDirty(); } }
+		}
+
+		public bool AddToSmsGroup
+		{
+			get => _addToSmsGroup;
+			set { if (_addToSmsGroup != value) { this.RaiseAndSetIfChanged(ref _addToSmsGroup, value); MarkDirty(); } }
+		}
+
+		// True when something on the screen has not reached the database yet.
+		public bool IsDirty
+		{
+			get => _isDirty;
+			private set => this.RaiseAndSetIfChanged(ref _isDirty, value);
+		}
+
+		// What the last save did, shown small next to the name ("Zapisano automatycznie 12:30:05").
+		public string AutoSaveStatus
+		{
+			get => _autoSaveStatus;
+			private set => this.RaiseAndSetIfChanged(ref _autoSaveStatus, value);
+		}
 
 		private string _notes;
 		private string _newTagText;
@@ -62,8 +97,10 @@ namespace SaleManeger.ViewModels
 			get => _notes;
 			set
 			{
+				if (_notes == value) return;
 				this.RaiseAndSetIfChanged(ref _notes, value);
 				this.RaisePropertyChanged(nameof(NotesHeader));
+				MarkDirty();
 			}
 		}
 
@@ -114,6 +151,7 @@ namespace SaleManeger.ViewModels
 				if (_order != value)
 				{
 					this.RaiseAndSetIfChanged(ref _order, value, nameof(Order));
+					MarkDirty();
 				}
 			}
 		}
@@ -123,6 +161,8 @@ namespace SaleManeger.ViewModels
 			get => _sale;
 			set
 			{
+				if (_sale != value)
+					MarkDirty();
 				_sale = value;
 				UpdateSaleSum();
 			}
@@ -135,6 +175,7 @@ namespace SaleManeger.ViewModels
             {
                 this.RaiseAndSetIfChanged(ref _expectedArrivalDate, value);
                 _hasIgnoredTimeWarning = false; 
+                MarkDirty();
             }
         }
 
@@ -145,6 +186,7 @@ namespace SaleManeger.ViewModels
             {
                 this.RaiseAndSetIfChanged(ref _expectedArrivalTime, value);
                 _hasIgnoredTimeWarning = false; 
+                MarkDirty();
             }
         }
 
@@ -178,9 +220,9 @@ namespace SaleManeger.ViewModels
 		{
 			_dataBase = db;
 			_saleID = saleID;
-			Name = client.Name;
-			Number = client.PhoneNumber;
-			AddToSmsGroup = client.AddToSmsGroup;
+			_name = client.Name;
+			_number = client.PhoneNumber;
+			_addToSmsGroup = client.AddToSmsGroup;
 			_notes = client.Notes;
 			ClientID = client.ID;
 			Client = client;
@@ -238,11 +280,60 @@ namespace SaleManeger.ViewModels
                 this.RaisePropertyChanged(nameof(ExpectedArrivalDate));
                 this.RaisePropertyChanged(nameof(ExpectedArrivalTime));
             }
+
+			// Filling the boxes from the database is not an edit.
+			IsDirty = false;
 		}
 
         #endregion Public Constructors
 
         #region Public Methods
+
+		/// <summary>
+		/// Saves what is on screen when something changed (called by a timer). A half-typed order, e.g. "Jabłka:" without
+		/// a weight, is not saved and its warning is not shown: the user is still typing.
+		/// Returns true when nothing is left unsaved.
+		/// </summary>
+		public bool AutoSave()
+		{
+			if (!IsDirty)
+				return true;
+			if (!TrySave())
+			{
+				AutoSaveStatus = "Autozapis czeka na poprawne dane";
+				return false;
+			}
+			AutoSaveStatus = $"Zapisano automatycznie {DateTime.Now:HH:mm:ss}";
+			return true;
+		}
+
+		/// <summary>Ctrl+S: saves now and stays on the screen. Errors are shown like when leaving the screen.</summary>
+		public bool SaveNow()
+		{
+			if (!TrySave(showWarnings: true))
+				return false;
+			WarningMessage = string.Empty;
+			AutoSaveStatus = $"Zapisano {DateTime.Now:HH:mm:ss}";
+			return true;
+		}
+
+		/// <summary>
+		/// Called when the window is about to close. Saves unsaved work; when that is not possible the first attempt is
+		/// refused with a warning and the second one lets the window close.
+		/// </summary>
+		public bool CanCloseWindow()
+		{
+			if (!IsDirty || AutoSave())
+				return true;
+			if (_closeWarned)
+				return true;
+			_closeWarned = true;
+			if (!ValidateText(Order) || !ValidateText(Sale))
+				WarningMessage = $"{WarningMessage} Zamknij program ponownie, aby wyjść bez zapisu.";
+			else
+				WarningMessage = "Nie udało się zapisać zmian. Zamknij program ponownie, aby wyjść bez zapisu.";
+			return false;
+		}
 
         public static void SaveClientOrder(IProjectRepository dataBase, Client client, string saleID)
 		{
@@ -326,13 +417,46 @@ namespace SaleManeger.ViewModels
 
 		#region Private Methods
 
+		private void MarkDirty()
+		{
+			IsDirty = true;
+			_closeWarned = false;
+		}
+
+		private bool TrySave(bool showWarnings = false)
+		{
+			var previousWarning = WarningMessage;
+			if (!ValidateText(Order) || !ValidateText(Sale))
+			{
+				if (!showWarnings)
+					WarningMessage = previousWarning;
+				return false;
+			}
+
+			try
+			{
+				// Same parsing as the save itself; an unknown product name throws here, before anything is written.
+				GetProductsFromText(_products, Order, true);
+				GetProductsFromText(_products, Sale, false);
+				SaveClient();
+			}
+			catch (InvalidOperationException)
+			{
+				return false;
+			}
+			return true;
+		}
+
 		private TagOption AddTagOption(string name, bool selected)
 		{
 			var option = new TagOption { Name = name, IsSelected = selected };
 			option.PropertyChanged += (_, e) =>
 			{
 				if (e.PropertyName == nameof(TagOption.IsSelected))
+				{
 					this.RaisePropertyChanged(nameof(NotesHeader));
+					MarkDirty();
+				}
 			};
 			TagOptions.Add(option);
 			return option;
@@ -448,6 +572,7 @@ namespace SaleManeger.ViewModels
 			// Return if all fields are empty
 			if (string.IsNullOrWhiteSpace(Name) && string.IsNullOrWhiteSpace(Number) && string.IsNullOrWhiteSpace(Sale) && string.IsNullOrWhiteSpace(Order))
 			{
+				IsDirty = false;
 				return;
 			}
 			Client.Name = string.IsNullOrWhiteSpace(Name) ? "" : Name;
@@ -504,6 +629,7 @@ namespace SaleManeger.ViewModels
             else _dataBase.Update(info);
 
 			SaveClientOrder(_dataBase, Client, _saleID);
+			IsDirty = false;
 		}
 
 		private void UpdateSaleSum()

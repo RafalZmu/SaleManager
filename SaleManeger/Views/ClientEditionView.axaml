@@ -18,6 +18,8 @@
                 <TimePicker Grid.Column="1" SelectedTime="{Binding ExpectedArrivalTime}" Margin="5,0,0,0" FontSize="30" VerticalAlignment="Stretch" MinHeight="0" ClockIdentifier="24HourClock" />
             </Grid>
             -->
+			<TextBlock Grid.Column="3" Margin="10,0,0,0" FontSize="14" Foreground="Gray" VerticalAlignment="Center" Text="{Binding AutoSaveStatus}"
+			           ToolTip.Tip="Zmiany zapisują się same co 20 sekund. Ctrl+S zapisuje od razu, Esc wraca do listy (też zapisując)." />
 			<CheckBox Grid.Column="4" Margin="10,0,0,0" FontSize="20" VerticalAlignment="Center" IsChecked="{Binding AddToSmsGroup, Mode=TwoWay}" Content="Dodać do wysyłki SMS" />
 		</Grid>
 		

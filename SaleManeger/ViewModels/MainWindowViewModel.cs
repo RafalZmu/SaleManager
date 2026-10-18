@@ -55,6 +55,9 @@ namespace SaleManeger.ViewModels
 
         #region Public Methods
 
+        // Asked when the window is closed: the client screen saves its unsaved work first.
+        public bool CanCloseWindow() => (Content as ClientEditionViewModel)?.CanCloseWindow() ?? true;
+
         public void OpenClientDeletion(string model)
         {
             var clientDeletionViewModel = new ClientDeletionConfirmationViewModel(_dataBase, _saleName, model);

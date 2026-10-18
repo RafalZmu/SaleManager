@@ -10,6 +10,11 @@ namespace SaleManeger.Views
         public MainWindow()
         {
             InitializeComponent();
+            Closing += (_, e) =>
+            {
+                if (DataContext is MainWindowViewModel vm && !vm.CanCloseWindow())
+                    e.Cancel = true;
+            };
         }
 
         #endregion Public Constructors
