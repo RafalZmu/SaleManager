@@ -126,13 +126,13 @@ namespace SaleManeger.ViewModels
 
                 double totalOrdered = reservedOrders.Sum(x => 
                 {
-                    double.TryParse(x.Value.Split(' ')[0], System.Globalization.NumberStyles.Any, culture, out double val);
+                    double.TryParse(x.Value.Split(' ')[0].Replace(',', '.'), System.Globalization.NumberStyles.Any, culture, out double val);
                     return val;
                 });
 
                 double totalSold = soldOrders.Sum(x => 
                 {
-                    double.TryParse(x.Value.Split(' ')[0], System.Globalization.NumberStyles.Any, culture, out double val);
+                    double.TryParse(x.Value.Split(' ')[0].Replace(',', '.'), System.Globalization.NumberStyles.Any, culture, out double val);
                     return val;
                 });
                 
