@@ -356,6 +356,143 @@ internal class DataViewModelTests
         Assert.That(vm.Clients.Select(x => x.Name), Is.EqualTo(new[] { "WantsApples" }));
     }
 
+    private (ClientSelectionViewModel vm, string sale, Product apples, Product beets) AdvancedFilterSetup()
+    {
+        var sale = _db.AddSale();
+        var apples = _db.AddProduct("Apples", "00", price: 4);
+        var beets = _db.AddProduct("Beets", "01", price: 10);
+        var small = _db.AddClient("Small");
+        var big = _db.AddClient("Big");
+        var split = _db.AddClient("Split");
+        var bought = _db.AddClient("Bought");
+        _db.AddClient("Nothing");
+        _db.AddOrder(small, apples, sale, "2", true);
+        _db.AddOrder(big, apples, sale, "8,5", true);
+        _db.AddOrder(big, beets, sale, "1", true);
+        _db.AddOrder(split, apples, sale, "3 kg", true);
+        _db.AddOrder(split, apples, sale, "3", true);
+        _db.AddOrder(bought, apples, sale, "20", false);
+        _db.AddOrder(bought, null, sale, "999", true); // comment line, must be ignored
+        return (new ClientSelectionViewModel(sale, _db.Repo, null), sale, apples, beets);
+    }
+
+    private static string[] Names(ClientSelectionViewModel vm) => vm.Clients.Select(x => x.Name).OrderBy(x => x).ToArray();
+
+    [Test]
+    public void ClientSelection_AdvancedFilter_OrderedAmountAboveThreshold()
+    {
+        var (vm, _, _, _) = AdvancedFilterSetup();
+        vm.AddFilterCommand.Execute().Subscribe();
+        var rule = vm.AdvancedFilters.Single();
+        rule.ThresholdText = "5";
+
+        // all products, ordered only, total amount > 5: Big 9.5, Split 6; Small 2 and Bought (no ordered lines) are out
+        Assert.That(Names(vm), Is.EqualTo(new[] { "Big", "Split" }));
+
+        rule.Comparison = FilterComparison.Below;
+        Assert.That(Names(vm), Is.EqualTo(new[] { "Small" }));
+    }
+
+    [Test]
+    public void ClientSelection_AdvancedFilter_CostUsesPricePerKg()
+    {
+        var (vm, _, apples, _) = AdvancedFilterSetup();
+        vm.AddFilterCommand.Execute().Subscribe();
+        var rule = vm.AdvancedFilters.Single();
+        rule.Metric = FilterMetric.Cost;
+        rule.ThresholdText = "40";
+
+        // Big: 8.5*4 + 1*10 = 44; Split: 6*4 = 24; Small: 8
+        Assert.That(Names(vm), Is.EqualTo(new[] { "Big" }));
+
+        rule.SelectedProduct = vm.FilterProducts.Single(x => x.ID == apples.ID);
+        // apples only: Big 34
+        Assert.That(Names(vm), Is.Empty);
+    }
+
+    [Test]
+    public void ClientSelection_AdvancedFilter_PerProductAndSingleOrder()
+    {
+        var (vm, _, apples, beets) = AdvancedFilterSetup();
+        vm.AddFilterCommand.Execute().Subscribe();
+        var rule = vm.AdvancedFilters.Single();
+        rule.SelectedProduct = vm.FilterProducts.Single(x => x.ID == apples.ID);
+        rule.ThresholdText = "5";
+
+        Assert.That(Names(vm), Is.EqualTo(new[] { "Big", "Split" }));
+
+        // Split ordered 3 + 3 in separate orders, so no single order is above 5
+        rule.Aggregation = FilterAggregation.SingleOrder;
+        Assert.That(Names(vm), Is.EqualTo(new[] { "Big" }));
+
+        rule.SelectedProduct = vm.FilterProducts.Single(x => x.ID == beets.ID);
+        rule.ThresholdText = "0,5"; // comma decimals are accepted
+        Assert.That(Names(vm), Is.EqualTo(new[] { "Big" }));
+    }
+
+    [Test]
+    public void ClientSelection_AdvancedFilter_StatusSelectsOrderedOrBoughtLines()
+    {
+        var (vm, _, _, _) = AdvancedFilterSetup();
+        vm.AddFilterCommand.Execute().Subscribe();
+        var rule = vm.AdvancedFilters.Single();
+        rule.ThresholdText = "10";
+
+        rule.Status = FilterStatus.Bought;
+        Assert.That(Names(vm), Is.EqualTo(new[] { "Bought" }));
+
+        rule.Status = FilterStatus.Ordered;
+        Assert.That(Names(vm), Is.Empty);
+
+        // Any: Big 9.5 is still below 10, Bought has 20
+        rule.Status = FilterStatus.Any;
+        Assert.That(Names(vm), Is.EqualTo(new[] { "Bought" }));
+    }
+
+    [Test]
+    public void ClientSelection_AdvancedFilter_RulesAreCombinedAndBlankThresholdIsIgnored()
+    {
+        var (vm, _, apples, beets) = AdvancedFilterSetup();
+        vm.AddFilterCommand.Execute().Subscribe();
+        vm.AddFilterCommand.Execute().Subscribe();
+        var first = vm.AdvancedFilters[0];
+        var second = vm.AdvancedFilters[1];
+        Assert.That(vm.Clients.Count, Is.EqualTo(5)); // empty thresholds filter nothing
+
+        first.SelectedProduct = vm.FilterProducts.Single(x => x.ID == apples.ID);
+        first.ThresholdText = "1";
+        Assert.That(Names(vm), Is.EqualTo(new[] { "Big", "Small", "Split" }));
+
+        second.SelectedProduct = vm.FilterProducts.Single(x => x.ID == beets.ID);
+        second.ThresholdText = "0";
+        Assert.That(Names(vm), Is.EqualTo(new[] { "Big" }));
+
+        second.ThresholdText = "abc";
+        Assert.That(Names(vm), Is.EqualTo(new[] { "Big", "Small", "Split" }));
+
+        vm.RemoveFilterCommand.Execute(first).Subscribe();
+        Assert.That(vm.AdvancedFilters.Count, Is.EqualTo(1));
+    }
+
+    [Test]
+    public void ClientSelection_AdvancedFilter_CombinesWithOtherFiltersAndSurvivesReopen()
+    {
+        var (vm, sale, apples, _) = AdvancedFilterSetup();
+        vm.AddFilterCommand.Execute().Subscribe();
+        var rule = vm.AdvancedFilters.Single();
+        rule.SelectedProduct = vm.FilterProducts.Single(x => x.ID == apples.ID);
+        rule.ThresholdText = "5";
+        vm.ClientName = "sp";
+        Assert.That(Names(vm), Is.EqualTo(new[] { "Split" }));
+
+        var reopened = new ClientSelectionViewModel(sale, _db.Repo, null, vm.AdvancedFilters);
+
+        var copy = reopened.AdvancedFilters.Single();
+        Assert.That(copy, Is.Not.SameAs(rule));
+        Assert.That(copy.SelectedProduct, Is.SameAs(reopened.FilterProducts.Single(x => x.ID == apples.ID)));
+        Assert.That(Names(reopened), Is.EqualTo(new[] { "Big", "Split" }));
+    }
+
     [Test]
     public void ClientSelection_NewClientCommand_ForNonGuidCreatesBlankClient()
     {

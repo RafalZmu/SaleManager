@@ -14,6 +14,7 @@ namespace SaleManeger.ViewModels
 
         private string _saleName;
         private List<bool> _selected;
+        private IEnumerable<ClientFilterRule> _advancedFilters;
         private ViewModelBase content;
 
         #endregion Private Fields
@@ -80,7 +81,8 @@ namespace SaleManeger.ViewModels
         public void OpenClientSelection(string saleName)
         {
             _saleName = saleName;
-            var clientSelectionViewModel = new ClientSelectionViewModel(saleName, _dataBase, _selected);
+            var clientSelectionViewModel = new ClientSelectionViewModel(saleName, _dataBase, _selected, _advancedFilters);
+            _advancedFilters = clientSelectionViewModel.AdvancedFilters;
             Content = clientSelectionViewModel;
 
             clientSelectionViewModel.OpenClientEditionCommand.Subscribe(OpenClientEdition);

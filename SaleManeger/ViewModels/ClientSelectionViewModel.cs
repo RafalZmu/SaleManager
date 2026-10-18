@@ -31,6 +31,15 @@ namespace SaleManeger.ViewModels
         #region Public Properties
 
         public ObservableCollection<Client> AllClients { get; set; }
+
+        // Extra filters on ordered amounts/values; all of them have to match (AND).
+        public ObservableCollection<ClientFilterRule> AdvancedFilters { get; }
+
+        // Product choices for the rules: a leading "all products" entry followed by the real products.
+        public List<Product> FilterProducts { get; }
+
+        public ReactiveCommand<Unit, Unit> AddFilterCommand { get; }
+        public ReactiveCommand<ClientFilterRule, Unit> RemoveFilterCommand { get; }
         public bool AreAllClientsShowing { get; set; } = true;
         public bool AreClientsWithOrderShowing { get; set; } = true;
         public bool AreClientsWithSaleShowing { get; set; } = false;
@@ -107,10 +116,24 @@ namespace SaleManeger.ViewModels
 
         #region Public Constructors
 
-        public ClientSelectionViewModel(string saleID, IProjectRepository dataBase, List<bool> selected)
+        public ClientSelectionViewModel(string saleID, IProjectRepository dataBase, List<bool> selected,
+            IEnumerable<ClientFilterRule> advancedFilters = null)
         {
             SaleID = saleID;
             _dataBase = dataBase;
+
+            // Copies, so rules from a previous visit don't keep notifying the old view model.
+            AdvancedFilters = new ObservableCollection<ClientFilterRule>(
+                (advancedFilters ?? Enumerable.Empty<ClientFilterRule>()).Select(x => x.Clone()));
+            AdvancedFilters.CollectionChanged += (_, e) =>
+            {
+                if (e.NewItems != null)
+                    foreach (ClientFilterRule rule in e.NewItems)
+                        rule.PropertyChanged += (_, _) => FiltrClients();
+                FiltrClients();
+            };
+            AddFilterCommand = ReactiveCommand.Create(() => { AdvancedFilters.Add(new ClientFilterRule { SelectedProduct = FilterProducts[0] }); });
+            RemoveFilterCommand = ReactiveCommand.Create<ClientFilterRule>(rule => { AdvancedFilters.Remove(rule); });
 
             OpenClientEditionCommand = ReactiveCommand.Create<string, Client>(CreateNewClient);
             OpenProjectSelectionCommand = ReactiveCommand.Create(() => { });
@@ -121,6 +144,16 @@ namespace SaleManeger.ViewModels
 
             AllClients = new ObservableCollection<Client>();
             ProductsList = _dataBase.GetAll<Product>().AsNoTracking().ToList();
+
+            FilterProducts = new List<Product> { new Product { Name = "Wszystkie produkty" } };
+            FilterProducts.AddRange(ProductsList.OrderBy(x => x.Code));
+            // Rules kept from a previous visit point to old product instances; re-link them by ID.
+            foreach (var rule in AdvancedFilters)
+            {
+                rule.SelectedProduct = FilterProducts.FirstOrDefault(x => x.ID != null && x.ID == rule.SelectedProduct?.ID)
+                    ?? FilterProducts[0];
+                rule.PropertyChanged += (_, _) => FiltrClients();
+            }
 
             // Get all clients and their orders.
             var clients = _dataBase.GetAll<Client>().ToList();
@@ -225,7 +258,7 @@ namespace SaleManeger.ViewModels
         // Filter the clients based on the current search term.
         private List<bool> FiltrClients()
         {
-            Clients = OrderAndSaleFiltr(ProductFiltr(NameAndNumberFiltr(AllClients)));
+            Clients = OrderAndSaleFiltr(AdvancedFiltr(ProductFiltr(NameAndNumberFiltr(AllClients))));
             var tempList = new List<bool>();
             foreach (var product in Products)
             {
@@ -294,6 +327,12 @@ namespace SaleManeger.ViewModels
                 .ThenByDescending(x => x.Products.Count);
                 
             return new ObservableCollection<Client>(sortedClients);
+        }
+
+        private ObservableCollection<Client> AdvancedFiltr(ObservableCollection<Client> clients)
+        {
+            var activeRules = AdvancedFilters.Where(x => x.IsActive).ToList();
+            return activeRules.Count == 0 ? clients : new ObservableCollection<Client>(clients.Where(c => activeRules.All(r => r.Matches(c))));
         }
 
         private ObservableCollection<Client> ProductFiltr(ObservableCollection<Client> clients)

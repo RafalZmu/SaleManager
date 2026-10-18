@@ -16,7 +16,7 @@
 					<Flyout Placement="Bottom">
 						<StackPanel Orientation="Vertical">
 							<TextBox Text="{Binding ProductSearchText}" Watermark="Szukaj produktu..." Margin="0,0,0,5" FontSize="18" />
-							<ScrollViewer MaxHeight="500">
+							<ScrollViewer MaxHeight="300">
 								<ItemsControl Items="{Binding FilteredProducts}">
 									<ItemsControl.ItemsPanel>
 									<ItemsPanelTemplate>
@@ -37,6 +37,54 @@
 									<CheckBox Command="{Binding UpdateClientsCommand}" IsChecked="{Binding AreClientsWithOrderShowing}">Ma zamówienie</CheckBox>
 									<CheckBox Command="{Binding UpdateClientsCommand}" IsChecked="{Binding AreClientsWithSaleShowing}">Ma kupno</CheckBox>
 									<CheckBox Command="{Binding UpdateClientsCommand}" IsChecked="{Binding AreAllClientsShowing}">Pokarz wszystkich</CheckBox>
+								</StackPanel>
+							</Border>
+							<Border BorderBrush="Gray" BorderThickness="0,3,0,0" Padding="2">
+								<StackPanel Orientation="Vertical">
+									<TextBlock FontSize="18" FontWeight="Bold" Text="Filtry zaawansowane (wszystkie muszą pasować)" />
+									<ScrollViewer MaxHeight="250">
+										<ItemsControl Items="{Binding AdvancedFilters}">
+											<ItemsControl.ItemTemplate>
+												<DataTemplate>
+													<Border BorderBrush="Gray" BorderThickness="1" Margin="0,3" Padding="4">
+														<StackPanel Orientation="Vertical">
+															<StackPanel Orientation="Horizontal">
+																<ComboBox Width="200" Items="{Binding $parent[UserControl].DataContext.FilterProducts}" SelectedItem="{Binding SelectedProduct, Mode=TwoWay}">
+																	<ComboBox.ItemTemplate>
+																		<DataTemplate>
+																			<TextBlock Text="{Binding Name}" />
+																		</DataTemplate>
+																	</ComboBox.ItemTemplate>
+																</ComboBox>
+																<ComboBox Margin="5,0,0,0" Width="130" SelectedIndex="{Binding StatusIndex, Mode=TwoWay}">
+																	<ComboBoxItem>Zamówione</ComboBoxItem>
+																	<ComboBoxItem>Kupione</ComboBoxItem>
+																	<ComboBoxItem>Zamówione lub kupione</ComboBoxItem>
+																</ComboBox>
+																<Button Margin="5,0,0,0" Content="Usuń" Command="{Binding $parent[UserControl].DataContext.RemoveFilterCommand}" CommandParameter="{Binding}" />
+															</StackPanel>
+															<StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+																<ComboBox Width="130" SelectedIndex="{Binding MetricIndex, Mode=TwoWay}">
+																	<ComboBoxItem>Ilość (kg)</ComboBoxItem>
+																	<ComboBoxItem>Wartość (zł)</ComboBoxItem>
+																</ComboBox>
+																<ComboBox Margin="5,0,0,0" Width="150" SelectedIndex="{Binding AggregationIndex, Mode=TwoWay}">
+																	<ComboBoxItem>Suma</ComboBoxItem>
+																	<ComboBoxItem>Pojedyncze zamówienie</ComboBoxItem>
+																</ComboBox>
+																<ComboBox Margin="5,0,0,0" Width="100" SelectedIndex="{Binding ComparisonIndex, Mode=TwoWay}">
+																	<ComboBoxItem>powyżej</ComboBoxItem>
+																	<ComboBoxItem>poniżej</ComboBoxItem>
+																</ComboBox>
+																<TextBox Margin="5,0,0,0" Width="80" Text="{Binding ThresholdText, Mode=TwoWay}" Watermark="np. 50" />
+															</StackPanel>
+														</StackPanel>
+													</Border>
+												</DataTemplate>
+											</ItemsControl.ItemTemplate>
+										</ItemsControl>
+									</ScrollViewer>
+									<Button Margin="0,3,0,0" Command="{Binding AddFilterCommand}" Content="+ Dodaj filtr" />
 								</StackPanel>
 							</Border>
 						</StackPanel>
