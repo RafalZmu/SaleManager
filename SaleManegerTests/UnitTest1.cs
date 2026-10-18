@@ -240,7 +240,7 @@ internal class Tests
         {
             ClientOrderID = Guid.NewGuid().ToString(),
             IsReserved = false,
-            ClientID = clients[0].ID,
+            ClientID = clients[1].ID,
             ProductID = product.ID,
             Value = "5",
             SaleID = saleID,
@@ -250,7 +250,7 @@ internal class Tests
         {
             ClientOrderID = Guid.NewGuid().ToString(),
             IsReserved = true,
-            ClientID = clients[0].ID,
+            ClientID = clients[1].ID,
             ProductID = product.ID,
             Value = "2",
             SaleID = saleID,
@@ -264,7 +264,7 @@ internal class Tests
         {
             ClientOrderID = Guid.NewGuid().ToString(),
             IsReserved = false,
-            ClientID = clients[0].ID,
+            ClientID = clients[2].ID,
             ProductID = product.ID,
             Value = "5",
             SaleID = saleID,
@@ -274,7 +274,7 @@ internal class Tests
         {
             ClientOrderID = Guid.NewGuid().ToString(),
             IsReserved = false,
-            ClientID = clients[0].ID,
+            ClientID = clients[2].ID,
             ProductID = product.ID,
             Value = "2",
             SaleID = saleID,
