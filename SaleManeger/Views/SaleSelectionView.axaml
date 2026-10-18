@@ -8,12 +8,15 @@
 	<Grid Margin="10,30,10,10" ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*, Auto" RowDefinitions="Auto,*">
 		<Button Margin ="0,0,5,0" FontSize="25" Command="{Binding $parent[Window].DataContext.OpenEditProductsView}" Content="Produkty" VerticalAlignment="Stretch" VerticalContentAlignment="Center" />
 		<Button Margin="0,0,5,0" Content="Podsumowanie" Command="{Binding OpenAllSalesSummaryCommand}" Grid.Column="1" FontSize="25" VerticalAlignment="Stretch" VerticalContentAlignment="Center" />
-		<Button Margin="0,0,5,0" Content="Statystyki" Command="{Binding OpenStatisticsCommand}" Grid.Column="2" FontSize="25" VerticalAlignment="Stretch" VerticalContentAlignment="Center" />
+		<Button Margin="0,0,5,0" Content="Statystyki" ToolTip.Tip="Przychód, trendy i wyniki produktów" Command="{Binding OpenStatisticsCommand}" Grid.Column="2" FontSize="25" VerticalAlignment="Stretch" VerticalContentAlignment="Center" />
         <Button Margin="0,0,5,0" Content="Kampanie SMS" Command="{Binding OpenGlobalSmsBroadcastCommand}" Grid.Column="3" FontSize="25" VerticalAlignment="Stretch" VerticalContentAlignment="Center" />
-		<Button Margin="0,0,5,0" Content="Kopie zapasowe" Command="{Binding OpenBackupsCommand}" Grid.Column="4" FontSize="25" VerticalAlignment="Stretch" VerticalContentAlignment="Center" />
+		<Button Margin="0,0,5,0" Content="Kopie zapasowe" Command="{Binding OpenBackupsCommand}" ToolTip.Tip="Lokalne kopie bazy danych i przywracanie" Grid.Column="4" FontSize="25" VerticalAlignment="Stretch" VerticalContentAlignment="Center" />
 		<TextBox Grid.Column="5" Text="{Binding NewSaleDate}" TextAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" Watermark="Wybierz projekt z listy lub wprowadz nazwe nowego projektu" />
 		<Button Grid.Column="6" Margin="5,0,0,0" FontSize="30" Command="{Binding CreateNewSaleCommand, }" Content="+" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
 		<Border Margin="0,5,0,0" BorderBrush="Gray" BorderThickness="2" Grid.Row="1" Grid.ColumnSpan="7">
+			<Grid>
+			<TextBlock IsVisible="{Binding HasNoSales}" Margin="15" FontSize="22" Foreground="Gray" TextWrapping="Wrap"
+			           Text="Nie ma jeszcze żadnej sprzedaży. Wpisz nazwę (np. datę) w polu u góry i kliknij +. Najpierw warto dodać produkty w zakładce &quot;Produkty&quot;." />
 			<ScrollViewer>
 				<ItemsControl Items="{Binding _salesList}">
 					<ItemsControl.ItemTemplate>
@@ -27,6 +30,7 @@
 					</ItemsControl.ItemTemplate>
 				</ItemsControl>
 			</ScrollViewer>
+			</Grid>
 		</Border>
 	</Grid>
 </UserControl>

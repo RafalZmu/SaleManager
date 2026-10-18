@@ -16,6 +16,9 @@ namespace SaleManeger.ViewModels
         #region Public Properties
 
         public ObservableCollection<Product> Products { get; set; }
+
+        // True while there are no product rows at all, the screen then explains what to do.
+        public bool HasNoProducts => Products.Count == 0;
         public ReactiveCommand<Unit, Unit> SaveToDataBaseCommand { get; set; }
 
         #endregion Public Properties
@@ -32,6 +35,7 @@ namespace SaleManeger.ViewModels
         {
             _dataBase = db;
             Products = new ObservableCollection<Product>(db.GetAll<Product>().OrderBy(x => x.Code).ToList());
+            Products.CollectionChanged += (_, _) => this.RaisePropertyChanged(nameof(HasNoProducts));
             SaveToDataBaseCommand = ReactiveCommand.Create(() => SaveToDataBase(_dataBase, Products));
         }
 

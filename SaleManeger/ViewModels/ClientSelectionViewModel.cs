@@ -75,6 +75,18 @@ namespace SaleManeger.ViewModels
 
         public bool HasActiveFilters => ActiveFilterCount > 0;
 
+        // The list is empty: either there are no clients at all or the filters hide all of them.
+        public bool IsListEmpty => Clients == null || Clients.Count == 0;
+
+        public string EmptyListText => AllClients == null || AllClients.Count == 0
+            ? "Nie ma jeszcze żadnych klientów. Kliknij \"Add client\" (Ctrl+N), aby dodać pierwszego."
+            : "Żaden klient nie pasuje do szukanej frazy i filtrów.";
+
+        // Offered together with the empty text, and always while something narrows the list.
+        public bool CanClearFilters => HasActiveFilters || !string.IsNullOrWhiteSpace(ClientName);
+
+        public ReactiveCommand<Unit, Unit> ClearFiltersCommand { get; }
+
         // Tags ticked in the flyout; a client matches when it has at least one of them.
         // The collection is handed on to the next visit of this screen like AdvancedFilters.
         public ObservableCollection<string> SelectedTags { get; }
@@ -111,6 +123,8 @@ namespace SaleManeger.ViewModels
                 if (_clients != value)
                 {
                     this.RaiseAndSetIfChanged(ref _clients, value);
+                    this.RaisePropertyChanged(nameof(IsListEmpty));
+                    this.RaisePropertyChanged(nameof(EmptyListText));
                 }
             }
         }
@@ -181,6 +195,7 @@ namespace SaleManeger.ViewModels
                         rule.PropertyChanged += (_, _) => FiltrClients();
                 FiltrClients();
             };
+            ClearFiltersCommand = ReactiveCommand.Create(ClearFilters);
             AddFilterCommand = ReactiveCommand.Create(() => { AdvancedFilters.Add(new ClientFilterRule { SelectedProduct = FilterProducts[0] }); });
             RemoveFilterCommand = ReactiveCommand.Create<ClientFilterRule>(rule => { AdvancedFilters.Remove(rule); });
 
@@ -346,6 +361,7 @@ namespace SaleManeger.ViewModels
             tempList.Add(AreSmsPendingShowing);
             this.RaisePropertyChanged(nameof(ActiveFilterCount));
             this.RaisePropertyChanged(nameof(HasActiveFilters));
+            this.RaisePropertyChanged(nameof(CanClearFilters));
             return tempList;
         }
 
@@ -367,6 +383,27 @@ namespace SaleManeger.ViewModels
                     ).OrderBy(x => x.Code)
                 );
             }
+        }
+
+        // Back to the state of a fresh visit: everybody listed, nothing ticked, search box empty.
+        private void ClearFilters()
+        {
+            foreach (var product in Products)
+                product.IsReserved = false;
+            AreAllClientsShowing = true;
+            AreClientsWithOrderShowing = true;
+            AreClientsWithSaleShowing = false;
+            AreSmsPendingShowing = false;
+            AdvancedFilters.Clear();
+            foreach (var option in TagFilterOptions)
+                option.IsSelected = false;
+            _clientName = null;
+
+            foreach (var name in new[] { nameof(ClientName), nameof(AreAllClientsShowing), nameof(AreClientsWithOrderShowing),
+                                         nameof(AreClientsWithSaleShowing), nameof(AreSmsPendingShowing) })
+                this.RaisePropertyChanged(name);
+            FiltrProducts();
+            FiltrClients();
         }
 
         private void OnTagFilterChanged(TagFilterOption option)

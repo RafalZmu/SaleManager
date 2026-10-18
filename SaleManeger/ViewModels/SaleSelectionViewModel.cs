@@ -28,6 +28,9 @@ namespace SaleManeger.ViewModels
             set => this.RaiseAndSetIfChanged(ref _newSaleDate, value);
         }
 
+        // True before the first sale is created, the screen then explains how to start one.
+        public bool HasNoSales => _salesList.Count == 0;
+
         public ReactiveCommand<Unit, Unit> OpenAllSalesSummaryCommand { get; }
         public ReactiveCommand<Unit, Unit> OpenStatisticsCommand { get; }
         public ReactiveCommand<Unit, Unit> OpenGlobalSmsBroadcastCommand { get; }

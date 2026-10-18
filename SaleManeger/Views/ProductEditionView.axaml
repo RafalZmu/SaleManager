@@ -7,6 +7,10 @@
 	<Grid Margin="5" MaxHeight="1000" RowDefinitions="50, *" ColumnDefinitions="Auto, Auto, *">
 		<Button Margin="0,0,5,0" FontSize="25" Content="Cofnij" Command="{Binding SaveToDataBaseCommand}"/>
 		<Button FontSize="25" Grid.Column="1" Content="Dodaj Produkt" Command="{Binding	AddProduct}"/>
+		<TextBlock Grid.Column="2" Margin="15,0,0,0" VerticalAlignment="Center" FontSize="14" Foreground="Gray" TextWrapping="Wrap"
+		           Text="Kod to 2 znaki do szybkiego wpisywania zamówień (wpisz kod, a program poda nazwę). Cena jest za kilogram, w zł." />
+		<TextBlock Grid.Row="1" Grid.ColumnSpan="3" IsVisible="{Binding HasNoProducts}" Margin="10,25" FontSize="22" Foreground="Gray" TextWrapping="Wrap"
+		           Text="Nie ma jeszcze żadnych produktów. Kliknij &quot;Dodaj Produkt&quot;, wpisz kod, nazwę i cenę za kilogram. Potem produkty pojawią się w zamówieniach klientów." />
 		<ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Row="1" Grid.ColumnSpan="3">
 			<ItemsControl Items="{Binding Products}">
 				<ItemsControl.ItemTemplate>
