@@ -12,10 +12,12 @@
 					Content="Cofnij" Command="{Binding OpenClientSelectionCommand}" />
 			<TextBox Grid.Column="1" FontSize="25" Text="{Binding	Name}" Watermark="Imie" />
 			<TextBox Grid.Column="2" FontSize="25" Text="{Binding	Number}" Watermark="Numer Telefonu" />
+            <!-- Pickup date/time pickers hidden from the GUI (not used by clients). Bindings and view model properties are kept; restore by uncommenting. Grid.Column 3 is Auto, so it collapses to zero width while empty.
             <Grid Grid.Column="3" ColumnDefinitions="Auto, Auto" Margin="5,0,0,0">
                 <DatePicker Grid.Column="0" SelectedDate="{Binding ExpectedArrivalDate}" FontSize="25" VerticalAlignment="Stretch" MinHeight="0" />
                 <TimePicker Grid.Column="1" SelectedTime="{Binding ExpectedArrivalTime}" Margin="5,0,0,0" FontSize="30" VerticalAlignment="Stretch" MinHeight="0" ClockIdentifier="24HourClock" />
             </Grid>
+            -->
 		</Grid>
 		
 		<TextBlock Grid.Row="1" Text="{Binding WarningMessage}" Foreground="Red" FontSize="18" FontWeight="Bold" Margin="10,0,10,5" IsVisible="{Binding WarningMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
