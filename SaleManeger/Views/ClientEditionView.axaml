@@ -39,10 +39,7 @@
             </Grid>
             <Grid Grid.Column="2" Grid.Row="0" Grid.RowSpan="3" RowDefinitions="Auto, Auto, *" Margin="5,0,0,0">
                 <Button Content="{Binding DisplayModeText}" Command="{Binding ToggleDisplayModeCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,0,0,5" FontSize="20" FontWeight="SemiBold" Background="#2D2D30"/>
-                <StackPanel Grid.Row="1" Margin="2,0,0,3">
-                    <TextBlock Text="{Binding CodesHeader}" FontSize="16" FontWeight="Bold" Foreground="{Binding CodesHeaderBrush}" />
-                    <TextBlock Text="{Binding CodesHint}" FontSize="12" Foreground="Gray" TextWrapping="Wrap" />
-                </StackPanel>
+                <TextBlock Grid.Row="1" Margin="2,0,0,3" Text="{Binding CodesHeader}" FontSize="16" FontWeight="Bold" Foreground="{Binding CodesHeaderBrush}" ToolTip.Tip="{Binding CodesHint}" />
                 <TextBox Grid.Row="2" Name="codes" IsReadOnly="True" UseFloatingWatermark="True" AcceptsReturn="True" Text="{Binding Codes}" Watermark="Kody" ToolTip.Tip="{Binding CodesHint}" />
             </Grid>
 			<TextBox Grid.Column="1" Grid.Row="2" IsReadOnly="True" Name="saleSum"  FontSize="20" Text="{Binding SaleSum, Mode=TwoWay}" />
