@@ -1,0 +1,48 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="SaleManeger.Views.BackupView">
+	<Grid Margin="10,30,10,10" RowDefinitions="Auto,Auto,Auto,*">
+		<Grid ColumnDefinitions="Auto,Auto,*">
+			<Button FontSize="25" Content="Cofnij" Command="{Binding ReturnCommand}" VerticalAlignment="Stretch" VerticalContentAlignment="Center" />
+			<Button Grid.Column="1" Margin="5,0,0,0" FontSize="25" Content="Zrób kopię teraz" Command="{Binding CreateBackupCommand}" VerticalAlignment="Stretch" VerticalContentAlignment="Center" />
+			<TextBlock Grid.Column="2" Margin="15,0,0,0" FontSize="18" VerticalAlignment="Center" TextWrapping="Wrap" Text="{Binding StatusText}" />
+		</Grid>
+
+		<TextBlock Grid.Row="1" Margin="2,10,0,5" FontSize="16" Foreground="Gray" TextWrapping="Wrap"
+		           Text="{Binding BackupFolder, StringFormat='Kopia zapisuje się sama przy starcie programu (co najwyżej raz na godzinę). Ostatnie 20 kopii leży w: {0}'}" />
+
+		<Border Grid.Row="2" IsVisible="{Binding IsRestoreConfirmationVisible}" Background="#3A2A00" BorderBrush="Orange" BorderThickness="2" Padding="10" Margin="0,0,0,10">
+			<StackPanel Orientation="Vertical" Spacing="8">
+				<TextBlock FontSize="20" TextWrapping="Wrap" Text="{Binding RestoreQuestion}" />
+				<StackPanel Orientation="Horizontal" Spacing="10">
+					<Button FontSize="20" Background="DarkGreen" Content="Tak, przywróć" Command="{Binding ConfirmRestoreCommand}" />
+					<Button FontSize="20" Content="Anuluj" Command="{Binding CancelRestoreCommand}" />
+				</StackPanel>
+			</StackPanel>
+		</Border>
+
+		<Border Grid.Row="3" BorderBrush="Gray" BorderThickness="2">
+			<Grid>
+				<TextBlock IsVisible="{Binding !HasBackups}" Margin="15" FontSize="20" Foreground="Gray" TextWrapping="Wrap"
+				           Text="Nie ma jeszcze żadnej kopii. Kliknij &quot;Zrób kopię teraz&quot;." />
+				<ScrollViewer>
+					<ItemsControl Items="{Binding Backups}">
+						<ItemsControl.ItemTemplate>
+							<DataTemplate>
+								<Grid Margin="8" ColumnDefinitions="Auto,Auto,*,Auto">
+									<TextBlock FontSize="26" Text="{Binding TimeText}" />
+									<TextBlock Grid.Column="1" Margin="20,0,0,0" FontSize="20" VerticalAlignment="Center" Foreground="Gray" Text="{Binding SizeText}" />
+									<TextBlock Grid.Column="2" Margin="20,0,0,0" FontSize="20" VerticalAlignment="Center" Foreground="Orange" Text="{Binding Kind}" />
+									<Button Grid.Column="3" FontSize="20" Content="Przywróć" Command="{Binding $parent[UserControl].DataContext.AskRestoreCommand}" CommandParameter="{Binding}" />
+								</Grid>
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
+				</ScrollViewer>
+			</Grid>
+		</Border>
+	</Grid>
+</UserControl>

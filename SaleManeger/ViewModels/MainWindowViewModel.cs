@@ -1,6 +1,7 @@
 using ReactiveUI;
 using SaleManeger.Models;
 using SaleManeger.Repositories;
+using SaleManeger.Services;
 using SQLitePCL;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,7 @@ namespace SaleManeger.ViewModels
         private List<bool> _selected;
         private IEnumerable<ClientFilterRule> _advancedFilters;
         private ViewModelBase content;
+        private SaleContext _saleContext;
 
         #endregion Private Fields
 
@@ -39,8 +41,10 @@ namespace SaleManeger.ViewModels
 
         public MainWindowViewModel()
         {
-            var saleContext = new SaleContext();
-            _dataBase = new ProjectRepository(saleContext);
+            _saleContext = new SaleContext();
+            // Copy the data before anything touches it, so a bad session can always be rolled back.
+            BackupService.TryAutoBackup(_saleContext.DbPath, BackupService.DefaultDirectory, TimeSpan.FromHours(1));
+            _dataBase = new ProjectRepository(_saleContext);
 
             OpenProjectSelection();
             Batteries.Init();
@@ -129,6 +133,10 @@ namespace SaleManeger.ViewModels
             {
                 OpenGlobalSmsBroadcast();
             });
+            projectViewModel.OpenBackupsCommand.Subscribe(model =>
+            {
+                OpenBackups();
+            });
         }
 
         public void OpenSaleSummary(string saleName)
@@ -191,6 +199,25 @@ namespace SaleManeger.ViewModels
         #endregion Public Methods
 
         #region Private Methods
+
+        private void OpenBackups()
+        {
+            var backupViewModel = new BackupViewModel(_saleContext.DbPath, BackupService.DefaultDirectory,
+                beforeRestore: () => _saleContext.Dispose());
+            Content = backupViewModel;
+            backupViewModel.ReturnCommand.Subscribe(model =>
+            {
+                OpenProjectSelection();
+            });
+            backupViewModel.ConfirmRestoreCommand.Subscribe(restored =>
+            {
+                // The old context was released before the file was replaced; without a new one the app would be useless.
+                _saleContext = new SaleContext();
+                _dataBase = new ProjectRepository(_saleContext);
+                _selected = null;
+                _advancedFilters = null;
+            });
+        }
 
         private void OpenAllSalesSummary()
         {
