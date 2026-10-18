@@ -11,6 +11,32 @@ using System.Reactive.Linq;
 
 namespace SaleManeger.ViewModels
 {
+    public class TagFilterOption : ReactiveObject
+    {
+        private bool _isSelected;
+        private readonly Action<TagFilterOption> _changed;
+
+        public TagFilterOption(string name, bool isSelected, Action<TagFilterOption> changed)
+        {
+            Name = name;
+            _isSelected = isSelected;
+            _changed = changed;
+        }
+
+        public string Name { get; }
+
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set
+            {
+                if (_isSelected == value) return;
+                this.RaiseAndSetIfChanged(ref _isSelected, value);
+                _changed?.Invoke(this);
+            }
+        }
+    }
+
     public class ClientSelectionViewModel : ViewModelBase
     {
         #region Private Fields
@@ -44,9 +70,16 @@ namespace SaleManeger.ViewModels
             (Products?.Count(p => p.IsReserved) ?? 0)
             + (AreAllClientsShowing ? 0 : 1)
             + (AreSmsPendingShowing ? 1 : 0)
+            + SelectedTags.Count
             + AdvancedFilters.Count(x => x.IsActive);
 
         public bool HasActiveFilters => ActiveFilterCount > 0;
+
+        // Tags ticked in the flyout; a client matches when it has at least one of them.
+        // The collection is handed on to the next visit of this screen like AdvancedFilters.
+        public ObservableCollection<string> SelectedTags { get; }
+
+        public List<TagFilterOption> TagFilterOptions { get; }
 
         public ReactiveCommand<Unit, Unit> AddFilterCommand { get; }
         public ReactiveCommand<ClientFilterRule, Unit> RemoveFilterCommand { get; }
@@ -130,10 +163,11 @@ namespace SaleManeger.ViewModels
         #region Public Constructors
 
         public ClientSelectionViewModel(string saleID, IProjectRepository dataBase, List<bool> selected,
-            IEnumerable<ClientFilterRule> advancedFilters = null)
+            IEnumerable<ClientFilterRule> advancedFilters = null, IEnumerable<string> selectedTags = null)
         {
             SaleID = saleID;
             _dataBase = dataBase;
+            SelectedTags = new ObservableCollection<string>(selectedTags ?? Enumerable.Empty<string>());
 
             // Copies, so rules from a previous visit don't keep notifying the old view model.
             AdvancedFilters = new ObservableCollection<ClientFilterRule>(
@@ -213,6 +247,14 @@ namespace SaleManeger.ViewModels
             clients.ForEach(x => x.Products ??= new ObservableCollection<Product>());
             AllClients = new ObservableCollection<Client>(clients);
 
+            // A remembered tag nobody has any more is dropped, otherwise it would filter everything out invisibly.
+            var knownTags = ClientTags.AllKnown(clients);
+            foreach (var stale in SelectedTags.Where(t => !knownTags.Contains(t, StringComparer.CurrentCultureIgnoreCase)).ToList())
+                SelectedTags.Remove(stale);
+            TagFilterOptions = knownTags
+                .Select(t => new TagFilterOption(t, SelectedTags.Contains(t, StringComparer.CurrentCultureIgnoreCase), OnTagFilterChanged))
+                .ToList();
+
             AllClients ??= new ObservableCollection<Client>();
             Clients = AllClients;
 
@@ -273,7 +315,7 @@ namespace SaleManeger.ViewModels
         // Filter the clients based on the current search term.
         private List<bool> FiltrClients()
         {
-            Clients = OrderAndSaleFiltr(AdvancedFiltr(ProductFiltr(SmsPendingFiltr(NameAndNumberFiltr(AllClients)))));
+            Clients = OrderAndSaleFiltr(AdvancedFiltr(ProductFiltr(TagFiltr(SmsPendingFiltr(NameAndNumberFiltr(AllClients))))));
             var tempList = new List<bool>();
             foreach (var product in Products)
             {
@@ -308,6 +350,24 @@ namespace SaleManeger.ViewModels
             }
         }
 
+        private void OnTagFilterChanged(TagFilterOption option)
+        {
+            var existing = SelectedTags.FirstOrDefault(t => string.Equals(t, option.Name, StringComparison.CurrentCultureIgnoreCase));
+            if (option.IsSelected && existing == null)
+                SelectedTags.Add(option.Name);
+            else if (!option.IsSelected && existing != null)
+                SelectedTags.Remove(existing);
+            FiltrClients();
+        }
+
+        private ObservableCollection<Client> TagFiltr(ObservableCollection<Client> clients)
+        {
+            if (SelectedTags.Count == 0)
+                return clients;
+            return new ObservableCollection<Client>(clients.Where(c =>
+                ClientTags.Parse(c.Tags).Any(t => SelectedTags.Contains(t, StringComparer.CurrentCultureIgnoreCase))));
+        }
+
         private ObservableCollection<Client> SmsPendingFiltr(ObservableCollection<Client> clients)
         {
             return AreSmsPendingShowing
@@ -318,7 +378,8 @@ namespace SaleManeger.ViewModels
         private ObservableCollection<Client> NameAndNumberFiltr(ObservableCollection<Client> clients)
         {
             return string.IsNullOrWhiteSpace(ClientName) ?
-                 clients : new ObservableCollection<Client>(clients.Where(x => x.Name.ToLower().Contains(ClientName.ToLower()) || x.PhoneNumber.Contains(ClientName)));
+                 clients : new ObservableCollection<Client>(clients.Where(x => x.Name.ToLower().Contains(ClientName.ToLower()) || x.PhoneNumber.Contains(ClientName)
+                    || (x.Tags != null && x.Tags.Contains(ClientName, StringComparison.CurrentCultureIgnoreCase))));
         }
 
         private int GetClientPriority(Client client)

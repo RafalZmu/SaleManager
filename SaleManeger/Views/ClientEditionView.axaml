@@ -6,7 +6,7 @@
 			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 			 x:Class="SaleManeger.Views.ClientEditionView">
 
-	<Grid Margin="10,30,10,10" RowDefinitions="Auto, Auto, *">
+	<Grid Margin="10,30,10,10" RowDefinitions="Auto, Auto, Auto, *">
 		<Grid Margin="5" ColumnDefinitions="Auto, *,*,Auto,Auto">
 			<Button Margin="0,0,5,0" FontSize="25" VerticalAlignment="Stretch" VerticalContentAlignment="Center"
 					Content="Cofnij" Command="{Binding OpenClientSelectionCommand}" />
@@ -21,9 +21,35 @@
 			<CheckBox Grid.Column="4" Margin="10,0,0,0" FontSize="20" VerticalAlignment="Center" IsChecked="{Binding AddToSmsGroup, Mode=TwoWay}" Content="Dodać do wysyłki SMS" />
 		</Grid>
 		
-		<TextBlock Grid.Row="1" Text="{Binding WarningMessage}" Foreground="Red" FontSize="18" FontWeight="Bold" Margin="10,0,10,5" IsVisible="{Binding WarningMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+		<Expander Grid.Row="1" Margin="5,0,5,5" HorizontalAlignment="Stretch" IsExpanded="False" FontSize="18" Header="{Binding NotesHeader}">
+			<Grid ColumnDefinitions="*,*" Margin="0,5,0,0">
+				<TextBox Text="{Binding Notes}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="80" MaxHeight="160" FontSize="18"
+				         Watermark="Notatki o kliencie (np. odbiera w piątki, uczulony na orzechy)" />
+				<StackPanel Grid.Column="1" Margin="10,0,0,0" Spacing="5">
+					<TextBlock FontSize="16" Foreground="Gray" Text="Tagi (zaznacz, które pasują do klienta)" />
+					<ItemsControl Items="{Binding TagOptions}">
+						<ItemsControl.ItemsPanel>
+							<ItemsPanelTemplate>
+								<WrapPanel Orientation="Horizontal" />
+							</ItemsPanelTemplate>
+						</ItemsControl.ItemsPanel>
+						<ItemsControl.ItemTemplate>
+							<DataTemplate>
+								<CheckBox Margin="0,0,15,0" IsChecked="{Binding IsSelected, Mode=TwoWay}" Content="{Binding Name}" />
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
+					<StackPanel Orientation="Horizontal" Spacing="5">
+						<TextBox Width="220" FontSize="16" Text="{Binding NewTagText}" Watermark="Nowy tag, np. stały" />
+						<Button FontSize="16" Content="Dodaj tag" Command="{Binding AddTagCommand}" />
+					</StackPanel>
+				</StackPanel>
+			</Grid>
+		</Expander>
+
+		<TextBlock Grid.Row="2" Text="{Binding WarningMessage}" Foreground="Red" FontSize="18" FontWeight="Bold" Margin="10,0,10,5" IsVisible="{Binding WarningMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
 		
-		<Grid Grid.Row="2" RowDefinitions="Auto, *, Auto" ColumnDefinitions="*,*,Auto">
+		<Grid Grid.Row="3" RowDefinitions="Auto, *, Auto" ColumnDefinitions="*,*,Auto">
             <TextBlock Grid.Column="0" Grid.Row="0" Margin="2,0,5,3" FontSize="16" FontWeight="SemiBold" Foreground="#FFC857"
                        Text="Zamówienie klienta (zarezerwowane)"
                        ToolTip.Tip="Produkty, które TEN klient zamówił. Zielona linia = już kupione, pomarańczowa = brakuje na stanie." />

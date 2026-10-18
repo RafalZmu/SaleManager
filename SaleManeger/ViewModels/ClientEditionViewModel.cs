@@ -16,6 +16,18 @@ using System.Text.RegularExpressions;
 
 namespace SaleManeger.ViewModels
 {
+	public class TagOption : ReactiveObject
+	{
+		private bool _isSelected;
+		public string Name { get; set; }
+
+		public bool IsSelected
+		{
+			get => _isSelected;
+			set => this.RaiseAndSetIfChanged(ref _isSelected, value);
+		}
+	}
+
 	public class ClientEditionViewModel : ViewModelBase, INotifyPropertyChanged
 	{
 		#region Fields
@@ -41,6 +53,44 @@ namespace SaleManeger.ViewModels
 		public string Name { get; set; }
 		public string Number { get; set; }
 		public bool AddToSmsGroup { get; set; }
+
+		private string _notes;
+		private string _newTagText;
+
+		public string Notes
+		{
+			get => _notes;
+			set
+			{
+				this.RaiseAndSetIfChanged(ref _notes, value);
+				this.RaisePropertyChanged(nameof(NotesHeader));
+			}
+		}
+
+		// All tags offered for this client (suggested ones, the ones other clients use and this client's own).
+		public ObservableCollection<TagOption> TagOptions { get; } = new();
+
+		public string NewTagText
+		{
+			get => _newTagText;
+			set => this.RaiseAndSetIfChanged(ref _newTagText, value);
+		}
+
+		public string SelectedTagsText => ClientTags.Join(TagOptions.Where(x => x.IsSelected).Select(x => x.Name));
+
+		// The section is collapsed, so the header says what is inside.
+		public string NotesHeader
+		{
+			get
+			{
+				var parts = ClientTags.Parse(SelectedTagsText).ToList();
+				if (!string.IsNullOrWhiteSpace(Notes))
+					parts.Add("notatka");
+				return parts.Count == 0 ? "Notatki i tagi" : $"Notatki i tagi ({string.Join(", ", parts)})";
+			}
+		}
+
+		public ReactiveCommand<Unit, Unit> AddTagCommand { get; }
 		private List<SaleProduct> _curruntlyAvailableProducts; 
 		public ReactiveCommand<Unit, string> OpenClientSelectionCommand { get; }
         public ReactiveCommand<Unit, Unit> ToggleDisplayModeCommand { get; }
@@ -131,10 +181,19 @@ namespace SaleManeger.ViewModels
 			Name = client.Name;
 			Number = client.PhoneNumber;
 			AddToSmsGroup = client.AddToSmsGroup;
+			_notes = client.Notes;
 			ClientID = client.ID;
 			Client = client;
 
 			OpenClientSelectionCommand = ReactiveCommand.Create(OpenClientSelection);
+			AddTagCommand = ReactiveCommand.Create(AddTag);
+
+			var ownTags = ClientTags.Parse(client.Tags);
+			var knownTags = ClientTags.AllKnown(_dataBase.GetAll<Client>().ToList());
+			foreach (var tag in ownTags.Where(t => !knownTags.Contains(t, StringComparer.CurrentCultureIgnoreCase)))
+				knownTags.Add(tag);
+			foreach (var tag in knownTags)
+				AddTagOption(tag, ownTags.Contains(tag, StringComparer.CurrentCultureIgnoreCase));
 
 			_curruntlyAvailableProducts = new List<SaleProduct>(_dataBase.GetAll<SaleProduct>().Where(x => x.SaleID == _saleID));
 
@@ -267,6 +326,33 @@ namespace SaleManeger.ViewModels
 
 		#region Private Methods
 
+		private TagOption AddTagOption(string name, bool selected)
+		{
+			var option = new TagOption { Name = name, IsSelected = selected };
+			option.PropertyChanged += (_, e) =>
+			{
+				if (e.PropertyName == nameof(TagOption.IsSelected))
+					this.RaisePropertyChanged(nameof(NotesHeader));
+			};
+			TagOptions.Add(option);
+			return option;
+		}
+
+		private void AddTag()
+		{
+			var typed = ClientTags.Parse(NewTagText);
+			NewTagText = "";
+			foreach (var tag in typed)
+			{
+				var existing = TagOptions.FirstOrDefault(x => string.Equals(x.Name, tag, StringComparison.CurrentCultureIgnoreCase));
+				if (existing != null)
+					existing.IsSelected = true;
+				else
+					AddTagOption(tag, true);
+			}
+			this.RaisePropertyChanged(nameof(NotesHeader));
+		}
+
         private void RefreshCodesText()
         {
             Codes = "";
@@ -367,6 +453,8 @@ namespace SaleManeger.ViewModels
 			Client.Name = string.IsNullOrWhiteSpace(Name) ? "" : Name;
 			Client.PhoneNumber = string.IsNullOrWhiteSpace(Number) ? "" : Number;
 			Client.AddToSmsGroup = AddToSmsGroup;
+			Client.Notes = string.IsNullOrWhiteSpace(Notes) ? null : Notes.Trim();
+			Client.Tags = SelectedTagsText.Length == 0 ? null : SelectedTagsText;
 
 			//Get ordered products
 			Client.Products.AddRange(GetProductsFromText(_products, Order, true));

@@ -16,6 +16,12 @@ namespace SaleManeger.Models
         // True while the client still has to be added to the SMS group (a reminder, it does not affect who gets SMS).
         public bool AddToSmsGroup { get; set; }
 
+        // Free text about the client ("odbiera w piątki").
+        public string Notes { get; set; }
+
+        // Comma separated labels such as "po terminie"; use ClientTags to read and write them.
+        public string Tags { get; set; }
+
         [NotMapped]
         public DateTime? ExpectedArrivalTime { get; set; }
 

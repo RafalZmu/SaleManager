@@ -43,6 +43,18 @@
 							</Border>
 							<Border BorderBrush="Gray" BorderThickness="0,3,0,0" Padding="2">
 								<StackPanel Orientation="Vertical">
+									<TextBlock FontSize="18" FontWeight="Bold" Text="Tagi (wystarczy jeden)" />
+									<ItemsControl Items="{Binding TagFilterOptions}">
+										<ItemsControl.ItemTemplate>
+											<DataTemplate>
+												<CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" Content="{Binding Name}" />
+											</DataTemplate>
+										</ItemsControl.ItemTemplate>
+									</ItemsControl>
+								</StackPanel>
+							</Border>
+							<Border BorderBrush="Gray" BorderThickness="0,3,0,0" Padding="2">
+								<StackPanel Orientation="Vertical">
 									<TextBlock FontSize="18" FontWeight="Bold" Text="Filtry zaawansowane (wszystkie muszą pasować)" />
 									<ScrollViewer MaxHeight="250">
 										<ItemsControl Items="{Binding AdvancedFilters}">
@@ -111,7 +123,10 @@
 					<ItemsRepeater.ItemTemplate>
 						<DataTemplate>
 							<Grid Margin="5" ColumnDefinitions="Auto,100*,Auto,Auto,Auto">
-								<TextBlock Grid.Column="0" Foreground ="{Binding Color}" FontSize="40" Text="{Binding Name}" />
+								<StackPanel Grid.Column="0" Orientation="Vertical" ToolTip.Tip="{Binding Notes}">
+									<TextBlock Foreground ="{Binding Color}" FontSize="40" Text="{Binding Name}" />
+									<TextBlock IsVisible="{Binding Tags, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Foreground="Orange" FontSize="16" Text="{Binding Tags}" />
+								</StackPanel>
 								<TextBlock Grid.Column="1" Foreground ="{Binding Color}" Margin ="10,0,0,0" FontSize="40" Text="{Binding PhoneNumber}" />
 								<TextBlock Grid.Column="2" Foreground ="{Binding Color}" Margin ="20,0,20,0" FontSize="30" VerticalAlignment="Center" Text="{Binding ExpectedArrivalTime, StringFormat=\{0:dd.MM HH:mm\}}" />
 								<Button HorizontalAlignment="Right" Grid.Column="3" Command="{Binding $parent[UserControl].DataContext.OpenClientEditionCommand}" CommandParameter="{Binding ID}" HorizontalContentAlignment="Center" Width="80" FontSize="20" Content="Open" />

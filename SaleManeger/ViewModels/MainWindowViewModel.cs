@@ -16,6 +16,7 @@ namespace SaleManeger.ViewModels
         private string _saleName;
         private List<bool> _selected;
         private IEnumerable<ClientFilterRule> _advancedFilters;
+        private IEnumerable<string> _selectedTags;
         private ViewModelBase content;
         private SaleContext _saleContext;
 
@@ -85,8 +86,9 @@ namespace SaleManeger.ViewModels
         public void OpenClientSelection(string saleName)
         {
             _saleName = saleName;
-            var clientSelectionViewModel = new ClientSelectionViewModel(saleName, _dataBase, _selected, _advancedFilters);
+            var clientSelectionViewModel = new ClientSelectionViewModel(saleName, _dataBase, _selected, _advancedFilters, _selectedTags);
             _advancedFilters = clientSelectionViewModel.AdvancedFilters;
+            _selectedTags = clientSelectionViewModel.SelectedTags;
             Content = clientSelectionViewModel;
 
             clientSelectionViewModel.OpenClientEditionCommand.Subscribe(OpenClientEdition);
@@ -216,6 +218,7 @@ namespace SaleManeger.ViewModels
                 _dataBase = new ProjectRepository(_saleContext);
                 _selected = null;
                 _advancedFilters = null;
+                _selectedTags = null;
             });
         }
 

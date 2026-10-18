@@ -52,7 +52,7 @@ namespace SaleManeger.Repositories
                 );
             ");
 
-            EnsureClientsHaveSmsGroupColumn(context);
+            EnsureClientsColumns(context);
 
             _context = context;
         }
@@ -61,9 +61,16 @@ namespace SaleManeger.Repositories
 
         #region Private Methods
 
-        // Databases created before this column existed are not touched by EnsureCreated(), so add it by hand.
-        // The column is only added when missing, existing rows keep their data and start unmarked (0).
-        private static void EnsureClientsHaveSmsGroupColumn(SaleContext context)
+        // Databases created before a column existed are not touched by EnsureCreated(), so add it by hand.
+        // A column is only added when missing, existing rows keep their data and get the default.
+        private static void EnsureClientsColumns(SaleContext context)
+        {
+            EnsureColumn(context, "Clients", "AddToSmsGroup", "INTEGER NOT NULL DEFAULT 0");
+            EnsureColumn(context, "Clients", "Notes", "TEXT NULL");
+            EnsureColumn(context, "Clients", "Tags", "TEXT NULL");
+        }
+
+        private static void EnsureColumn(SaleContext context, string table, string column, string definition)
         {
             var connection = context.Database.GetDbConnection();
             var wasClosed = connection.State != System.Data.ConnectionState.Open;
@@ -74,11 +81,11 @@ namespace SaleManeger.Repositories
                 bool hasColumn = false;
                 using (var command = connection.CreateCommand())
                 {
-                    command.CommandText = "PRAGMA table_info(\"Clients\");";
+                    command.CommandText = $"PRAGMA table_info(\"{table}\");";
                     using var reader = command.ExecuteReader();
                     while (reader.Read())
                     {
-                        if (reader.GetString(reader.GetOrdinal("name")) == "AddToSmsGroup")
+                        if (reader.GetString(reader.GetOrdinal("name")) == column)
                             hasColumn = true;
                     }
                 }
@@ -86,7 +93,7 @@ namespace SaleManeger.Repositories
                 if (!hasColumn)
                 {
                     using var alter = connection.CreateCommand();
-                    alter.CommandText = "ALTER TABLE \"Clients\" ADD COLUMN \"AddToSmsGroup\" INTEGER NOT NULL DEFAULT 0;";
+                    alter.CommandText = $"ALTER TABLE \"{table}\" ADD COLUMN \"{column}\" {definition};";
                     alter.ExecuteNonQuery();
                 }
             }
