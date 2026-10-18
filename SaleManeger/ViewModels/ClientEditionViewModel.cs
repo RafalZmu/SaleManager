@@ -1,3 +1,4 @@
+using Avalonia.Media;
 using AvaloniaEdit.Utils;
 using ReactiveUI;
 using SaleManeger.Models;
@@ -44,7 +45,13 @@ namespace SaleManeger.ViewModels
         public ReactiveCommand<Unit, Unit> ToggleDisplayModeCommand { get; }
         
         private bool _isShowingWolne = true;
-        public string DisplayModeText => _isShowingWolne ? "Pokaż: Zamówione" : "Pokaż: Wolne";
+        // The button names the view you will switch TO; the header below it names the view you are looking at.
+        public string DisplayModeText => _isShowingWolne ? "Przełącz na: Zamówione" : "Przełącz na: Wolne";
+        public string CodesHeader => _isShowingWolne ? "WOLNE (na stanie)" : "ZAMÓWIONE (wszyscy klienci)";
+        public string CodesHint => _isShowingWolne
+            ? "Dostępne minus zamówienia wszystkich klientów. Wartość ujemna = brakuje."
+            : "Łącznie zamówione przez wszystkich klientów i jeszcze niekupione.";
+        public IBrush CodesHeaderBrush => _isShowingWolne ? Brushes.LightGreen : Brushes.Orange;
         
         private List<Product> _requiredProducts;
 
@@ -291,6 +298,9 @@ namespace SaleManeger.ViewModels
 
             this.RaisePropertyChanged(nameof(Codes));
             this.RaisePropertyChanged(nameof(DisplayModeText));
+            this.RaisePropertyChanged(nameof(CodesHeader));
+            this.RaisePropertyChanged(nameof(CodesHint));
+            this.RaisePropertyChanged(nameof(CodesHeaderBrush));
         }
 
 		private string OpenClientSelection()

@@ -22,20 +22,30 @@
 		
 		<TextBlock Grid.Row="1" Text="{Binding WarningMessage}" Foreground="Red" FontSize="18" FontWeight="Bold" Margin="10,0,10,5" IsVisible="{Binding WarningMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
 		
-		<Grid Grid.Row="2" RowDefinitions="*, Auto" ColumnDefinitions="*,*,Auto">
-            <Grid Grid.Column="0" Grid.RowSpan="2" Margin="0,0,5,0">
+		<Grid Grid.Row="2" RowDefinitions="Auto, *, Auto" ColumnDefinitions="*,*,Auto">
+            <TextBlock Grid.Column="0" Grid.Row="0" Margin="2,0,5,3" FontSize="16" FontWeight="SemiBold" Foreground="#FFC857"
+                       Text="Zamówienie klienta (zarezerwowane)"
+                       ToolTip.Tip="Produkty, które TEN klient zamówił. Zielona linia = już kupione, pomarańczowa = brakuje na stanie." />
+            <TextBlock Grid.Column="1" Grid.Row="0" Margin="7,0,0,3" FontSize="16" FontWeight="SemiBold" Foreground="#7FD18B"
+                       Text="Kupione przez klienta"
+                       ToolTip.Tip="Produkty, które TEN klient faktycznie kupił (sprzedane)." />
+            <Grid Grid.Column="0" Grid.Row="1" Grid.RowSpan="2" Margin="0,0,5,0">
                 <avedit:TextEditor Name="order" FontSize="20" ShowLineNumbers="False" WordWrap="True" Background="Black" Foreground="White" BorderBrush="Gray" BorderThickness="2" Padding="5" />
                 <TextBlock Name="orderWatermark" Text="Zamówienie" Foreground="DimGray" FontSize="20" Margin="7,7,0,0" IsHitTestVisible="False" />
             </Grid>
-            <Grid Grid.Column="1" Grid.Row="0" Margin="5,0,0,5">
+            <Grid Grid.Column="1" Grid.Row="1" Margin="5,0,0,5">
                 <avedit:TextEditor Name="sale" FontSize="20" ShowLineNumbers="False" WordWrap="True" Background="Black" Foreground="White" BorderBrush="Gray" BorderThickness="2" Padding="5" />
                 <TextBlock Name="saleWatermark" Text="Kupione" Foreground="DimGray" FontSize="20" Margin="7,7,0,0" IsHitTestVisible="False" />
             </Grid>
-            <Grid Grid.Column="2" Grid.RowSpan="2" RowDefinitions="Auto, *" Margin="5,0,0,0">
+            <Grid Grid.Column="2" Grid.Row="0" Grid.RowSpan="3" RowDefinitions="Auto, Auto, *" Margin="5,0,0,0">
                 <Button Content="{Binding DisplayModeText}" Command="{Binding ToggleDisplayModeCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,0,0,5" FontSize="20" FontWeight="SemiBold" Background="#2D2D30"/>
-                <TextBox Grid.Row="1" Name="codes" IsReadOnly="True" UseFloatingWatermark="True" AcceptsReturn="True" Text="{Binding Codes}" Watermark="Kody" />
+                <StackPanel Grid.Row="1" Margin="2,0,0,3">
+                    <TextBlock Text="{Binding CodesHeader}" FontSize="16" FontWeight="Bold" Foreground="{Binding CodesHeaderBrush}" />
+                    <TextBlock Text="{Binding CodesHint}" FontSize="12" Foreground="Gray" TextWrapping="Wrap" />
+                </StackPanel>
+                <TextBox Grid.Row="2" Name="codes" IsReadOnly="True" UseFloatingWatermark="True" AcceptsReturn="True" Text="{Binding Codes}" Watermark="Kody" ToolTip.Tip="{Binding CodesHint}" />
             </Grid>
-			<TextBox Grid.Column="1" Grid.Row="1" IsReadOnly="True" Name="saleSum"  FontSize="20" Text="{Binding SaleSum, Mode=TwoWay}" />
+			<TextBox Grid.Column="1" Grid.Row="2" IsReadOnly="True" Name="saleSum"  FontSize="20" Text="{Binding SaleSum, Mode=TwoWay}" />
 		</Grid>
 	</Grid>
 </UserControl>

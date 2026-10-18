@@ -256,10 +256,14 @@ internal class OrderTextTests
         var vm = new ClientEditionViewModel(_db.Repo, _db.AddClient("Me"), sale);
 
         Assert.That(vm.Codes, Does.Contain("00-Apples: Wolne = [6]"));
+        Assert.That(vm.CodesHeader, Does.StartWith("WOLNE"));
+        Assert.That(vm.DisplayModeText, Is.EqualTo("Przełącz na: Zamówione"));
         Assert.That(vm.LowStockProductIDs, Is.Empty);
 
         vm.ToggleDisplayModeCommand.Execute().Subscribe();
         Assert.That(vm.Codes, Does.Contain("Zamówione = [4]"));
+        Assert.That(vm.CodesHeader, Does.StartWith("ZAMÓWIONE"));
+        Assert.That(vm.DisplayModeText, Is.EqualTo("Przełącz na: Wolne"));
     }
 
     [Test]
