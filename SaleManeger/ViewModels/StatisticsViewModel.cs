@@ -42,9 +42,9 @@ namespace SaleManeger.ViewModels
             get
             {
                 if (double.IsNaN(PercentageDifference)) return Brushes.Gray;
-                if (PercentageDifference > 0) return Brushes.LightGreen;
-                if (PercentageDifference < 0) return Brushes.LightCoral;
-                return Brushes.White;
+                if (PercentageDifference > 0) return ThemeService.GoodBrush;
+                if (PercentageDifference < 0) return ThemeService.BadBrush;
+                return ThemeService.TextBrush;
             }
         }
     }
@@ -162,27 +162,28 @@ namespace SaleManeger.ViewModels
         {
             var plot = new PlotModel
             {
-                TextColor = OxyColors.White,
-                PlotAreaBorderColor = OxyColors.White,
-                TitleColor = OxyColors.White,
+                TextColor = ThemeService.PlotText,
+                PlotAreaBorderColor = ThemeService.PlotText,
+                TitleColor = ThemeService.PlotText,
             };
-            plot.Axes.Add(new CategoryAxis
+            var salesAxis = new CategoryAxis
             {
                 Position = AxisPosition.Bottom,
-                ItemsSource = rows.Select(x => x.SaleName).ToList(),
-                TextColor = OxyColors.White,
-                TicklineColor = OxyColors.White,
+                TextColor = ThemeService.PlotText,
+                TicklineColor = ThemeService.PlotText,
                 Angle = rows.Count > 6 ? -35 : 0,
-            });
+            };
+            salesAxis.Labels.AddRange(rows.Select(x => x.SaleName));
+            plot.Axes.Add(salesAxis);
             plot.Axes.Add(new LinearAxis
             {
                 Position = AxisPosition.Left,
                 Key = "revenue",
                 Title = "Przychód (zł)",
                 Minimum = 0,
-                TextColor = OxyColors.LightGreen,
-                TitleColor = OxyColors.LightGreen,
-                TicklineColor = OxyColors.LightGreen,
+                TextColor = ThemeService.PlotGood,
+                TitleColor = ThemeService.PlotGood,
+                TicklineColor = ThemeService.PlotGood,
             });
             plot.Axes.Add(new LinearAxis
             {
@@ -190,14 +191,14 @@ namespace SaleManeger.ViewModels
                 Key = "clients",
                 Title = "Klienci",
                 Minimum = 0,
-                TextColor = OxyColors.CornflowerBlue,
-                TitleColor = OxyColors.CornflowerBlue,
-                TicklineColor = OxyColors.CornflowerBlue,
+                TextColor = ThemeService.PlotAccent,
+                TitleColor = ThemeService.PlotAccent,
+                TicklineColor = ThemeService.PlotAccent,
             });
             plot.Series.Add(new LineSeries
             {
                 Title = "Przychód",
-                Color = OxyColors.LightGreen,
+                Color = ThemeService.PlotGood,
                 YAxisKey = "revenue",
                 MarkerType = MarkerType.Circle,
                 ItemsSource = rows.Select((x, i) => new DataPoint(i, x.Revenue)).ToList(),
@@ -205,12 +206,12 @@ namespace SaleManeger.ViewModels
             plot.Series.Add(new LineSeries
             {
                 Title = "Klienci, którzy kupili",
-                Color = OxyColors.CornflowerBlue,
+                Color = ThemeService.PlotAccent,
                 YAxisKey = "clients",
                 MarkerType = MarkerType.Diamond,
                 ItemsSource = rows.Select((x, i) => new DataPoint(i, x.ClientsBought)).ToList(),
             });
-            plot.Legends.Add(new Legend { LegendPosition = LegendPosition.TopLeft, LegendTextColor = OxyColors.White });
+            plot.Legends.Add(new Legend { LegendPosition = LegendPosition.TopLeft, LegendTextColor = ThemeService.PlotText });
             return plot;
         }
 

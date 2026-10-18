@@ -5,6 +5,7 @@ using OxyPlot.Series;
 using ReactiveUI;
 using SaleManeger.Models;
 using SaleManeger.Repositories;
+using SaleManeger.Services;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -64,12 +65,14 @@ namespace SaleManeger.ViewModels
                 var sumOfProductsWeight = 0.0;
                 foreach (var product in _dataBase.GetAll<Product>().ToList())
                 {
-                    var productWeight = _dataBase.GetAll<ClientOrder>()
+                    // Bought lines hold the price paid, so the profit is their sum and the weight is that money over the price per kg.
+                    var productMoney = _dataBase.GetAll<ClientOrder>()
                         .Where(x => x.ProductID == product.ID && x.SaleID == sale.SaleID && x.IsReserved == false)
                         .ToList()
                         .Sum(x => OrderValue.Parse(x.Value));
-                    saleProfit += productWeight * product.PricePerKg;
-                    sumOfProductsWeight += productWeight;
+                    saleProfit += productMoney;
+                    if (product.PricePerKg > 0)
+                        sumOfProductsWeight += productMoney / product.PricePerKg;
                 }
                 saleProfitPerSale.Add(saleProfit);
                 weightOfSoldProductsPerSale.Add(sumOfProductsWeight);
@@ -106,11 +109,11 @@ namespace SaleManeger.ViewModels
 
             Plot = new PlotModel()
             {
-                TextColor = OxyColors.White,
-                PlotAreaBorderColor = OxyColors.White,
-                SelectionColor = OxyColors.White,
-                SubtitleColor = OxyColors.White,
-                TitleColor = OxyColors.White,
+                TextColor = ThemeService.PlotText,
+                PlotAreaBorderColor = ThemeService.PlotText,
+                SelectionColor = ThemeService.PlotText,
+                SubtitleColor = ThemeService.PlotText,
+                TitleColor = ThemeService.PlotText,
             };
 
             // Create a series to represent the data

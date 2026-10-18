@@ -13,7 +13,10 @@ public partial class ClientSelectionView : UserControl
     {
         InitializeComponent();
         clientName.AddHandler(KeyUpEvent, UpdateClients_InputHandler, RoutingStrategies.Tunnel);
-        AddHandler(KeyDownEvent, Shortcut_KeyDown, RoutingStrategies.Tunnel);
+
+        // Listen on the whole window: when nothing on this screen has the keyboard focus the keys never pass through this control.
+        AttachedToVisualTree += (_, e) => (e.Root as InputElement)?.AddHandler(KeyDownEvent, Shortcut_KeyDown, RoutingStrategies.Tunnel);
+        DetachedFromVisualTree += (_, e) => (e.Root as InputElement)?.RemoveHandler(KeyDownEvent, Shortcut_KeyDown);
     }
 
     #endregion Public Constructors

@@ -13,7 +13,7 @@
 			<ItemsControl Items="{Binding saleProducts}">
 				<ItemsControl.ItemTemplate>
 					<DataTemplate>
-						<Border BorderBrush="#353535" BorderThickness="3" Margin="5">
+						<Border BorderBrush="{DynamicResource AppBorder}" BorderThickness="3" Margin="5">
 							<Grid ColumnDefinitions="70, 300*, 300*" RowDefinitions="*">
 								<Label Margin="10,0,15,0" Grid.Column="0" VerticalAlignment="Center" Content="{Binding ProductCode, Mode=TwoWay}" FontSize="20"/>
 								<Label Grid.Column="1" VerticalAlignment="Center" Content="{Binding ProductName, Mode=TwoWay}" FontSize="20"/>

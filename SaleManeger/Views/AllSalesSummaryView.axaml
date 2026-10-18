@@ -14,7 +14,7 @@
 			<CheckBox IsChecked="{Binding NumberOfClients}" FontSize="20" Command="{Binding UpdateGraphCommand}" Content="Liczba klientów" Margin="0,0,10,0" />
 			<CheckBox IsChecked="{Binding Weight}" FontSize="20" Command="{Binding UpdateGraphCommand}" Content="Suma wag" />
 		</StackPanel>
-		<oxy:PlotView Margin="0,10,0,0" Background="#1f1f1f" Grid.ColumnSpan="4"
+		<oxy:PlotView Margin="0,10,0,0" Background="{DynamicResource AppBackground}" Grid.ColumnSpan="4"
 					  Grid.Row="1" Model="{Binding Plot, Mode=TwoWay}">
 			<oxy:PlotView.DefaultTrackerTemplate>
 				<ControlTemplate>

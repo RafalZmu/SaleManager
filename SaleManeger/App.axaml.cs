@@ -19,9 +19,11 @@ namespace SaleManeger
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
+                // The view model applies the saved theme, so it has to exist before the window is created.
+                var viewModel = new MainWindowViewModel();
                 desktop.MainWindow = new MainWindow
                 {
-                    DataContext = new MainWindowViewModel(),
+                    DataContext = viewModel,
                 };
             }
 

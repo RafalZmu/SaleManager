@@ -46,7 +46,7 @@ internal class AutoSaveAndShortcutTests
         Assert.That(vm.AutoSave(), Is.True);
 
         Assert.That(vm.IsDirty, Is.False);
-        Assert.That(vm.AutoSaveStatus, Does.StartWith("Zapisano automatycznie"));
+        Assert.That(vm.AutoSaveStatus, Does.StartWith("Autozapis "));
         var order = _db.Repo.GetAll<ClientOrder>().Single();
         Assert.That(order.Value, Is.EqualTo("3"));
         Assert.That(order.IsReserved, Is.True);

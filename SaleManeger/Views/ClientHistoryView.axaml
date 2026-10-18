@@ -6,13 +6,13 @@
              x:Class="SaleManeger.Views.ClientHistoryView">
 	<Grid Margin="10,30,10,10" RowDefinitions="Auto,Auto,*">
 		<Grid ColumnDefinitions="Auto,*">
-			<Button FontSize="25" Content="Cofnij" Command="{Binding ReturnCommand}" VerticalAlignment="Stretch" VerticalContentAlignment="Center" />
+			<Button FontSize="25" MinWidth="100" HorizontalContentAlignment="Center" Content="Cofnij" Command="{Binding ReturnCommand}" VerticalAlignment="Stretch" VerticalContentAlignment="Center" />
 			<StackPanel Grid.Column="1" Margin="15,0,0,0" Orientation="Vertical">
 				<StackPanel Orientation="Horizontal" Spacing="20">
 					<TextBlock FontSize="36" FontWeight="Bold" Text="{Binding ClientName}" />
 					<TextBlock FontSize="28" VerticalAlignment="Bottom" Foreground="Gray" Text="{Binding PhoneNumber}" />
 				</StackPanel>
-				<TextBlock IsVisible="{Binding HasTags}" FontSize="16" Foreground="Orange" Text="{Binding Tags}" />
+				<TextBlock IsVisible="{Binding HasTags}" FontSize="16" Foreground="{DynamicResource AppWarn}" Text="{Binding Tags}" />
 				<TextBlock IsVisible="{Binding HasNotes}" FontSize="16" Foreground="Gray" TextWrapping="Wrap" Text="{Binding Notes}" />
 			</StackPanel>
 		</Grid>
@@ -21,34 +21,34 @@
 		           Text="Ten klient nie ma jeszcze żadnego zamówienia ani zakupu. Historia pojawi się, gdy zapiszesz pierwsze zamówienie." />
 
 		<UniformGrid Grid.Row="1" Rows="1" Margin="0,15,0,10" IsVisible="{Binding HasHistory}">
-			<Border Margin="0,0,5,0" Padding="10" Background="#2D2D30" CornerRadius="5">
+			<Border Margin="0,0,5,0" Padding="10" Background="{DynamicResource AppSurface}" CornerRadius="5">
 				<StackPanel>
 					<TextBlock FontSize="14" Foreground="Gray" Text="Odebrane sprzedaże" />
 					<TextBlock FontSize="28" FontWeight="Bold" Text="{Binding VisitsText}" />
 				</StackPanel>
 			</Border>
-			<Border Margin="5,0" Padding="10" Background="#2D2D30" CornerRadius="5">
+			<Border Margin="5,0" Padding="10" Background="{DynamicResource AppSurface}" CornerRadius="5">
 				<StackPanel>
 					<TextBlock FontSize="14" Foreground="Gray" Text="Wydane razem" />
-					<TextBlock FontSize="28" FontWeight="Bold" Foreground="LightGreen" Text="{Binding TotalSpentText}" />
+					<TextBlock FontSize="28" FontWeight="Bold" Foreground="{DynamicResource AppGood}" Text="{Binding TotalSpentText}" />
 				</StackPanel>
 			</Border>
-			<Border Margin="5,0" Padding="10" Background="#2D2D30" CornerRadius="5">
+			<Border Margin="5,0" Padding="10" Background="{DynamicResource AppSurface}" CornerRadius="5">
 				<StackPanel>
 					<TextBlock FontSize="14" Foreground="Gray" Text="Średnio na sprzedaż" />
 					<TextBlock FontSize="28" FontWeight="Bold" Text="{Binding AverageSpentText}" />
 				</StackPanel>
 			</Border>
-			<Border Margin="5,0" Padding="10" Background="#2D2D30" CornerRadius="5">
+			<Border Margin="5,0" Padding="10" Background="{DynamicResource AppSurface}" CornerRadius="5">
 				<StackPanel>
 					<TextBlock FontSize="14" Foreground="Gray" Text="Ostatni zakup" />
 					<TextBlock FontSize="28" FontWeight="Bold" Text="{Binding LastVisitText}" />
 				</StackPanel>
 			</Border>
-			<Border Margin="5,0,0,0" Padding="10" Background="#2D2D30" CornerRadius="5" ToolTip.Tip="Sprzedaże, w których klient zamówił, ale nic nie kupił (bez trwającej sprzedaży).">
+			<Border Margin="5,0,0,0" Padding="10" Background="{DynamicResource AppSurface}" CornerRadius="5" ToolTip.Tip="Sprzedaże, w których klient zamówił, ale nic nie kupił (bez trwającej sprzedaży).">
 				<StackPanel>
 					<TextBlock FontSize="14" Foreground="Gray" Text="Nie odebrał" />
-					<TextBlock FontSize="28" FontWeight="Bold" Foreground="IndianRed" Text="{Binding MissedText}" />
+					<TextBlock FontSize="28" FontWeight="Bold" Foreground="{DynamicResource AppBad}" Text="{Binding MissedText}" />
 				</StackPanel>
 			</Border>
 		</UniformGrid>
@@ -56,7 +56,7 @@
 		<Grid Grid.Row="2" ColumnDefinitions="3*,2*" IsVisible="{Binding HasHistory}">
 			<Border BorderBrush="Gray" BorderThickness="2" Margin="0,0,5,0">
 				<Grid RowDefinitions="Auto,*">
-					<Grid Margin="8,6" ColumnDefinitions="2*,*,2*,*,*">
+					<Grid Margin="8,6" ColumnDefinitions="2*,1.1*,2.2*,1*,1.7*">
 						<TextBlock FontWeight="Bold" FontSize="16" Text="Sprzedaż" />
 						<TextBlock Grid.Column="1" FontWeight="Bold" FontSize="16" Text="Data" />
 						<TextBlock Grid.Column="2" FontWeight="Bold" FontSize="16" Text="Zamówione" />
@@ -67,7 +67,7 @@
 						<ItemsControl Items="{Binding Sales}">
 							<ItemsControl.ItemTemplate>
 								<DataTemplate>
-									<Grid Margin="8,4" ColumnDefinitions="2*,*,2*,*,*">
+									<Grid Margin="8,4" ColumnDefinitions="2*,1.1*,2.2*,1*,1.7*">
 										<TextBlock FontSize="18" TextWrapping="Wrap" Text="{Binding SaleName}" />
 										<TextBlock Grid.Column="1" FontSize="16" Foreground="Gray" Text="{Binding DateText}" />
 										<TextBlock Grid.Column="2" FontSize="16" TextWrapping="Wrap" Text="{Binding OrderedText}" />

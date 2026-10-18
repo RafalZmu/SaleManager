@@ -1,0 +1,34 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="SaleManeger.Views.SettingsView">
+	<Grid Margin="10,30,10,10" RowDefinitions="Auto,*">
+		<Button FontSize="25" HorizontalAlignment="Left" MinWidth="100" HorizontalContentAlignment="Center" Content="Cofnij" Command="{Binding ReturnCommand}" />
+		<StackPanel Grid.Row="1" Margin="10,25,10,0" Spacing="20" MaxWidth="700" HorizontalAlignment="Left">
+			<TextBlock FontSize="32" FontWeight="Bold" Text="Ustawienia" />
+
+			<StackPanel Spacing="6">
+				<TextBlock FontSize="22" FontWeight="SemiBold" Text="Motyw" />
+				<ComboBox FontSize="20" Width="300" Items="{Binding ThemeNames}" SelectedIndex="{Binding ThemeIndex, Mode=TwoWay}" />
+			</StackPanel>
+
+			<StackPanel Spacing="6">
+				<TextBlock FontSize="22" FontWeight="SemiBold" Text="Rozmiar tekstu i przycisków" />
+				<ComboBox FontSize="20" Width="300" Items="{Binding ScaleNames}" SelectedIndex="{Binding ScaleIndex, Mode=TwoWay}" />
+				<TextBlock FontSize="14" Foreground="Gray" TextWrapping="Wrap" Text="Powiększa cały program. Zmiany działają od razu i są zapamiętane na tym komputerze." />
+			</StackPanel>
+
+			<TextBlock FontSize="16" Foreground="{DynamicResource AppBad}" TextWrapping="Wrap" Text="{Binding StatusText}" IsVisible="{Binding StatusText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+			<Border BorderBrush="{DynamicResource AppBorder}" BorderThickness="0,1,0,0" Padding="0,20,0,0">
+				<StackPanel Spacing="6">
+					<TextBlock FontSize="22" FontWeight="SemiBold" Text="Dane" />
+					<Button FontSize="20" HorizontalAlignment="Left" Content="Kopie zapasowe" Command="{Binding OpenBackupsCommand}" />
+					<TextBlock FontSize="14" Foreground="Gray" TextWrapping="Wrap" Text="Lokalne kopie bazy danych i przywracanie ich po błędzie." />
+				</StackPanel>
+			</Border>
+		</StackPanel>
+	</Grid>
+</UserControl>

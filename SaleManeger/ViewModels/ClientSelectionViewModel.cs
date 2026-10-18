@@ -1,6 +1,7 @@
 using ReactiveUI;
 using SaleManeger.Models;
 using SaleManeger.Repositories;
+using SaleManeger.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -297,7 +298,7 @@ namespace SaleManeger.ViewModels
             foreach (var client in AllClients)
             {
                 client.Color = client.Products.Any(x => x.IsReserved == false) ? "Green" :
-                    client.Products.Any(x => x.IsReserved == true) ? "Red" : "White";
+                    client.Products.Any(x => x.IsReserved == true) ? "Red" : ThemeService.DefaultTextColor;
                 
                 var info = saleInfos.FirstOrDefault(x => x.ClientID == client.ID);
                 client.ExpectedArrivalTime = info?.ExpectedArrivalTime;

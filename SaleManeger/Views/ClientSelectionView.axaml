@@ -10,7 +10,7 @@
 		<Grid Margin="10,30,10,10" MinHeight="50" Grid.Row="0" ColumnDefinitions="Auto,Auto,*,Auto,Auto,Auto,Auto">
 			<Button Margin="0,0,5,0" FontSize="25" VerticalAlignment="Stretch" VerticalContentAlignment="Center" Grid.Column="0" Content="Cofnij" Command="{Binding	OpenProjectSelectionCommand}" />
 			<Button FontSize="25" VerticalAlignment="Stretch" VerticalContentAlignment="Center" Grid.Column="1" Content="Podsumowanie sprzedaży" Command="{Binding OpenSaleSummaryCommand}" />
-			<TextBox Margin="5,0" FontSize="20" Name="clientName" Text="{Binding ClientName}" VerticalAlignment="Stretch" VerticalContentAlignment="Center"  Grid.Column="2" Watermark="Wprowadz imie, nazwisko, numer telefonu lub tag (Ctrl+F)" />
+			<TextBox Margin="5,0" FontSize="20" Name="clientName" Text="{Binding ClientName}" VerticalAlignment="Stretch" VerticalContentAlignment="Center"  Grid.Column="2" Watermark="Szukaj: imię, numer lub tag (Ctrl+F)" />
 			<Panel Grid.Column="3">
 			<Button Name="filtr" FontSize="25" VerticalAlignment="Stretch" VerticalContentAlignment="Center" Content="Filtr" ToolTip.Tip="Filtruj po produktach, tagach, zamówieniach i ilości lub wartości">
 				<Button.Flyout>
@@ -130,7 +130,7 @@
 							<Grid Margin="5" ColumnDefinitions="Auto,100*,Auto,Auto,Auto,Auto">
 								<StackPanel Grid.Column="0" Orientation="Vertical" ToolTip.Tip="{Binding Notes}">
 									<TextBlock Foreground ="{Binding Color}" FontSize="40" Text="{Binding Name}" />
-									<TextBlock IsVisible="{Binding Tags, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Foreground="Orange" FontSize="16" Text="{Binding Tags}" />
+									<TextBlock IsVisible="{Binding Tags, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Foreground="{DynamicResource AppWarn}" FontSize="16" Text="{Binding Tags}" />
 								</StackPanel>
 								<TextBlock Grid.Column="1" Foreground ="{Binding Color}" Margin ="10,0,0,0" FontSize="40" Text="{Binding PhoneNumber}" />
 								<TextBlock Grid.Column="2" Foreground ="{Binding Color}" Margin ="20,0,20,0" FontSize="30" VerticalAlignment="Center" Text="{Binding ExpectedArrivalTime, StringFormat=\{0:dd.MM HH:mm\}}" />

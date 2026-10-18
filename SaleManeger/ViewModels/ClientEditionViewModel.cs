@@ -3,6 +3,7 @@ using AvaloniaEdit.Utils;
 using ReactiveUI;
 using SaleManeger.Models;
 using SaleManeger.Repositories;
+using SaleManeger.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -142,7 +143,7 @@ namespace SaleManeger.ViewModels
         public string CodesHint => _isShowingWolne
             ? "Dostępne minus zamówienia wszystkich klientów. Wartość ujemna = brakuje."
             : "Łącznie zamówione przez wszystkich klientów i jeszcze niekupione.";
-        public IBrush CodesHeaderBrush => _isShowingWolne ? Brushes.LightGreen : Brushes.Orange;
+        public IBrush CodesHeaderBrush => _isShowingWolne ? ThemeService.GoodBrush : ThemeService.WarnBrush;
         
         private List<Product> _requiredProducts;
 
@@ -307,7 +308,7 @@ namespace SaleManeger.ViewModels
 				AutoSaveStatus = "Autozapis czeka na poprawne dane";
 				return false;
 			}
-			AutoSaveStatus = $"Zapisano automatycznie {DateTime.Now:HH:mm:ss}";
+			AutoSaveStatus = $"Autozapis {DateTime.Now:HH:mm:ss}";
 			return true;
 		}
 

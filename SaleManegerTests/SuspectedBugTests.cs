@@ -108,4 +108,23 @@ internal class SuspectedBugTests
         var points = vm.NumberOfCliensSeries.ItemsSource as IEnumerable<OxyPlot.DataPoint>;
         Assert.That(points!.Select(p => p.Y), Is.EqualTo(new[] { 1.0, 2.0 }));
     }
+
+    /// <summary>"Kupione" values are the price paid: profit is their sum and the weight is money / price per kg.</summary>
+    [Test]
+    public void AllSalesSummary_ProfitIsTheMoneyPaid_AndWeightIsMoneyOverPrice()
+    {
+        var sale = _db.AddSale();
+        var apples = _db.AddProduct("Apples", "00", 2);
+        var beets = _db.AddProduct("Beets", "01", 5);
+        var client = _db.AddClient();
+        _db.AddOrder(client, apples, sale, "10", false);
+        _db.AddOrder(client, beets, sale, "20", false);
+
+        var vm = new AllSalesSummaryViewModel(_db.Repo);
+
+        var profit = (vm.SalesProfitSeries.ItemsSource as IEnumerable<OxyPlot.DataPoint>)!.Single().Y;
+        var weight = (vm.NumberOfSoldProductsSeries.ItemsSource as IEnumerable<OxyPlot.DataPoint>)!.Single().Y;
+        Assert.That(profit, Is.EqualTo(30));
+        Assert.That(weight, Is.EqualTo(9).Within(1e-9), "5 kg apples + 4 kg beets");
+    }
 }

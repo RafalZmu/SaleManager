@@ -20,13 +20,13 @@
 			<Grid Grid.Row="2" Grid.ColumnSpan="2" RowDefinitions="Auto, *">
 				
 				<!-- Table Header -->
-				<Border Background="#2D2D30" BorderBrush="#3E3E42" BorderThickness="1" CornerRadius="5,5,0,0" Padding="15,10,15,10" Margin="5,0,5,0">
+				<Border Background="{DynamicResource AppSurface}" BorderBrush="{DynamicResource AppBorder}" BorderThickness="1" CornerRadius="5,5,0,0" Padding="15,10,15,10" Margin="5,0,5,0">
 					<Grid ColumnDefinitions="*, 2.5*, 1.5*, 1.5*, 1.5*">
-						<TextBlock Grid.Column="0" Text="Kod" FontWeight="Bold" FontSize="18" Foreground="#E0E0E0"/>
-						<TextBlock Grid.Column="1" Text="Produkt" FontWeight="Bold" FontSize="18" Foreground="#E0E0E0"/>
-						<TextBlock Grid.Column="2" Text="Pozostałe zamówienia" FontWeight="Bold" FontSize="18" Foreground="#E0E0E0" TextAlignment="Left"/>
-						<TextBlock Grid.Column="3" Text="Zamówione ogólnie" FontWeight="Bold" FontSize="18" Foreground="#E0E0E0" TextAlignment="Left"/>
-						<TextBlock Grid.Column="4" Text="Sprzedane ogólnie" FontWeight="Bold" FontSize="18" Foreground="#E0E0E0" TextAlignment="Left"/>
+						<TextBlock Grid.Column="0" Text="Kod" FontWeight="Bold" FontSize="18" Foreground="{DynamicResource AppText}"/>
+						<TextBlock Grid.Column="1" Text="Produkt" FontWeight="Bold" FontSize="18" Foreground="{DynamicResource AppText}"/>
+						<TextBlock Grid.Column="2" Text="Pozostałe zamówienia" FontWeight="Bold" FontSize="18" Foreground="{DynamicResource AppText}" TextAlignment="Left"/>
+						<TextBlock Grid.Column="3" Text="Zamówione ogólnie" FontWeight="Bold" FontSize="18" Foreground="{DynamicResource AppText}" TextAlignment="Left"/>
+						<TextBlock Grid.Column="4" Text="Sprzedane ogólnie" FontWeight="Bold" FontSize="18" Foreground="{DynamicResource AppText}" TextAlignment="Left"/>
 					</Grid>
 				</Border>
 
@@ -35,13 +35,13 @@
 					<ItemsControl Items="{Binding FilteredSummaryItems}">
 						<ItemsControl.ItemTemplate>
 							<DataTemplate>
-								<Border BorderBrush="#3E3E42" BorderThickness="1,0,1,1" Padding="15,10,15,10" Background="Transparent">
+								<Border BorderBrush="{DynamicResource AppBorder}" BorderThickness="1,0,1,1" Padding="15,10,15,10" Background="Transparent">
 									<Grid ColumnDefinitions="*, 2.5*, 1.5*, 1.5*, 1.5*">
-										<TextBlock Grid.Column="0" Text="{Binding Code}" FontWeight="SemiBold" FontSize="20" Foreground="White" TextWrapping="Wrap"/>
-										<TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="SemiBold" FontSize="20" Foreground="White" TextWrapping="Wrap"/>
-										<TextBlock Grid.Column="2" Text="{Binding OrdersLeft}" FontSize="20" Foreground="#BBBBBB" TextAlignment="Left" TextWrapping="Wrap"/>
-										<TextBlock Grid.Column="3" Text="{Binding AllOrders}" FontSize="20" Foreground="#BBBBBB" TextAlignment="Left" TextWrapping="Wrap"/>
-										<TextBlock Grid.Column="4" Text="{Binding SoldAll}" FontSize="20" Foreground="#BBBBBB" TextAlignment="Left" TextWrapping="Wrap"/>
+										<TextBlock Grid.Column="0" Text="{Binding Code}" FontWeight="SemiBold" FontSize="20" Foreground="{DynamicResource AppText}" TextWrapping="Wrap"/>
+										<TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="SemiBold" FontSize="20" Foreground="{DynamicResource AppText}" TextWrapping="Wrap"/>
+										<TextBlock Grid.Column="2" Text="{Binding OrdersLeft}" FontSize="20" Foreground="{DynamicResource AppTextSoft}" TextAlignment="Left" TextWrapping="Wrap"/>
+										<TextBlock Grid.Column="3" Text="{Binding AllOrders}" FontSize="20" Foreground="{DynamicResource AppTextSoft}" TextAlignment="Left" TextWrapping="Wrap"/>
+										<TextBlock Grid.Column="4" Text="{Binding SoldAll}" FontSize="20" Foreground="{DynamicResource AppTextSoft}" TextAlignment="Left" TextWrapping="Wrap"/>
 									</Grid>
 								</Border>
 							</DataTemplate>
@@ -50,14 +50,14 @@
 				</ScrollViewer>
 			</Grid>
 		</Grid>
-		<Border IsVisible="{Binding IsError}" Background="#90000000" Padding="20">
+		<Border IsVisible="{Binding IsError}" Background="{DynamicResource AppOverlay}" Padding="20">
 			<Grid>
 				<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
 					<ItemsControl Items="{Binding Errors}">
 						<ItemsControl.ItemTemplate>
 							<DataTemplate>
 								<!-- Display each error message in a TextBlock -->
-								<TextBlock Text="{Binding}" FontSize="20" Foreground="White" TextAlignment="Center"/>
+								<TextBlock Text="{Binding}" FontSize="20" Foreground="{DynamicResource AppText}" TextAlignment="Center"/>
 							</DataTemplate>
 						</ItemsControl.ItemTemplate>
 					</ItemsControl>

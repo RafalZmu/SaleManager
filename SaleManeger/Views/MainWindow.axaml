@@ -9,8 +9,7 @@
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
         Title="SaleManeger"
-        Background="#1f1f1f"
-		Content="{Binding Content}"
+        Background="{DynamicResource AppBackground}"
 		ExtendClientAreaToDecorationsHint="True">
 
 	<Design.DataContext>
@@ -18,6 +17,9 @@
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
 		<vm:MainWindowViewModel/>
 	</Design.DataContext>
+	<LayoutTransformControl LayoutTransform="{Binding UiScaleTransform}">
+		<ContentControl Content="{Binding Content}" />
+	</LayoutTransformControl>
 	<Window.Styles>
 		<Style Selector="TextBox:focus /template/	Border#PART_BorderElement">
 			<Setter Property="BorderBrush" Value="Green"/>

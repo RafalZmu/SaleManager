@@ -33,10 +33,10 @@
 					<!-- Data Grid for Metrics -->
 					<Grid Grid.Row="1" RowDefinitions="Auto, *">
 						<!-- Table Header -->
-						<Border Background="#2D2D30" BorderBrush="#3E3E42" BorderThickness="1" CornerRadius="5,5,0,0" Padding="15,10,15,10">
+						<Border Background="{DynamicResource AppSurface}" BorderBrush="{DynamicResource AppBorder}" BorderThickness="1" CornerRadius="5,5,0,0" Padding="15,10,15,10">
 							<Grid ColumnDefinitions="*, 1.5*">
-								<TextBlock Grid.Column="0" Text="Produkt" FontWeight="Bold" FontSize="18" Foreground="#E0E0E0"/>
-								<TextBlock Grid.Column="1" Text="Różnica (Sprzedane vs Zamówione)" FontWeight="Bold" FontSize="18" Foreground="#E0E0E0" TextAlignment="Left"/>
+								<TextBlock Grid.Column="0" Text="Produkt" FontWeight="Bold" FontSize="18" Foreground="{DynamicResource AppText}"/>
+								<TextBlock Grid.Column="1" Text="Różnica (Sprzedane vs Zamówione)" FontWeight="Bold" FontSize="18" Foreground="{DynamicResource AppText}" TextAlignment="Left"/>
 							</Grid>
 						</Border>
 
@@ -45,9 +45,9 @@
 							<ItemsControl Items="{Binding AccuracyMetrics}">
 								<ItemsControl.ItemTemplate>
 									<DataTemplate>
-										<Border BorderBrush="#3E3E42" BorderThickness="1,0,1,1" Padding="15,10,15,10" Background="Transparent">
+										<Border BorderBrush="{DynamicResource AppBorder}" BorderThickness="1,0,1,1" Padding="15,10,15,10" Background="Transparent">
 											<Grid ColumnDefinitions="*, 1.5*">
-												<TextBlock Grid.Column="0" Text="{Binding ProductName}" FontWeight="SemiBold" FontSize="20" Foreground="White" />
+												<TextBlock Grid.Column="0" Text="{Binding ProductName}" FontWeight="SemiBold" FontSize="20" Foreground="{DynamicResource AppText}" />
 												<TextBlock Grid.Column="1" Text="{Binding PercentageString}" FontSize="20" FontWeight="Bold" TextAlignment="Left" Foreground="{Binding PercentageColor}"/>
 											</Grid>
 										</Border>
@@ -69,10 +69,10 @@
 					           Text="Brak danych. Przychód pojawi się, gdy w jakiejś sprzedaży zapiszesz pierwsze zamówienia lub zakupy klientów." />
 					<TextBlock IsVisible="{Binding HasSaleTrends}" Text="{Binding TrendSummary}" FontSize="20" Margin="0,0,0,10" TextWrapping="Wrap" />
 					<Grid Grid.Row="1" RowDefinitions="*,*" IsVisible="{Binding HasSaleTrends}">
-						<oxy:PlotView Model="{Binding TrendPlot}" Background="#1f1f1f" Margin="0,0,0,10" MinHeight="180" />
+						<oxy:PlotView Model="{Binding TrendPlot}" Background="{DynamicResource AppBackground}" Margin="0,0,0,10" MinHeight="180" />
 						<Grid Grid.Row="1" RowDefinitions="Auto, *">
-							<Border Background="#2D2D30" BorderBrush="#3E3E42" BorderThickness="1" CornerRadius="5,5,0,0" Padding="15,8">
-								<Grid ColumnDefinitions="2*,*,*,*,*,*,*,*">
+							<Border Background="{DynamicResource AppSurface}" BorderBrush="{DynamicResource AppBorder}" BorderThickness="1" CornerRadius="5,5,0,0" Padding="15,8">
+								<Grid ColumnDefinitions="2*,1.3*,1.3*,1.1*,0.9*,1.4*,1.5*,1.2*">
 									<TextBlock Text="Sprzedaż" FontWeight="Bold" FontSize="16" />
 									<TextBlock Grid.Column="1" Text="Data" FontWeight="Bold" FontSize="16" />
 									<TextBlock Grid.Column="2" Text="Przychód" FontWeight="Bold" FontSize="16" />
@@ -87,14 +87,14 @@
 								<ItemsControl Items="{Binding SaleTrends}">
 									<ItemsControl.ItemTemplate>
 										<DataTemplate>
-											<Border BorderBrush="#3E3E42" BorderThickness="1,0,1,1" Padding="15,6">
-												<Grid ColumnDefinitions="2*,*,*,*,*,*,*,*">
+											<Border BorderBrush="{DynamicResource AppBorder}" BorderThickness="1,0,1,1" Padding="15,6">
+												<Grid ColumnDefinitions="2*,1.3*,1.3*,1.1*,0.9*,1.4*,1.5*,1.2*">
 													<TextBlock Text="{Binding SaleName}" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" />
 													<TextBlock Grid.Column="1" Text="{Binding DateText}" FontSize="16" Foreground="Gray" />
-													<TextBlock Grid.Column="2" Text="{Binding RevenueText}" FontSize="18" Foreground="LightGreen" />
+													<TextBlock Grid.Column="2" Text="{Binding RevenueText}" FontSize="18" Foreground="{DynamicResource AppGood}" />
 													<TextBlock Grid.Column="3" Text="{Binding ChangeText}" FontSize="16" />
 													<TextBlock Grid.Column="4" Text="{Binding ClientsBought}" FontSize="18" />
-													<TextBlock Grid.Column="5" Text="{Binding ClientsMissed}" FontSize="18" Foreground="IndianRed" />
+													<TextBlock Grid.Column="5" Text="{Binding ClientsMissed}" FontSize="18" Foreground="{DynamicResource AppBad}" />
 													<TextBlock Grid.Column="6" Text="{Binding BasketText}" FontSize="16" />
 													<TextBlock Grid.Column="7" Text="{Binding SoldKgText}" FontSize="16" />
 												</Grid>
@@ -129,13 +129,13 @@
 					<TextBlock Grid.Row="2" IsVisible="{Binding !HasProductPerformance}" FontSize="20" Foreground="Gray" TextWrapping="Wrap"
 					           Text="Brak danych w tym zakresie. Produkty pojawią się, gdy klienci zamówią lub kupią coś w zapisanych sprzedażach." />
 					<Grid Grid.Row="2" RowDefinitions="Auto, *" IsVisible="{Binding HasProductPerformance}">
-						<Border Background="#2D2D30" BorderBrush="#3E3E42" BorderThickness="1" CornerRadius="5,5,0,0" Padding="15,8">
-							<Grid ColumnDefinitions="2*,*,*,*,*,*,*">
+						<Border Background="{DynamicResource AppSurface}" BorderBrush="{DynamicResource AppBorder}" BorderThickness="1" CornerRadius="5,5,0,0" Padding="15,8">
+							<Grid ColumnDefinitions="2*,1.2*,1.2*,1.2*,1.2*,1.1*,1.2*">
 								<TextBlock Text="Produkt" FontWeight="Bold" FontSize="16" />
 								<TextBlock Grid.Column="1" Text="Zamówione" FontWeight="Bold" FontSize="16" />
 								<TextBlock Grid.Column="2" Text="Sprzedane" FontWeight="Bold" FontSize="16" />
 								<TextBlock Grid.Column="3" Text="Trafność" FontWeight="Bold" FontSize="16" ToolTip.Tip="Sprzedane w porównaniu z zamówionymi" />
-								<TextBlock Grid.Column="4" Text="Średnio / sprzedaż" FontWeight="Bold" FontSize="16" />
+								<TextBlock Grid.Column="4" Text="Średnio" FontWeight="Bold" FontSize="16" ToolTip.Tip="Ile kg średnio sprzedano na jedną sprzedaż" />
 								<TextBlock Grid.Column="5" Text="Trend" FontWeight="Bold" FontSize="16" ToolTip.Tip="Ostatnia sprzedaż w porównaniu ze średnią z wcześniejszych" />
 								<TextBlock Grid.Column="6" Text="Zalecane" FontWeight="Bold" FontSize="16" />
 							</Grid>
@@ -144,15 +144,15 @@
 							<ItemsControl Items="{Binding ProductPerformance}">
 								<ItemsControl.ItemTemplate>
 									<DataTemplate>
-										<Border BorderBrush="#3E3E42" BorderThickness="1,0,1,1" Padding="15,6">
-											<Grid ColumnDefinitions="2*,*,*,*,*,*,*">
+										<Border BorderBrush="{DynamicResource AppBorder}" BorderThickness="1,0,1,1" Padding="15,6">
+											<Grid ColumnDefinitions="2*,1.2*,1.2*,1.2*,1.2*,1.1*,1.2*">
 												<TextBlock Text="{Binding Name}" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" />
 												<TextBlock Grid.Column="1" Text="{Binding OrderedText}" FontSize="16" />
 												<TextBlock Grid.Column="2" Text="{Binding SoldText}" FontSize="16" />
 												<TextBlock Grid.Column="3" Text="{Binding AccuracyText}" FontSize="16" />
 												<TextBlock Grid.Column="4" Text="{Binding AverageSoldText}" FontSize="16" />
 												<TextBlock Grid.Column="5" Text="{Binding Trend}" FontSize="16" />
-												<TextBlock Grid.Column="6" Text="{Binding SuggestedText}" FontSize="18" FontWeight="Bold" Foreground="Orange" />
+												<TextBlock Grid.Column="6" Text="{Binding SuggestedText}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource AppWarn}" />
 											</Grid>
 										</Border>
 									</DataTemplate>

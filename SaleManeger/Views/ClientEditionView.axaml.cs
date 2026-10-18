@@ -5,6 +5,7 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using AvaloniaEdit.Rendering;
 using SaleManeger.Models;
+using SaleManeger.Services;
 using SaleManeger.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -24,10 +25,18 @@ public partial class ClientEditionView : UserControl
     {
         InitializeComponent();
         _autoSaveTimer.Tick += (_, _) => (DataContext as ClientEditionViewModel)?.AutoSave();
-        AttachedToVisualTree += (_, _) => _autoSaveTimer.Start();
-        DetachedFromVisualTree += (_, _) => _autoSaveTimer.Stop();
         // Ctrl+S saves and stays, Esc does the same as the Cofnij button (which saves too).
-        AddHandler(KeyDownEvent, Shortcut_KeyDown, RoutingStrategies.Tunnel);
+        // Listened for on the whole window, because with no focus inside this screen the keys never pass through it.
+        AttachedToVisualTree += (_, e) =>
+        {
+            _autoSaveTimer.Start();
+            (e.Root as InputElement)?.AddHandler(KeyDownEvent, Shortcut_KeyDown, RoutingStrategies.Tunnel);
+        };
+        DetachedFromVisualTree += (_, e) =>
+        {
+            _autoSaveTimer.Stop();
+            (e.Root as InputElement)?.RemoveHandler(KeyDownEvent, Shortcut_KeyDown);
+        };
         sale.AddHandler(KeyUpEvent, Sale_InputHandler, RoutingStrategies.Tunnel);
         order.AddHandler(KeyUpEvent, Order_InputHandler, RoutingStrategies.Tunnel);
         
@@ -306,14 +315,14 @@ public class OrderColorizer : DocumentColorizingTransformer
         {
             ChangeLinePart(line.Offset, line.EndOffset, element =>
             {
-                element.TextRunProperties.ForegroundBrush = Brushes.LightGreen;
+                element.TextRunProperties.ForegroundBrush = ThemeService.GoodBrush;
             });
         }
         else if (OrangeLines.Contains(line.LineNumber))
         {
             ChangeLinePart(line.Offset, line.EndOffset, element =>
             {
-                element.TextRunProperties.ForegroundBrush = Brushes.Orange;
+                element.TextRunProperties.ForegroundBrush = ThemeService.WarnBrush;
             });
         }
     }

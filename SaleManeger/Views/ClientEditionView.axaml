@@ -26,7 +26,7 @@
 			<CheckBox Grid.Column="4" Margin="10,0,0,0" FontSize="20" VerticalAlignment="Center" IsChecked="{Binding AddToSmsGroup, Mode=TwoWay}" Content="Dodać do wysyłki SMS" />
 		</Grid>
 		
-		<Expander Grid.Row="1" Margin="5,0,5,5" HorizontalAlignment="Stretch" IsExpanded="False" FontSize="18" Header="{Binding NotesHeader}">
+		<Expander Grid.Row="1" Margin="5,0,5,5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" IsExpanded="False" FontSize="18" Header="{Binding NotesHeader}">
 			<Grid ColumnDefinitions="*,*" Margin="0,5,0,0">
 				<TextBox Text="{Binding Notes}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="80" MaxHeight="160" FontSize="18"
 				         Watermark="Notatki o kliencie (np. odbiera w piątki, uczulony na orzechy)" />
@@ -55,22 +55,22 @@
 		<TextBlock Grid.Row="2" Text="{Binding WarningMessage}" Foreground="Red" FontSize="18" FontWeight="Bold" Margin="10,0,10,5" IsVisible="{Binding WarningMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
 		
 		<Grid Grid.Row="3" RowDefinitions="Auto, *, Auto" ColumnDefinitions="*,*,Auto">
-            <TextBlock Grid.Column="0" Grid.Row="0" Margin="2,0,5,3" FontSize="16" FontWeight="SemiBold" Foreground="#FFC857"
+            <TextBlock Grid.Column="0" Grid.Row="0" Margin="2,0,5,3" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource AppWarn}"
                        Text="Zamówienie klienta (zarezerwowane)"
                        ToolTip.Tip="Produkty, które TEN klient zamówił. Zielona linia = już kupione, pomarańczowa = brakuje na stanie." />
-            <TextBlock Grid.Column="1" Grid.Row="0" Margin="7,0,0,3" FontSize="16" FontWeight="SemiBold" Foreground="#7FD18B"
+            <TextBlock Grid.Column="1" Grid.Row="0" Margin="7,0,0,3" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource AppGood}"
                        Text="Kupione przez klienta"
                        ToolTip.Tip="Produkty, które TEN klient faktycznie kupił (sprzedane)." />
             <Grid Grid.Column="0" Grid.Row="1" Grid.RowSpan="2" Margin="0,0,5,0">
-                <avedit:TextEditor Name="order" FontSize="20" ShowLineNumbers="False" WordWrap="True" Background="Black" Foreground="White" BorderBrush="Gray" BorderThickness="2" Padding="5" />
+                <avedit:TextEditor Name="order" FontSize="20" ShowLineNumbers="False" WordWrap="True" Background="{DynamicResource AppEditorBackground}" Foreground="{DynamicResource AppEditorForeground}" BorderBrush="Gray" BorderThickness="2" Padding="5" />
                 <TextBlock Name="orderWatermark" Text="Zamówienie" Foreground="DimGray" FontSize="20" Margin="7,7,0,0" IsHitTestVisible="False" />
             </Grid>
             <Grid Grid.Column="1" Grid.Row="1" Margin="5,0,0,5">
-                <avedit:TextEditor Name="sale" FontSize="20" ShowLineNumbers="False" WordWrap="True" Background="Black" Foreground="White" BorderBrush="Gray" BorderThickness="2" Padding="5" />
+                <avedit:TextEditor Name="sale" FontSize="20" ShowLineNumbers="False" WordWrap="True" Background="{DynamicResource AppEditorBackground}" Foreground="{DynamicResource AppEditorForeground}" BorderBrush="Gray" BorderThickness="2" Padding="5" />
                 <TextBlock Name="saleWatermark" Text="Kupione" Foreground="DimGray" FontSize="20" Margin="7,7,0,0" IsHitTestVisible="False" />
             </Grid>
             <Grid Grid.Column="2" Grid.Row="0" Grid.RowSpan="3" RowDefinitions="Auto, Auto, *" Margin="5,0,0,0">
-                <Button Content="{Binding DisplayModeText}" Command="{Binding ToggleDisplayModeCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,0,0,5" FontSize="20" FontWeight="SemiBold" Background="#2D2D30"/>
+                <Button Content="{Binding DisplayModeText}" Command="{Binding ToggleDisplayModeCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,0,0,5" FontSize="20" FontWeight="SemiBold" Background="{DynamicResource AppSurface}"/>
                 <TextBlock Grid.Row="1" Margin="2,0,0,3" Text="{Binding CodesHeader}" FontSize="16" FontWeight="Bold" Foreground="{Binding CodesHeaderBrush}" ToolTip.Tip="{Binding CodesHint}" />
                 <TextBox Grid.Row="2" Name="codes" IsReadOnly="True" UseFloatingWatermark="True" AcceptsReturn="True" Text="{Binding Codes}" Watermark="Kody" ToolTip.Tip="{Binding CodesHint}" />
             </Grid>

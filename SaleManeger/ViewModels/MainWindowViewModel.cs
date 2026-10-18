@@ -1,3 +1,4 @@
+using Avalonia.Media;
 using ReactiveUI;
 using SaleManeger.Models;
 using SaleManeger.Repositories;
@@ -24,6 +25,12 @@ namespace SaleManeger.ViewModels
 
         #region Public Properties
 
+        // Theme and text size; changed on the settings screen.
+        public AppSettings Settings { get; }
+
+        // The whole window content is scaled with this, so text, buttons and spacing grow together.
+        public ITransform UiScaleTransform => new ScaleTransform(Settings.UiScale, Settings.UiScale);
+
         public ViewModelBase Content
         {
             get => content;
@@ -42,6 +49,8 @@ namespace SaleManeger.ViewModels
 
         public MainWindowViewModel()
         {
+            Settings = AppSettingsStore.Load(AppSettingsStore.DefaultPath);
+            ThemeService.Apply(Settings);
             _saleContext = new SaleContext();
             // Copy the data before anything touches it, so a bad session can always be rolled back.
             BackupService.TryAutoBackup(_saleContext.DbPath, BackupService.DefaultDirectory, TimeSpan.FromHours(1));
@@ -153,9 +162,9 @@ namespace SaleManeger.ViewModels
             {
                 OpenGlobalSmsBroadcast();
             });
-            projectViewModel.OpenBackupsCommand.Subscribe(model =>
+            projectViewModel.OpenSettingsCommand.Subscribe(model =>
             {
-                OpenBackups();
+                OpenSettings();
             });
         }
 
@@ -220,6 +229,21 @@ namespace SaleManeger.ViewModels
 
         #region Private Methods
 
+        private void OpenSettings()
+        {
+            var settingsViewModel = new SettingsViewModel(Settings, AppSettingsStore.DefaultPath,
+                changed: () => this.RaisePropertyChanged(nameof(UiScaleTransform)));
+            Content = settingsViewModel;
+            settingsViewModel.ReturnCommand.Subscribe(model =>
+            {
+                OpenProjectSelection();
+            });
+            settingsViewModel.OpenBackupsCommand.Subscribe(model =>
+            {
+                OpenBackups();
+            });
+        }
+
         private void OpenBackups()
         {
             var backupViewModel = new BackupViewModel(_saleContext.DbPath, BackupService.DefaultDirectory,
@@ -227,7 +251,7 @@ namespace SaleManeger.ViewModels
             Content = backupViewModel;
             backupViewModel.ReturnCommand.Subscribe(model =>
             {
-                OpenProjectSelection();
+                OpenSettings();
             });
             backupViewModel.ConfirmRestoreCommand.Subscribe(restored =>
             {

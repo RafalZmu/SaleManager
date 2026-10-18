@@ -2,6 +2,7 @@ using Avalonia.Media;
 using ReactiveUI;
 using SaleManeger.Models;
 using SaleManeger.Repositories;
+using SaleManeger.Services;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -32,9 +33,9 @@ namespace SaleManeger.ViewModels
             : "";
 
         public IBrush StatusBrush =>
-            HasPurchase ? Brushes.LightGreen
-            : HasOrder && IsCurrentSale ? Brushes.Orange
-            : Brushes.IndianRed;
+            HasPurchase ? ThemeService.GoodBrush
+            : HasOrder && IsCurrentSale ? ThemeService.WarnBrush
+            : ThemeService.BadBrush;
     }
 
     public class ClientHistoryProductRow

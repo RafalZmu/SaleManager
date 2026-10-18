@@ -35,7 +35,7 @@
 								<Grid Margin="8" ColumnDefinitions="Auto,Auto,*,Auto">
 									<TextBlock FontSize="26" Text="{Binding TimeText}" />
 									<TextBlock Grid.Column="1" Margin="20,0,0,0" FontSize="20" VerticalAlignment="Center" Foreground="Gray" Text="{Binding SizeText}" />
-									<TextBlock Grid.Column="2" Margin="20,0,0,0" FontSize="20" VerticalAlignment="Center" Foreground="Orange" Text="{Binding Kind}" />
+									<TextBlock Grid.Column="2" Margin="20,0,0,0" FontSize="20" VerticalAlignment="Center" Foreground="{DynamicResource AppWarn}" Text="{Binding Kind}" />
 									<Button Grid.Column="3" FontSize="20" Content="Przywróć" Command="{Binding $parent[UserControl].DataContext.AskRestoreCommand}" CommandParameter="{Binding}" />
 								</Grid>
 							</DataTemplate>

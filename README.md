@@ -6,7 +6,17 @@
 - Unlimited creation of sales is supported.
 - Products can be linked to two user-selected keys for efficient insertion.
 - Clients are shared across different sales.
-- Client filtering is available based on ordered or bought products, name, and phone number.
+- Client filtering is available based on ordered or bought products, name, phone number, tags and ordered amount/value.
+- Clients can have notes and tags (for example `po terminie`) that can be used to filter the list.
+- A client history screen (`Historia`) shows a client's sales, money spent, orders not collected and favourite products.
+- The client screen saves itself every 20 seconds; closing the program saves first.
+- Statistics: order accuracy, revenue and trends per sale, and product performance with a suggested quantity for the next sale.
+- Automatic local backups of the database (at program start, last 20 kept) with a restore screen (`Ustawienia` -> `Kopie zapasowe`).
+- Dark and light theme and three text sizes (`Ustawienia`).
+
+# Keyboard shortcuts
+- Client list: `Ctrl+F` search, `Enter` in the search opens the first client, `Ctrl+N` new client, `Esc` clears the search and then goes back.
+- Client screen: `Ctrl+S` save, `Esc` save and go back.
 
 # Usage Guide 
 ![image](https://github.com/RafalZmu/SaleManager/assets/36961066/5c44e398-27e1-46ff-a4fc-b8df1c6f11dc)
