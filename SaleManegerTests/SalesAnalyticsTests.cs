@@ -196,7 +196,7 @@ internal class SalesAnalyticsTests
     {
         ThreeSales();
 
-        var vm = new StatisticsViewModel(_db.Repo);
+        var vm = StatisticsHelper.Open(_db.Repo);
 
         Assert.Multiple(() =>
         {
@@ -216,7 +216,7 @@ internal class SalesAnalyticsTests
     [Test]
     public void StatisticsViewModel_NoData_ShowsEmptyStates()
     {
-        var vm = new StatisticsViewModel(_db.Repo);
+        var vm = StatisticsHelper.Open(_db.Repo);
 
         Assert.Multiple(() =>
         {

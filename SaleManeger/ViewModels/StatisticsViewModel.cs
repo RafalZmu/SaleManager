@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Linq;
 using Avalonia.Media;
 using OxyPlot;
 using OxyPlot.Axes;
@@ -59,11 +60,28 @@ namespace SaleManeger.ViewModels
 
     public class StatisticsViewModel : ViewModelBase
     {
-        private readonly IProjectRepository _dataBase;
+        // Loaded once, off the UI thread, when the tab opens; switching sale or range then only recalculates in memory.
+        private SalesSnapshot _data;
+        private List<SaleTrendRow> _trends;
+
+        private bool _isLoading;
+        public bool IsLoading
+        {
+            get => _isLoading;
+            private set => this.RaiseAndSetIfChanged(ref _isLoading, value);
+        }
+
+        // "Ładowanie..." while the data is read; the reason when reading failed; empty otherwise.
+        private string _loadMessage = "";
+        public string LoadMessage
+        {
+            get => _loadMessage;
+            private set => this.RaiseAndSetIfChanged(ref _loadMessage, value);
+        }
 
         public ReactiveCommand<Unit, Unit> ReturnCommand { get; }
 
-        public ObservableCollection<SaleScope> SaleScopes { get; set; }
+        public ObservableCollection<SaleScope> SaleScopes { get; } = new();
         
         private SaleScope _selectedSaleScope;
         public SaleScope SelectedSaleScope
@@ -88,13 +106,32 @@ namespace SaleManeger.ViewModels
 
         // ---- Przychód i trendy ----
 
-        public ObservableCollection<SaleTrendRow> SaleTrends { get; private set; } = new();
+        private ObservableCollection<SaleTrendRow> _saleTrends = new();
+        public ObservableCollection<SaleTrendRow> SaleTrends
+        {
+            get => _saleTrends;
+            private set
+            {
+                this.RaiseAndSetIfChanged(ref _saleTrends, value);
+                this.RaisePropertyChanged(nameof(HasSaleTrends));
+            }
+        }
 
-        public PlotModel TrendPlot { get; private set; }
+        private PlotModel _trendPlot;
+        public PlotModel TrendPlot
+        {
+            get => _trendPlot;
+            private set => this.RaiseAndSetIfChanged(ref _trendPlot, value);
+        }
 
         public bool HasSaleTrends => SaleTrends.Count > 0;
 
-        public string TrendSummary { get; private set; } = "";
+        private string _trendSummary = "";
+        public string TrendSummary
+        {
+            get => _trendSummary;
+            private set => this.RaiseAndSetIfChanged(ref _trendSummary, value);
+        }
 
         // ---- Wyniki produktów ----
 
@@ -133,17 +170,36 @@ namespace SaleManeger.ViewModels
 
         public StatisticsViewModel(IProjectRepository db)
         {
-            _dataBase = db;
-            ReturnCommand = ReactiveCommand.Create(() => { });
+            // Going back is held until the read ends: the database context must not be used from two places at once.
+            ReturnCommand = ReactiveCommand.Create(() => { }, this.WhenAnyValue(x => x.IsLoading, loading => !loading));
 
+            IsLoading = true;
+            LoadMessage = "Ładowanie statystyk...";
+            Observable.Start(() => SalesSnapshot.Load(db), RxApp.TaskpoolScheduler)
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(OnLoaded, OnLoadFailed);
+        }
+
+        private void OnLoaded(SalesSnapshot data)
+        {
+            _data = data;
             InitializeScopes();
             CalculateSaleTrends();
             SelectedPerformanceScope = PerformanceScopes[1];
+            LoadMessage = "";
+            IsLoading = false;
+        }
+
+        private void OnLoadFailed(Exception error)
+        {
+            LoadMessage = "Nie udało się wczytać statystyk: " + error.Message;
+            IsLoading = false;
         }
 
         private void CalculateSaleTrends()
         {
-            SaleTrends = new ObservableCollection<SaleTrendRow>(SalesAnalytics.BuildSaleTrends(_dataBase));
+            _trends = SalesAnalytics.BuildSaleTrends(_data);
+            SaleTrends = new ObservableCollection<SaleTrendRow>(_trends);
 
             if (SaleTrends.Count == 0)
             {
@@ -158,10 +214,16 @@ namespace SaleManeger.ViewModels
             TrendPlot = CreateTrendPlot(SaleTrends);
         }
 
-        private static PlotModel CreateTrendPlot(IReadOnlyList<SaleTrendRow> rows)
+        // More points than this and the sale names on the axis turn into an unreadable smear.
+        private const int MaxChartSales = 24;
+
+        private static PlotModel CreateTrendPlot(IReadOnlyList<SaleTrendRow> allRows)
         {
+            var rows = allRows.Count > MaxChartSales ? allRows.Skip(allRows.Count - MaxChartSales).ToList() : allRows;
             var plot = new PlotModel
             {
+                Subtitle = rows.Count < allRows.Count ? $"Wykres: ostatnie {rows.Count} z {allRows.Count} sprzedaży (pełna lista poniżej)" : null,
+                SubtitleColor = ThemeService.PlotText,
                 TextColor = ThemeService.PlotText,
                 PlotAreaBorderColor = ThemeService.PlotText,
                 TitleColor = ThemeService.PlotText,
@@ -218,16 +280,15 @@ namespace SaleManeger.ViewModels
         private void CalculateProductPerformance()
         {
             ProductPerformance = new ObservableCollection<ProductPerformanceRow>(
-                SalesAnalytics.BuildProductPerformance(_dataBase, SelectedPerformanceScope.LastSales));
+                SalesAnalytics.BuildProductPerformance(_data, _trends, SelectedPerformanceScope.LastSales));
         }
 
         private void InitializeScopes()
         {
-            SaleScopes = new ObservableCollection<SaleScope>();
+            SaleScopes.Clear();
             SaleScopes.Add(new SaleScope { SaleID = "ALL", DisplayName = "Wszystkie zsumowane (Średnia)" });
 
-            var sales = _dataBase.GetAll<Sale>().ToList();
-            foreach (var s in sales)
+            foreach (var s in _data.Sales)
             {
                 SaleScopes.Add(new SaleScope { SaleID = s.SaleID, DisplayName = s.SaleName });
             }
@@ -238,63 +299,48 @@ namespace SaleManeger.ViewModels
 
         private void CalculateAccuracyMetrics()
         {
-            // Reset collection
-            AccuracyMetrics = new ObservableCollection<OrderAccuracyMetric>();
+            // Ordered kg and money paid per product, summed in one pass over the lines in scope.
+            IEnumerable<OrderLine> lines = SelectedSaleScope.SaleID == "ALL"
+                ? _data.Lines
+                : _data.LinesBySale.GetValueOrDefault(SelectedSaleScope.SaleID) ?? Enumerable.Empty<OrderLine>();
 
-            var allClientOrdersList = _dataBase.GetAll<ClientOrder>().ToList();
-            var allProductsList = _dataBase.GetAll<Product>().ToList();
-            
-            // Filter by specific Sale or global aggregate
-            IEnumerable<ClientOrder> relevantOrders;
-            if (SelectedSaleScope.SaleID == "ALL")
+            var sums = new Dictionary<string, (double ordered, double paid)>();
+            foreach (var line in lines)
             {
-                relevantOrders = allClientOrdersList.Where(x => x.ProductID != OrderValue.CommentProductId);
-            }
-            else
-            {
-                relevantOrders = allClientOrdersList.Where(x => x.SaleID == SelectedSaleScope.SaleID && x.ProductID != OrderValue.CommentProductId);
+                if (line.ProductID == null)
+                    continue;
+                sums.TryGetValue(line.ProductID, out var s);
+                sums[line.ProductID] = line.IsReserved ? (s.ordered + line.Amount, s.paid) : (s.ordered, s.paid + line.Amount);
             }
 
-            var culture = new System.Globalization.CultureInfo("en-US");
-
-            foreach (var product in allProductsList.OrderBy(p => p.Code))
+            var metrics = new List<OrderAccuracyMetric>();
+            foreach (var product in _data.Products.OrderBy(p => p.Code))
             {
-                var productOrders = relevantOrders.Where(x => x.ProductID == product.ID).ToList();
-
-                var reservedOrders = productOrders.Where(x => x.IsReserved).ToList();
-                var soldOrders = productOrders.Where(x => !x.IsReserved).ToList();
-
-                double totalOrdered = reservedOrders.Sum(x => OrderValue.Parse(x.Value));
-
-                double totalSold = soldOrders.Sum(x => OrderValue.Parse(x.Value));
-                
+                sums.TryGetValue(product.ID, out var s);
+                double totalOrdered = s.ordered;
+                double totalSold = s.paid;
                 if (product.PricePerKg > 0)
                 {
                     totalSold /= product.PricePerKg;
                 }
 
-                double percentage = 0;
-
                 if (totalOrdered == 0 && totalSold == 0)
                 {
                     continue; // Skip products not involved in this scope at all
                 }
-                
-                if (totalOrdered == 0 && totalSold > 0)
-                {
-                    percentage = double.PositiveInfinity; // Infinite % increase
-                }
-                else
-                {
-                    percentage = ((totalSold - totalOrdered) / totalOrdered) * 100.0;
-                }
 
-                AccuracyMetrics.Add(new OrderAccuracyMetric
+                // Sold without any order is an infinite increase.
+                double percentage = totalOrdered == 0 && totalSold > 0
+                    ? double.PositiveInfinity
+                    : (totalSold - totalOrdered) / totalOrdered * 100.0;
+
+                metrics.Add(new OrderAccuracyMetric
                 {
                     ProductName = product.Name,
                     PercentageDifference = percentage
                 });
             }
+            AccuracyMetrics = new ObservableCollection<OrderAccuracyMetric>(metrics);
         }
     }
 }

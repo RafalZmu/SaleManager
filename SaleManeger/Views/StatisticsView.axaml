@@ -7,7 +7,11 @@
              x:Class="SaleManeger.Views.StatisticsView">
 	<Grid RowDefinitions="Auto, *">
 		<!-- Top Navigation -->
-		<Button Content="Wróć" Margin="10" FontSize="20" HorizontalAlignment="Left" Command="{Binding ReturnCommand}" />
+		<StackPanel Orientation="Horizontal" Spacing="15">
+			<Button Content="Wróć" Margin="10" FontSize="20" HorizontalAlignment="Left" Command="{Binding ReturnCommand}" />
+			<TextBlock Text="{Binding LoadMessage}" IsVisible="{Binding LoadMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+			           VerticalAlignment="Center" FontSize="20" Foreground="{DynamicResource AppWarn}" />
+		</StackPanel>
 
 		<!-- Tabs Area -->
 		<TabControl Grid.Row="1" Margin="10,0,10,10">

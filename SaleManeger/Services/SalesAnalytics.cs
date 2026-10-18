@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using SaleManeger.Models;
 using SaleManeger.Repositories;
 using System;
@@ -64,38 +65,124 @@ namespace SaleManeger.Services
         public string AccuracyText => AccuracyPercent == null ? "-" : $"{(AccuracyPercent >= 0 ? "+" : "")}{AccuracyPercent.Value.ToString("0.0", CultureInfo.InvariantCulture)}%";
     }
 
+    /// <summary>One order line cut down to what the statistics need, with the amount already parsed.</summary>
+    public sealed class OrderLine
+    {
+        public string SaleID { get; init; }
+        public string ClientID { get; init; }
+        public string ProductID { get; init; }
+        public bool IsReserved { get; init; }
+
+        // Parsed once when loading: kg for ordered lines, money for bought lines.
+        public double Amount { get; init; }
+    }
+
+    /// <summary>
+    /// Everything the Statystyki tab reads, loaded from the database in one pass and without change tracking,
+    /// so switching sale or range afterwards costs no database access.
+    /// </summary>
+    public sealed class SalesSnapshot
+    {
+        public List<Sale> Sales { get; init; }
+        public List<Product> Products { get; init; }
+        public Dictionary<string, Product> ProductsById { get; init; }
+        public List<OrderLine> Lines { get; init; }
+
+        // Earliest order date per sale, read separately because parsing a date for every line is slow on big databases.
+        public Dictionary<string, DateTime> FirstActivityBySale { get; init; }
+        public Dictionary<string, List<OrderLine>> LinesBySale { get; init; }
+
+        public static SalesSnapshot Load(IProjectRepository dataBase)
+        {
+            var products = dataBase.GetAll<Product>().AsNoTracking().ToList();
+            var sales = dataBase.GetAll<Sale>().AsNoTracking().ToList();
+
+            // Projecting to plain values skips entity materialization and change tracking, the slow part on big databases.
+            var lines = dataBase.GetAll<ClientOrder>()
+                .Where(x => x.ProductID == null || x.ProductID != OrderValue.CommentProductId)
+                .Select(x => new { x.SaleID, x.ClientID, x.ProductID, x.IsReserved, x.Value })
+                .AsEnumerable()
+                .Select(x => new OrderLine
+                {
+                    SaleID = x.SaleID,
+                    ClientID = x.ClientID,
+                    ProductID = x.ProductID,
+                    IsReserved = x.IsReserved,
+                    Amount = OrderValue.Parse(x.Value)
+                })
+                .ToList();
+
+            var firstActivity = dataBase.GetAll<ClientOrder>()
+                .Where(x => x.ProductID == null || x.ProductID != OrderValue.CommentProductId)
+                .GroupBy(x => x.SaleID)
+                .Select(g => new { SaleID = g.Key, First = g.Min(x => x.Date) })
+                .ToDictionary(x => x.SaleID, x => x.First);
+
+            return new SalesSnapshot
+            {
+                FirstActivityBySale = firstActivity,
+                Sales = sales,
+                Products = products,
+                ProductsById = products.ToDictionary(x => x.ID),
+                Lines = lines,
+                LinesBySale = lines.GroupBy(x => x.SaleID).ToDictionary(x => x.Key, x => x.ToList())
+            };
+        }
+
+        /// <summary>Kilograms behind a bought line: money paid divided by the product's price per kg.</summary>
+        public double KgFromPrice(OrderLine bought)
+        {
+            if (bought.ProductID == null || !ProductsById.TryGetValue(bought.ProductID, out var product) || product.PricePerKg <= 0)
+                return 0;
+            return bought.Amount / product.PricePerKg;
+        }
+    }
+
     /// <summary>
     /// Numbers across sales. Bought lines hold the price paid ("Kupione" values are money), so kilograms are
     /// worked out as price / price per kg, the same way the order accuracy tab does it.
     /// </summary>
     public static class SalesAnalytics
     {
-        public static List<SaleTrendRow> BuildSaleTrends(IProjectRepository dataBase)
+        public static List<SaleTrendRow> BuildSaleTrends(IProjectRepository dataBase) =>
+            BuildSaleTrends(SalesSnapshot.Load(dataBase));
+
+        public static List<SaleTrendRow> BuildSaleTrends(SalesSnapshot data)
         {
-            var products = dataBase.GetAll<Product>().ToDictionary(x => x.ID);
-            var orders = dataBase.GetAll<ClientOrder>().ToList().Where(x => !OrderValue.IsComment(x)).ToList();
             var rows = new List<SaleTrendRow>();
 
-            foreach (var sale in dataBase.GetAll<Sale>().ToList())
+            foreach (var sale in data.Sales)
             {
-                var saleOrders = orders.Where(x => x.SaleID == sale.SaleID).ToList();
-                if (saleOrders.Count == 0)
+                if (!data.LinesBySale.TryGetValue(sale.SaleID, out var saleLines) || saleLines.Count == 0)
                     continue;
 
-                var bought = saleOrders.Where(x => !x.IsReserved).ToList();
-                var buyers = bought.Select(x => x.ClientID).ToHashSet();
-                var orderers = saleOrders.Where(x => x.IsReserved).Select(x => x.ClientID).ToHashSet();
+                var buyers = new HashSet<string>();
+                var orderers = new HashSet<string>();
+                double revenue = 0, soldKg = 0;
+                foreach (var line in saleLines)
+                {
+                    if (line.IsReserved)
+                    {
+                        orderers.Add(line.ClientID);
+                    }
+                    else
+                    {
+                        buyers.Add(line.ClientID);
+                        revenue += line.Amount;
+                        soldKg += data.KgFromPrice(line);
+                    }
+                }
 
                 rows.Add(new SaleTrendRow
                 {
                     SaleID = sale.SaleID,
                     SaleName = sale.SaleName,
-                    FirstActivity = saleOrders.Min(x => x.Date),
+                    FirstActivity = data.FirstActivityBySale.GetValueOrDefault(sale.SaleID),
                     ClientsOrdered = orderers.Count,
                     ClientsBought = buyers.Count,
                     ClientsMissed = orderers.Count(x => !buyers.Contains(x)),
-                    Revenue = bought.Sum(x => OrderValue.Parse(x.Value)),
-                    SoldKg = bought.Sum(x => KgFromPrice(products, x))
+                    Revenue = revenue,
+                    SoldKg = soldKg
                 });
             }
 
@@ -111,26 +198,41 @@ namespace SaleManeger.Services
         /// <param name="lastSales">How many of the newest sales to look at; 0 means all of them.</param>
         public static List<ProductPerformanceRow> BuildProductPerformance(IProjectRepository dataBase, int lastSales)
         {
-            var trends = BuildSaleTrends(dataBase);
+            var data = SalesSnapshot.Load(dataBase);
+            return BuildProductPerformance(data, BuildSaleTrends(data), lastSales);
+        }
+
+        /// <param name="trends">The sales in time order, from <see cref="BuildSaleTrends(SalesSnapshot)"/>.</param>
+        public static List<ProductPerformanceRow> BuildProductPerformance(SalesSnapshot data, IReadOnlyList<SaleTrendRow> trends, int lastSales)
+        {
             var inScope = (lastSales > 0 ? trends.Skip(Math.Max(0, trends.Count - lastSales)) : trends).Select(x => x.SaleID).ToList();
-            var products = dataBase.GetAll<Product>().ToList();
-            var productsById = products.ToDictionary(x => x.ID);
-            var orders = dataBase.GetAll<ClientOrder>().ToList()
-                .Where(x => !OrderValue.IsComment(x) && x.ProductID != null && inScope.Contains(x.SaleID))
-                .ToList();
+
+            // One pass over the lines of the sales in range: ordered kg, sold kg and line count per (sale, product).
+            var perSaleAndProduct = new Dictionary<(string sale, string product), (double ordered, double sold, int lines)>();
+            foreach (var saleId in inScope)
+            {
+                if (!data.LinesBySale.TryGetValue(saleId, out var saleLines))
+                    continue;
+                foreach (var line in saleLines)
+                {
+                    if (line.ProductID == null)
+                        continue;
+                    var key = (saleId, line.ProductID);
+                    perSaleAndProduct.TryGetValue(key, out var sums);
+                    perSaleAndProduct[key] = line.IsReserved
+                        ? (sums.ordered + line.Amount, sums.sold, sums.lines + 1)
+                        : (sums.ordered, sums.sold + data.KgFromPrice(line), sums.lines + 1);
+                }
+            }
 
             var rows = new List<ProductPerformanceRow>();
-            foreach (var product in products.OrderBy(x => x.Code))
+            foreach (var product in data.Products.OrderBy(x => x.Code))
             {
                 var perSale = new List<(double ordered, double sold)>();
                 foreach (var saleId in inScope)
                 {
-                    var lines = orders.Where(x => x.SaleID == saleId && x.ProductID == product.ID).ToList();
-                    if (lines.Count == 0)
-                        continue;
-                    perSale.Add((
-                        lines.Where(x => x.IsReserved).Sum(x => OrderValue.Parse(x.Value)),
-                        lines.Where(x => !x.IsReserved).Sum(x => KgFromPrice(productsById, x))));
+                    if (perSaleAndProduct.TryGetValue((saleId, product.ID), out var sums))
+                        perSale.Add((sums.ordered, sums.sold));
                 }
                 if (perSale.Count == 0)
                     continue;
@@ -159,13 +261,6 @@ namespace SaleManeger.Services
                 rows.Add(row);
             }
             return rows.OrderByDescending(x => x.SoldKg).ThenBy(x => x.Name).ToList();
-        }
-
-        private static double KgFromPrice(Dictionary<string, Product> products, ClientOrder bought)
-        {
-            if (bought.ProductID == null || !products.TryGetValue(bought.ProductID, out var product) || product.PricePerKg <= 0)
-                return 0;
-            return OrderValue.Parse(bought.Value) / product.PricePerKg;
         }
     }
 }

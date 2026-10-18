@@ -224,7 +224,7 @@ internal class DataViewModelTests
         // sold value is money: 30 / 2 per kg = 15 kg vs 10 kg ordered => +50%
         _db.AddOrder(c, apples, sale, "30", false);
 
-        var vm = new StatisticsViewModel(_db.Repo);
+        var vm = StatisticsHelper.Open(_db.Repo);
 
         Assert.That(Metric(vm, "Apples").PercentageDifference, Is.EqualTo(50).Within(0.001));
         Assert.That(Metric(vm, "Apples").PercentageString, Is.EqualTo("+50.0%"));
@@ -237,7 +237,7 @@ internal class DataViewModelTests
         var apples = _db.AddProduct("Apples", "00");
         _db.AddOrder(_db.AddClient(), apples, sale, "5", false);
 
-        var vm = new StatisticsViewModel(_db.Repo);
+        var vm = StatisticsHelper.Open(_db.Repo);
 
         Assert.That(double.IsPositiveInfinity(Metric(vm, "Apples").PercentageDifference), Is.True);
         Assert.That(Metric(vm, "Apples").PercentageString, Is.EqualTo("Brak danych"));
@@ -256,7 +256,7 @@ internal class DataViewModelTests
         _db.AddOrder(c, apples, sale2, "10", true);
         _db.AddOrder(c, apples, sale2, "20", false);
 
-        var vm = new StatisticsViewModel(_db.Repo);
+        var vm = StatisticsHelper.Open(_db.Repo);
         Assert.That(vm.SaleScopes.Count, Is.EqualTo(3));
         Assert.That(vm.AccuracyMetrics.Select(x => x.ProductName), Is.EqualTo(new[] { "Apples" }));
         Assert.That(Metric(vm, "Apples").PercentageDifference, Is.EqualTo(25).Within(0.001)); // (25-20)/20
