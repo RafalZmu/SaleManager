@@ -4,9 +4,14 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
 using Avalonia.Media;
+using OxyPlot;
+using OxyPlot.Axes;
+using OxyPlot.Legends;
+using OxyPlot.Series;
 using ReactiveUI;
 using SaleManeger.Models;
 using SaleManeger.Repositories;
+using SaleManeger.Services;
 
 namespace SaleManeger.ViewModels
 {
@@ -44,6 +49,14 @@ namespace SaleManeger.ViewModels
         }
     }
 
+    public class PerformanceScope
+    {
+        public string DisplayName { get; set; }
+
+        // How many of the newest sales are looked at; 0 = all.
+        public int LastSales { get; set; }
+    }
+
     public class StatisticsViewModel : ViewModelBase
     {
         private readonly IProjectRepository _dataBase;
@@ -73,12 +86,138 @@ namespace SaleManeger.ViewModels
             set => this.RaiseAndSetIfChanged(ref _accuracyMetrics, value);
         }
 
+        // ---- Przychód i trendy ----
+
+        public ObservableCollection<SaleTrendRow> SaleTrends { get; private set; } = new();
+
+        public PlotModel TrendPlot { get; private set; }
+
+        public bool HasSaleTrends => SaleTrends.Count > 0;
+
+        public string TrendSummary { get; private set; } = "";
+
+        // ---- Wyniki produktów ----
+
+        public List<PerformanceScope> PerformanceScopes { get; } = new()
+        {
+            new PerformanceScope { DisplayName = "Ostatnie 3 sprzedaże", LastSales = 3 },
+            new PerformanceScope { DisplayName = "Ostatnie 5 sprzedaży", LastSales = 5 },
+            new PerformanceScope { DisplayName = "Ostatnie 10 sprzedaży", LastSales = 10 },
+            new PerformanceScope { DisplayName = "Wszystkie sprzedaże", LastSales = 0 },
+        };
+
+        private PerformanceScope _selectedPerformanceScope;
+        public PerformanceScope SelectedPerformanceScope
+        {
+            get => _selectedPerformanceScope;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _selectedPerformanceScope, value);
+                if (value != null)
+                    CalculateProductPerformance();
+            }
+        }
+
+        private ObservableCollection<ProductPerformanceRow> _productPerformance = new();
+        public ObservableCollection<ProductPerformanceRow> ProductPerformance
+        {
+            get => _productPerformance;
+            private set
+            {
+                this.RaiseAndSetIfChanged(ref _productPerformance, value);
+                this.RaisePropertyChanged(nameof(HasProductPerformance));
+            }
+        }
+
+        public bool HasProductPerformance => ProductPerformance.Count > 0;
+
         public StatisticsViewModel(IProjectRepository db)
         {
             _dataBase = db;
             ReturnCommand = ReactiveCommand.Create(() => { });
 
             InitializeScopes();
+            CalculateSaleTrends();
+            SelectedPerformanceScope = PerformanceScopes[1];
+        }
+
+        private void CalculateSaleTrends()
+        {
+            SaleTrends = new ObservableCollection<SaleTrendRow>(SalesAnalytics.BuildSaleTrends(_dataBase));
+
+            if (SaleTrends.Count == 0)
+            {
+                TrendSummary = "";
+                TrendPlot = null;
+                return;
+            }
+
+            var best = SaleTrends.OrderByDescending(x => x.Revenue).First();
+            TrendSummary = $"Razem {SaleTrends.Count} sprzedaży, przychód {SaleTrendRow.Money(SaleTrends.Sum(x => x.Revenue))}. " +
+                           $"Najlepsza: {best.SaleName} ({best.RevenueText}).";
+            TrendPlot = CreateTrendPlot(SaleTrends);
+        }
+
+        private static PlotModel CreateTrendPlot(IReadOnlyList<SaleTrendRow> rows)
+        {
+            var plot = new PlotModel
+            {
+                TextColor = OxyColors.White,
+                PlotAreaBorderColor = OxyColors.White,
+                TitleColor = OxyColors.White,
+            };
+            plot.Axes.Add(new CategoryAxis
+            {
+                Position = AxisPosition.Bottom,
+                ItemsSource = rows.Select(x => x.SaleName).ToList(),
+                TextColor = OxyColors.White,
+                TicklineColor = OxyColors.White,
+                Angle = rows.Count > 6 ? -35 : 0,
+            });
+            plot.Axes.Add(new LinearAxis
+            {
+                Position = AxisPosition.Left,
+                Key = "revenue",
+                Title = "Przychód (zł)",
+                Minimum = 0,
+                TextColor = OxyColors.LightGreen,
+                TitleColor = OxyColors.LightGreen,
+                TicklineColor = OxyColors.LightGreen,
+            });
+            plot.Axes.Add(new LinearAxis
+            {
+                Position = AxisPosition.Right,
+                Key = "clients",
+                Title = "Klienci",
+                Minimum = 0,
+                TextColor = OxyColors.CornflowerBlue,
+                TitleColor = OxyColors.CornflowerBlue,
+                TicklineColor = OxyColors.CornflowerBlue,
+            });
+            plot.Series.Add(new LineSeries
+            {
+                Title = "Przychód",
+                Color = OxyColors.LightGreen,
+                YAxisKey = "revenue",
+                MarkerType = MarkerType.Circle,
+                ItemsSource = rows.Select((x, i) => new DataPoint(i, x.Revenue)).ToList(),
+            });
+            plot.Series.Add(new LineSeries
+            {
+                Title = "Klienci, którzy kupili",
+                Color = OxyColors.CornflowerBlue,
+                YAxisKey = "clients",
+                MarkerType = MarkerType.Diamond,
+                ItemsSource = rows.Select((x, i) => new DataPoint(i, x.ClientsBought)).ToList(),
+            });
+            plot.Legends.Add(new Legend { LegendPosition = LegendPosition.TopLeft, LegendTextColor = OxyColors.White });
+            return plot;
+        }
+
+        private void CalculateProductPerformance()
+        {
+            ProductPerformance = new ObservableCollection<ProductPerformanceRow>(
+                SalesAnalytics.BuildProductPerformance(_dataBase, SelectedPerformanceScope.LastSales));
         }
 
         private void InitializeScopes()

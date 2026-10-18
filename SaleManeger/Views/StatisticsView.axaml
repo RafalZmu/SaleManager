@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:oxy="clr-namespace:OxyPlot.Avalonia;assembly=OxyPlot.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
              x:Class="SaleManeger.Views.StatisticsView">
 	<Grid RowDefinitions="Auto, *">
@@ -48,6 +49,110 @@
 											<Grid ColumnDefinitions="*, 1.5*">
 												<TextBlock Grid.Column="0" Text="{Binding ProductName}" FontWeight="SemiBold" FontSize="20" Foreground="White" />
 												<TextBlock Grid.Column="1" Text="{Binding PercentageString}" FontSize="20" FontWeight="Bold" TextAlignment="Left" Foreground="{Binding PercentageColor}"/>
+											</Grid>
+										</Border>
+									</DataTemplate>
+								</ItemsControl.ItemTemplate>
+							</ItemsControl>
+						</ScrollViewer>
+					</Grid>
+				</Grid>
+			</TabItem>
+
+			<!-- TAB 2: Przychód i trendy -->
+			<TabItem>
+				<TabItem.Header>
+					<TextBlock Text="Przychód i trendy" FontSize="24" FontWeight="Bold" Margin="10,5"/>
+				</TabItem.Header>
+				<Grid RowDefinitions="Auto,*" Margin="0,15,0,0">
+					<TextBlock Grid.Row="1" IsVisible="{Binding !HasSaleTrends}" FontSize="20" Foreground="Gray" TextWrapping="Wrap"
+					           Text="Brak danych. Przychód pojawi się, gdy w jakiejś sprzedaży zapiszesz pierwsze zamówienia lub zakupy klientów." />
+					<TextBlock IsVisible="{Binding HasSaleTrends}" Text="{Binding TrendSummary}" FontSize="20" Margin="0,0,0,10" TextWrapping="Wrap" />
+					<Grid Grid.Row="1" RowDefinitions="*,*" IsVisible="{Binding HasSaleTrends}">
+						<oxy:PlotView Model="{Binding TrendPlot}" Background="#1f1f1f" Margin="0,0,0,10" MinHeight="180" />
+						<Grid Grid.Row="1" RowDefinitions="Auto, *">
+							<Border Background="#2D2D30" BorderBrush="#3E3E42" BorderThickness="1" CornerRadius="5,5,0,0" Padding="15,8">
+								<Grid ColumnDefinitions="2*,*,*,*,*,*,*,*">
+									<TextBlock Text="Sprzedaż" FontWeight="Bold" FontSize="16" />
+									<TextBlock Grid.Column="1" Text="Data" FontWeight="Bold" FontSize="16" />
+									<TextBlock Grid.Column="2" Text="Przychód" FontWeight="Bold" FontSize="16" />
+									<TextBlock Grid.Column="3" Text="Zmiana" FontWeight="Bold" FontSize="16" ToolTip.Tip="Przychód w porównaniu z poprzednią sprzedażą" />
+									<TextBlock Grid.Column="4" Text="Kupiło" FontWeight="Bold" FontSize="16" />
+									<TextBlock Grid.Column="5" Text="Nie odebrało" FontWeight="Bold" FontSize="16" ToolTip.Tip="Klienci, którzy zamówili, ale nic nie kupili" />
+									<TextBlock Grid.Column="6" Text="Średni koszyk" FontWeight="Bold" FontSize="16" />
+									<TextBlock Grid.Column="7" Text="Sprzedane" FontWeight="Bold" FontSize="16" ToolTip.Tip="Przeliczone z ceny i ceny za kg każdego produktu" />
+								</Grid>
+							</Border>
+							<ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+								<ItemsControl Items="{Binding SaleTrends}">
+									<ItemsControl.ItemTemplate>
+										<DataTemplate>
+											<Border BorderBrush="#3E3E42" BorderThickness="1,0,1,1" Padding="15,6">
+												<Grid ColumnDefinitions="2*,*,*,*,*,*,*,*">
+													<TextBlock Text="{Binding SaleName}" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" />
+													<TextBlock Grid.Column="1" Text="{Binding DateText}" FontSize="16" Foreground="Gray" />
+													<TextBlock Grid.Column="2" Text="{Binding RevenueText}" FontSize="18" Foreground="LightGreen" />
+													<TextBlock Grid.Column="3" Text="{Binding ChangeText}" FontSize="16" />
+													<TextBlock Grid.Column="4" Text="{Binding ClientsBought}" FontSize="18" />
+													<TextBlock Grid.Column="5" Text="{Binding ClientsMissed}" FontSize="18" Foreground="IndianRed" />
+													<TextBlock Grid.Column="6" Text="{Binding BasketText}" FontSize="16" />
+													<TextBlock Grid.Column="7" Text="{Binding SoldKgText}" FontSize="16" />
+												</Grid>
+											</Border>
+										</DataTemplate>
+									</ItemsControl.ItemTemplate>
+								</ItemsControl>
+							</ScrollViewer>
+						</Grid>
+					</Grid>
+				</Grid>
+			</TabItem>
+
+			<!-- TAB 3: Wyniki produktów -->
+			<TabItem>
+				<TabItem.Header>
+					<TextBlock Text="Wyniki produktów" FontSize="24" FontWeight="Bold" Margin="10,5"/>
+				</TabItem.Header>
+				<Grid RowDefinitions="Auto,Auto,*" Margin="0,15,0,0">
+					<StackPanel Orientation="Horizontal" Spacing="15" Margin="0,0,0,8">
+						<TextBlock Text="Zakres:" VerticalAlignment="Center" FontSize="20" FontWeight="SemiBold"/>
+						<ComboBox Items="{Binding PerformanceScopes}" SelectedItem="{Binding SelectedPerformanceScope, Mode=TwoWay}" FontSize="20" Width="300">
+							<ComboBox.ItemTemplate>
+								<DataTemplate>
+									<TextBlock Text="{Binding DisplayName}" />
+								</DataTemplate>
+							</ComboBox.ItemTemplate>
+						</ComboBox>
+					</StackPanel>
+					<TextBlock Grid.Row="1" Margin="0,0,0,8" FontSize="14" Foreground="Gray" TextWrapping="Wrap"
+					           Text="Zalecane na sprzedaż = średnia z większej wartości (zamówione albo sprzedane) w sprzedażach, w których produkt się pojawił, zaokrąglona w górę do 0,5 kg. To podpowiedź, nie wyrocznia." />
+					<TextBlock Grid.Row="2" IsVisible="{Binding !HasProductPerformance}" FontSize="20" Foreground="Gray" TextWrapping="Wrap"
+					           Text="Brak danych w tym zakresie. Produkty pojawią się, gdy klienci zamówią lub kupią coś w zapisanych sprzedażach." />
+					<Grid Grid.Row="2" RowDefinitions="Auto, *" IsVisible="{Binding HasProductPerformance}">
+						<Border Background="#2D2D30" BorderBrush="#3E3E42" BorderThickness="1" CornerRadius="5,5,0,0" Padding="15,8">
+							<Grid ColumnDefinitions="2*,*,*,*,*,*,*">
+								<TextBlock Text="Produkt" FontWeight="Bold" FontSize="16" />
+								<TextBlock Grid.Column="1" Text="Zamówione" FontWeight="Bold" FontSize="16" />
+								<TextBlock Grid.Column="2" Text="Sprzedane" FontWeight="Bold" FontSize="16" />
+								<TextBlock Grid.Column="3" Text="Trafność" FontWeight="Bold" FontSize="16" ToolTip.Tip="Sprzedane w porównaniu z zamówionymi" />
+								<TextBlock Grid.Column="4" Text="Średnio / sprzedaż" FontWeight="Bold" FontSize="16" />
+								<TextBlock Grid.Column="5" Text="Trend" FontWeight="Bold" FontSize="16" ToolTip.Tip="Ostatnia sprzedaż w porównaniu ze średnią z wcześniejszych" />
+								<TextBlock Grid.Column="6" Text="Zalecane" FontWeight="Bold" FontSize="16" />
+							</Grid>
+						</Border>
+						<ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+							<ItemsControl Items="{Binding ProductPerformance}">
+								<ItemsControl.ItemTemplate>
+									<DataTemplate>
+										<Border BorderBrush="#3E3E42" BorderThickness="1,0,1,1" Padding="15,6">
+											<Grid ColumnDefinitions="2*,*,*,*,*,*,*">
+												<TextBlock Text="{Binding Name}" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" />
+												<TextBlock Grid.Column="1" Text="{Binding OrderedText}" FontSize="16" />
+												<TextBlock Grid.Column="2" Text="{Binding SoldText}" FontSize="16" />
+												<TextBlock Grid.Column="3" Text="{Binding AccuracyText}" FontSize="16" />
+												<TextBlock Grid.Column="4" Text="{Binding AverageSoldText}" FontSize="16" />
+												<TextBlock Grid.Column="5" Text="{Binding Trend}" FontSize="16" />
+												<TextBlock Grid.Column="6" Text="{Binding SuggestedText}" FontSize="18" FontWeight="Bold" Foreground="Orange" />
 											</Grid>
 										</Border>
 									</DataTemplate>
