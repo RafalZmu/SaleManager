@@ -38,6 +38,15 @@ namespace SaleManeger.ViewModels
         // Product choices for the rules: a leading "all products" entry followed by the real products.
         public List<Product> FilterProducts { get; }
 
+        // Filters set in the flyout: checked products, the order/sale restriction and valid advanced rules.
+        // The name search is not counted, it is visible in its own box.
+        public int ActiveFilterCount =>
+            (Products?.Count(p => p.IsReserved) ?? 0)
+            + (AreAllClientsShowing ? 0 : 1)
+            + AdvancedFilters.Count(x => x.IsActive);
+
+        public bool HasActiveFilters => ActiveFilterCount > 0;
+
         public ReactiveCommand<Unit, Unit> AddFilterCommand { get; }
         public ReactiveCommand<ClientFilterRule, Unit> RemoveFilterCommand { get; }
         public bool AreAllClientsShowing { get; set; } = true;
@@ -267,6 +276,8 @@ namespace SaleManeger.ViewModels
             tempList.Add(AreClientsWithOrderShowing);
             tempList.Add(AreClientsWithSaleShowing);
             tempList.Add(AreAllClientsShowing);
+            this.RaisePropertyChanged(nameof(ActiveFilterCount));
+            this.RaisePropertyChanged(nameof(HasActiveFilters));
             return tempList;
         }
 

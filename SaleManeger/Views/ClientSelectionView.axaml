@@ -11,7 +11,8 @@
 			<Button Margin="0,0,5,0" FontSize="25" VerticalAlignment="Stretch" VerticalContentAlignment="Center" Grid.Column="0" Content="Cofnij" Command="{Binding	OpenProjectSelectionCommand}" />
 			<Button FontSize="25" VerticalAlignment="Stretch" VerticalContentAlignment="Center" Grid.Column="1" Content="Podsumowanie sprzedaży" Command="{Binding OpenSaleSummaryCommand}" />
 			<TextBox Margin="5,0" FontSize="20" Name="clientName" Text="{Binding ClientName}" VerticalAlignment="Stretch" VerticalContentAlignment="Center"  Grid.Column="2" Watermark="Wprowadz imie, nazwisko lub numer telefonu" />
-			<Button Name="filtr" FontSize="25" VerticalAlignment="Stretch" VerticalContentAlignment="Center"  Grid.Column="3" Content="Filtr">
+			<Panel Grid.Column="3">
+			<Button Name="filtr" FontSize="25" VerticalAlignment="Stretch" VerticalContentAlignment="Center" Content="Filtr">
 				<Button.Flyout>
 					<Flyout Placement="Bottom">
 						<StackPanel Orientation="Vertical">
@@ -91,6 +92,10 @@
 					</Flyout>
 				</Button.Flyout>
 			</Button>
+			<Border IsVisible="{Binding HasActiveFilters}" IsHitTestVisible="False" Background="Red" CornerRadius="10" MinWidth="20" Height="20" Padding="5,0" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-8,-8,0">
+				<TextBlock Text="{Binding ActiveFilterCount}" Foreground="White" FontSize="13" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+			</Border>
+			</Panel>
 			<Button Margin="5,0" FontSize="25"  VerticalAlignment="Stretch" VerticalContentAlignment="Center"  Grid.Column="4" Content="Add client" Command="{Binding $parent[UserControl].DataContext.OpenClientEditionCommand}" CommandParameter="{Binding	#clientName.Text}" />
 			<Button Margin="5,0" FontSize="25"  VerticalAlignment="Stretch" VerticalContentAlignment="Center"  Grid.Column="5" Content="Więcej" Command="{Binding $parent[UserControl].DataContext.OpenMoreSettingsCommand}">
 			</Button>

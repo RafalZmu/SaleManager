@@ -494,6 +494,35 @@ internal class DataViewModelTests
     }
 
     [Test]
+    public void ClientSelection_ActiveFilterCount_CountsEverythingSetInTheFlyout()
+    {
+        var (vm, _, _, _) = AdvancedFilterSetup();
+        Assert.That(vm.ActiveFilterCount, Is.EqualTo(0));
+        Assert.That(vm.HasActiveFilters, Is.False);
+
+        var raised = new List<string?>();
+        vm.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
+
+        vm.Products.First().IsReserved = true;
+        vm.AreAllClientsShowing = false;
+        vm.UpdateClientsCommand.Execute().Subscribe();
+        Assert.That(vm.ActiveFilterCount, Is.EqualTo(2));
+        Assert.That(vm.HasActiveFilters, Is.True);
+        Assert.That(raised, Does.Contain(nameof(ClientSelectionViewModel.HasActiveFilters)));
+
+        vm.AddFilterCommand.Execute().Subscribe();
+        Assert.That(vm.ActiveFilterCount, Is.EqualTo(2)); // no threshold yet, rule is ignored
+        vm.AdvancedFilters.Single().ThresholdText = "5";
+        Assert.That(vm.ActiveFilterCount, Is.EqualTo(3));
+
+        vm.Products.First().IsReserved = false;
+        vm.AreAllClientsShowing = true;
+        vm.AdvancedFilters.Clear();
+        vm.UpdateClientsCommand.Execute().Subscribe();
+        Assert.That(vm.HasActiveFilters, Is.False);
+    }
+
+    [Test]
     public void ClientSelection_NewClientCommand_ForNonGuidCreatesBlankClient()
     {
         var vm = new ClientSelectionViewModel(_db.AddSale(), _db.Repo, null);
