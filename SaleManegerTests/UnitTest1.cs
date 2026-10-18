@@ -240,7 +240,7 @@ internal class Tests
         {
             ClientOrderID = Guid.NewGuid().ToString(),
             IsReserved = false,
-            ClientID = clients[0].ID,
+            ClientID = clients[1].ID,
             ProductID = product.ID,
             Value = "5",
             SaleID = saleID,
@@ -250,7 +250,7 @@ internal class Tests
         {
             ClientOrderID = Guid.NewGuid().ToString(),
             IsReserved = true,
-            ClientID = clients[0].ID,
+            ClientID = clients[1].ID,
             ProductID = product.ID,
             Value = "2",
             SaleID = saleID,
@@ -264,7 +264,7 @@ internal class Tests
         {
             ClientOrderID = Guid.NewGuid().ToString(),
             IsReserved = false,
-            ClientID = clients[0].ID,
+            ClientID = clients[2].ID,
             ProductID = product.ID,
             Value = "5",
             SaleID = saleID,
@@ -274,7 +274,7 @@ internal class Tests
         {
             ClientOrderID = Guid.NewGuid().ToString(),
             IsReserved = false,
-            ClientID = clients[0].ID,
+            ClientID = clients[2].ID,
             ProductID = product.ID,
             Value = "2",
             SaleID = saleID,
@@ -289,9 +289,10 @@ internal class Tests
         var saleSummaryViewModel = new SaleSummaryViewModel(_dataBase, saleID);
 
         //Assert
-        Assert.That(double.Parse(saleSummaryViewModel.AllOrders.Split(": ")[1], CultureInfo.InvariantCulture), Is.EqualTo(9));
-        Assert.That(double.Parse(saleSummaryViewModel.OrdersLeft.Split(": ")[1], CultureInfo.InvariantCulture), Is.EqualTo(7));
-        Assert.That(double.Parse(saleSummaryViewModel.SoldAll.Split(": ")[1], CultureInfo.InvariantCulture), Is.EqualTo(12));
+        var item = saleSummaryViewModel.SummaryItems.Single(x => x.Name == "Product1");
+        Assert.That(double.Parse(item.AllOrders, CultureInfo.InvariantCulture), Is.EqualTo(9));
+        Assert.That(double.Parse(item.OrdersLeft, CultureInfo.InvariantCulture), Is.EqualTo(7));
+        Assert.That(double.Parse(item.SoldAll, CultureInfo.InvariantCulture), Is.EqualTo(12));
     }
 
     #endregion Public Methods

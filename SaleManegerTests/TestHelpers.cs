@@ -90,7 +90,7 @@ namespace SaleManegerTests
             {
                 database.Delete<Sale>(sale);
             }
-
+            database.Save();
         }
     }
 }
