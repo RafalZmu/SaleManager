@@ -44,7 +44,7 @@ namespace SaleManeger.ViewModels
 		public ReactiveCommand<Unit, string> OpenClientSelectionCommand { get; }
         public ReactiveCommand<Unit, Unit> ToggleDisplayModeCommand { get; }
         
-        private bool _isShowingWolne = true;
+        private bool _isShowingWolne = false;
         // The button names the view you will switch TO; the header below it names the view you are looking at.
         public string DisplayModeText => _isShowingWolne ? "Przełącz na: Zamówione" : "Przełącz na: Wolne";
         public string CodesHeader => _isShowingWolne ? "WOLNE (na stanie)" : "ZAMÓWIONE (razem)";
