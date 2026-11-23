@@ -7,6 +7,7 @@
 			 x:Class="SaleManeger.Views.ClientEditionView">
 
 	<Grid Margin="10,30,10,10" RowDefinitions="Auto, Auto, Auto, *">
+		<StackPanel>
 		<Grid Margin="5" ColumnDefinitions="Auto, *,*,Auto,Auto">
 			<Button Margin="0,0,5,0" FontSize="25" VerticalAlignment="Stretch" VerticalContentAlignment="Center"
 					Content="Cofnij" Command="{Binding OpenClientSelectionCommand}" />
@@ -25,6 +26,9 @@
 			</StackPanel>
 			<CheckBox Grid.Column="4" Margin="10,0,0,0" FontSize="20" VerticalAlignment="Center" IsChecked="{Binding AddToSmsGroup, Mode=TwoWay}" Content="Dodać do wysyłki SMS" />
 		</Grid>
+		<TextBlock IsVisible="{Binding LastClosedText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Margin="10,0,5,3" FontSize="18" FontWeight="SemiBold"
+		           Foreground="{DynamicResource AppGood}" Text="{Binding LastClosedText}" />
+		</StackPanel>
 		
 		<Expander Grid.Row="1" Margin="5,0,5,5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" IsExpanded="False" FontSize="18" Header="{Binding NotesHeader}">
 			<Grid ColumnDefinitions="*,*" Margin="0,5,0,0">
@@ -62,7 +66,8 @@
                        Text="Kupione przez klienta"
                        ToolTip.Tip="Produkty, które TEN klient faktycznie kupił (sprzedane)." />
             <Grid Grid.Column="0" Grid.Row="1" Grid.RowSpan="2" Margin="0,0,5,0">
-                <avedit:TextEditor Name="order" FontSize="20" ShowLineNumbers="False" WordWrap="True" Background="{DynamicResource AppEditorBackground}" Foreground="{DynamicResource AppEditorForeground}" BorderBrush="Gray" BorderThickness="2" Padding="5" />
+                <avedit:TextEditor Name="order" FontSize="20" ShowLineNumbers="False" WordWrap="True" Background="{DynamicResource AppEditorBackground}" Foreground="{DynamicResource AppEditorForeground}" BorderBrush="Gray" BorderThickness="2" Padding="5,5,45,5" />
+                <Canvas Name="orderArrows" ClipToBounds="True" Margin="2" />
                 <TextBlock Name="orderWatermark" Text="Zamówienie" Foreground="DimGray" FontSize="20" Margin="7,7,0,0" IsHitTestVisible="False" />
             </Grid>
             <Grid Grid.Column="1" Grid.Row="1" Margin="5,0,0,5">

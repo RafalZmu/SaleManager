@@ -39,7 +39,10 @@ namespace SaleManeger.Repositories
                     ""SaleID"" TEXT NULL,
                     ""FirstPurchaseTime"" TEXT NULL,
                     ""FirstOrderTime"" TEXT NULL,
-                    ""ExpectedArrivalTime"" TEXT NULL
+                    ""ExpectedArrivalTime"" TEXT NULL,
+                    ""ServiceStartTime"" TEXT NULL,
+                    ""ServiceEndTime"" TEXT NULL,
+                    ""ServiceSeconds"" REAL NOT NULL DEFAULT 0
                 );
             ");
 
@@ -53,6 +56,9 @@ namespace SaleManeger.Repositories
             ");
 
             EnsureClientsColumns(context);
+            EnsureColumn(context, "ClientSaleInfos", "ServiceStartTime", "TEXT NULL");
+            EnsureColumn(context, "ClientSaleInfos", "ServiceEndTime", "TEXT NULL");
+            EnsureColumn(context, "ClientSaleInfos", "ServiceSeconds", "REAL NOT NULL DEFAULT 0");
 
             _context = context;
         }

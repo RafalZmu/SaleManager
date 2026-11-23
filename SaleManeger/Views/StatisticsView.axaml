@@ -167,6 +167,256 @@
 				</Grid>
 			</TabItem>
 
+
+			<!-- TAB 4: Czas obsługi (four groups of views, so it stays one tab) -->
+			<TabItem>
+				<TabItem.Header>
+					<TextBlock Text="Czas obsługi" FontSize="24" FontWeight="Bold" Margin="10,5"/>
+				</TabItem.Header>
+				<Grid DataContext="{Binding Service}" RowDefinitions="Auto,*" Margin="0,15,0,0">
+					<StackPanel Orientation="Horizontal" Spacing="15" Margin="0,0,0,8">
+						<TextBlock Text="Zakres:" VerticalAlignment="Center" FontSize="20" FontWeight="SemiBold"/>
+						<ComboBox Items="{Binding Scopes}" SelectedItem="{Binding SelectedScope, Mode=TwoWay}" FontSize="20" Width="300">
+							<ComboBox.ItemTemplate>
+								<DataTemplate>
+									<TextBlock Text="{Binding DisplayName}" />
+								</DataTemplate>
+							</ComboBox.ItemTemplate>
+						</ComboBox>
+						<TextBlock VerticalAlignment="Center" FontSize="14" Foreground="Gray" TextWrapping="Wrap" MaxWidth="650"
+						           Text="Czas liczy się od wpisania pierwszego kupionego produktu z wagą do zamknięcia klienta. Przerwy dłuższe niż 5 minut liczą się tylko jako 5 minut." />
+					</StackPanel>
+
+					<TextBlock Grid.Row="1" IsVisible="{Binding HasNoData}" FontSize="20" Foreground="Gray" TextWrapping="Wrap" Text="{Binding EmptyText}" />
+
+					<TabControl Grid.Row="1" IsVisible="{Binding HasData}">
+
+						<!-- 1: Podsumowanie -->
+						<TabItem>
+							<TabItem.Header>
+								<TextBlock Text="Podsumowanie" FontSize="18" FontWeight="SemiBold" Margin="6,3"/>
+							</TabItem.Header>
+							<ScrollViewer VerticalScrollBarVisibility="Auto">
+								<StackPanel Margin="0,10,10,10" Spacing="10">
+									<WrapPanel Orientation="Horizontal">
+										<Border Margin="0,0,10,10" Padding="14,8" Background="{DynamicResource AppSurface}" BorderBrush="{DynamicResource AppBorder}" BorderThickness="1" CornerRadius="6" MinWidth="150">
+											<StackPanel>
+												<TextBlock Text="Obsłużeni klienci" FontSize="14" Foreground="Gray" />
+												<TextBlock Text="{Binding CountText}" FontSize="28" FontWeight="Bold" />
+											</StackPanel>
+										</Border>
+										<Border Margin="0,0,10,10" Padding="14,8" Background="{DynamicResource AppSurface}" BorderBrush="{DynamicResource AppBorder}" BorderThickness="1" CornerRadius="6" MinWidth="150">
+											<StackPanel>
+												<TextBlock Text="Średni czas" FontSize="14" Foreground="Gray" />
+												<TextBlock Text="{Binding AverageText}" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource AppGood}" />
+											</StackPanel>
+										</Border>
+										<Border Margin="0,0,10,10" Padding="14,8" Background="{DynamicResource AppSurface}" BorderBrush="{DynamicResource AppBorder}" BorderThickness="1" CornerRadius="6" MinWidth="150" ToolTip.Tip="Połowa klientów była obsłużona szybciej, połowa wolniej">
+											<StackPanel>
+												<TextBlock Text="Mediana" FontSize="14" Foreground="Gray" />
+												<TextBlock Text="{Binding MedianText}" FontSize="28" FontWeight="Bold" />
+											</StackPanel>
+										</Border>
+										<Border Margin="0,0,10,10" Padding="14,8" Background="{DynamicResource AppSurface}" BorderBrush="{DynamicResource AppBorder}" BorderThickness="1" CornerRadius="6" MinWidth="150">
+											<StackPanel>
+												<TextBlock Text="Najszybszy" FontSize="14" Foreground="Gray" />
+												<TextBlock Text="{Binding FastestText}" FontSize="28" FontWeight="Bold" />
+											</StackPanel>
+										</Border>
+										<Border Margin="0,0,10,10" Padding="14,8" Background="{DynamicResource AppSurface}" BorderBrush="{DynamicResource AppBorder}" BorderThickness="1" CornerRadius="6" MinWidth="150">
+											<StackPanel>
+												<TextBlock Text="Najwolniejszy" FontSize="14" Foreground="Gray" />
+												<TextBlock Text="{Binding SlowestText}" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource AppBad}" />
+											</StackPanel>
+										</Border>
+										<Border Margin="0,0,10,10" Padding="14,8" Background="{DynamicResource AppSurface}" BorderBrush="{DynamicResource AppBorder}" BorderThickness="1" CornerRadius="6" MinWidth="150" ToolTip.Tip="90% klientów obsłużono szybciej niż ten czas">
+											<StackPanel>
+												<TextBlock Text="90% szybciej niż" FontSize="14" Foreground="Gray" />
+												<TextBlock Text="{Binding Percentile90Text}" FontSize="28" FontWeight="Bold" />
+											</StackPanel>
+										</Border>
+										<Border Margin="0,0,10,10" Padding="14,8" Background="{DynamicResource AppSurface}" BorderBrush="{DynamicResource AppBorder}" BorderThickness="1" CornerRadius="6" MinWidth="150" ToolTip.Tip="Łączny czas obsługi wszystkich klientów w zakresie">
+											<StackPanel>
+												<TextBlock Text="Łącznie przy kliencie" FontSize="14" Foreground="Gray" />
+												<TextBlock Text="{Binding TotalText}" FontSize="28" FontWeight="Bold" />
+											</StackPanel>
+										</Border>
+										<Border Margin="0,0,10,10" Padding="14,8" Background="{DynamicResource AppSurface}" BorderBrush="{DynamicResource AppBorder}" BorderThickness="1" CornerRadius="6" MinWidth="150" ToolTip.Tip="Ilu klientów da się obsłużyć w godzinę ciągłej obsługi">
+											<StackPanel>
+												<TextBlock Text="Klientów na godzinę" FontSize="14" Foreground="Gray" />
+												<TextBlock Text="{Binding ClientsPerHourText}" FontSize="28" FontWeight="Bold" />
+											</StackPanel>
+										</Border>
+										<Border Margin="0,0,10,10" Padding="14,8" Background="{DynamicResource AppSurface}" BorderBrush="{DynamicResource AppBorder}" BorderThickness="1" CornerRadius="6" MinWidth="150">
+											<StackPanel>
+												<TextBlock Text="Czas na 1 kg" FontSize="14" Foreground="Gray" />
+												<TextBlock Text="{Binding PerKgText}" FontSize="28" FontWeight="Bold" />
+											</StackPanel>
+										</Border>
+										<Border Margin="0,0,10,10" Padding="14,8" Background="{DynamicResource AppSurface}" BorderBrush="{DynamicResource AppBorder}" BorderThickness="1" CornerRadius="6" MinWidth="150">
+											<StackPanel>
+												<TextBlock Text="Czas na 1 pozycję" FontSize="14" Foreground="Gray" />
+												<TextBlock Text="{Binding PerItemText}" FontSize="28" FontWeight="Bold" />
+											</StackPanel>
+										</Border>
+										<Border Margin="0,0,10,10" Padding="14,8" Background="{DynamicResource AppSurface}" BorderBrush="{DynamicResource AppBorder}" BorderThickness="1" CornerRadius="6" MinWidth="150">
+											<StackPanel>
+												<TextBlock Text="Czas na 100 zł" FontSize="14" Foreground="Gray" />
+												<TextBlock Text="{Binding PerHundredText}" FontSize="28" FontWeight="Bold" />
+											</StackPanel>
+										</Border>
+									</WrapPanel>
+
+									<TextBlock Text="Ilu klientów obsłużono w jakim czasie" FontSize="18" FontWeight="SemiBold" />
+									<oxy:PlotView Model="{Binding DistributionPlot}" Background="{DynamicResource AppBackground}" Height="280" />
+
+									<TextBlock Text="Średni czas obsługi w kolejnych sprzedażach" FontSize="18" FontWeight="SemiBold" />
+									<oxy:PlotView Model="{Binding SalePlot}" Background="{DynamicResource AppBackground}" Height="280" />
+
+									<Border Background="{DynamicResource AppSurface}" BorderBrush="{DynamicResource AppBorder}" BorderThickness="1" CornerRadius="5,5,0,0" Padding="15,8">
+										<Grid ColumnDefinitions="2*,1.3*,1*,1.4*,1.4*,1.3*">
+											<TextBlock Text="Sprzedaż" FontWeight="Bold" FontSize="16" />
+											<TextBlock Grid.Column="1" Text="Data" FontWeight="Bold" FontSize="16" />
+											<TextBlock Grid.Column="2" Text="Klienci" FontWeight="Bold" FontSize="16" />
+											<TextBlock Grid.Column="3" Text="Średni czas" FontWeight="Bold" FontSize="16" />
+											<TextBlock Grid.Column="4" Text="Łącznie" FontWeight="Bold" FontSize="16" />
+											<TextBlock Grid.Column="5" Text="Śr. waga" FontWeight="Bold" FontSize="16" />
+										</Grid>
+									</Border>
+									<ItemsControl Items="{Binding SaleRows}" Margin="0,-10,0,0">
+										<ItemsControl.ItemTemplate>
+											<DataTemplate>
+												<Border BorderBrush="{DynamicResource AppBorder}" BorderThickness="1,0,1,1" Padding="15,6">
+													<Grid ColumnDefinitions="2*,1.3*,1*,1.4*,1.4*,1.3*">
+														<TextBlock Text="{Binding SaleName}" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" />
+														<TextBlock Grid.Column="1" Text="{Binding DateText}" FontSize="16" Foreground="Gray" />
+														<TextBlock Grid.Column="2" Text="{Binding Clients}" FontSize="18" />
+														<TextBlock Grid.Column="3" Text="{Binding AverageText}" FontSize="18" Foreground="{DynamicResource AppGood}" />
+														<TextBlock Grid.Column="4" Text="{Binding TotalText}" FontSize="16" />
+														<TextBlock Grid.Column="5" Text="{Binding AverageKgText}" FontSize="16" />
+													</Grid>
+												</Border>
+											</DataTemplate>
+										</ItemsControl.ItemTemplate>
+									</ItemsControl>
+								</StackPanel>
+							</ScrollViewer>
+						</TabItem>
+
+						<!-- 2: Korelacje -->
+						<TabItem>
+							<TabItem.Header>
+								<TextBlock Text="Korelacje" FontSize="18" FontWeight="SemiBold" Margin="6,3"/>
+							</TabItem.Header>
+							<Grid RowDefinitions="Auto,Auto,*" Margin="0,10,0,0">
+								<StackPanel Orientation="Horizontal" Spacing="15" Margin="0,0,0,8">
+									<TextBlock Text="Czas obsługi a:" VerticalAlignment="Center" FontSize="20" FontWeight="SemiBold"/>
+									<ComboBox Items="{Binding MetricOptions}" SelectedItem="{Binding SelectedMetric, Mode=TwoWay}" FontSize="20" Width="360">
+										<ComboBox.ItemTemplate>
+											<DataTemplate>
+												<TextBlock Text="{Binding DisplayName}" />
+											</DataTemplate>
+										</ComboBox.ItemTemplate>
+									</ComboBox>
+								</StackPanel>
+								<StackPanel Grid.Row="1" Margin="0,0,0,8" Spacing="2">
+									<TextBlock Text="{Binding CorrelationText}" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" Foreground="{DynamicResource AppWarn}" />
+									<ItemsControl Items="{Binding CorrelationOverview}">
+										<ItemsControl.ItemTemplate>
+											<DataTemplate>
+												<TextBlock Text="{Binding}" FontSize="14" Foreground="Gray" />
+											</DataTemplate>
+										</ItemsControl.ItemTemplate>
+									</ItemsControl>
+									<TextBlock FontSize="13" Foreground="Gray" TextWrapping="Wrap"
+									           Text="r bliski 1 = im więcej, tym dłużej; bliski 0 = brak związku. Każda kropka to jeden klient, linia to średni trend." />
+								</StackPanel>
+								<oxy:PlotView Grid.Row="2" Model="{Binding CorrelationPlot}" Background="{DynamicResource AppBackground}" MinHeight="260" />
+							</Grid>
+						</TabItem>
+
+						<!-- 3: Produkty -->
+						<TabItem>
+							<TabItem.Header>
+								<TextBlock Text="Produkty" FontSize="18" FontWeight="SemiBold" Margin="6,3"/>
+							</TabItem.Header>
+							<Grid RowDefinitions="Auto,Auto,*" Margin="0,10,0,0">
+								<TextBlock Margin="0,0,0,8" FontSize="14" Foreground="Gray" TextWrapping="Wrap"
+								           Text="Czas na pozycję = czas klienta podzielony po równo na kupione pozycje, uśredniony dla produktu (przybliżenie). Różnica = średni czas klientów z tym produktem minus średnia wszystkich." />
+								<Border Grid.Row="1" Background="{DynamicResource AppSurface}" BorderBrush="{DynamicResource AppBorder}" BorderThickness="1" CornerRadius="5,5,0,0" Padding="15,8">
+									<Grid ColumnDefinitions="2*,1*,1.4*,1.4*,1.4*,1.2*">
+										<TextBlock Text="Produkt" FontWeight="Bold" FontSize="16" />
+										<TextBlock Grid.Column="1" Text="Klienci" FontWeight="Bold" FontSize="16" />
+										<TextBlock Grid.Column="2" Text="Czas na pozycję" FontWeight="Bold" FontSize="16" />
+										<TextBlock Grid.Column="3" Text="Śr. czas klienta" FontWeight="Bold" FontSize="16" />
+										<TextBlock Grid.Column="4" Text="Różnica" FontWeight="Bold" FontSize="16" />
+										<TextBlock Grid.Column="5" Text="Sprzedane" FontWeight="Bold" FontSize="16" />
+									</Grid>
+								</Border>
+								<ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+									<ItemsControl Items="{Binding ProductRows}">
+										<ItemsControl.ItemTemplate>
+											<DataTemplate>
+												<Border BorderBrush="{DynamicResource AppBorder}" BorderThickness="1,0,1,1" Padding="15,6">
+													<Grid ColumnDefinitions="2*,1*,1.4*,1.4*,1.4*,1.2*">
+														<TextBlock Text="{Binding Name}" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" />
+														<TextBlock Grid.Column="1" Text="{Binding Clients}" FontSize="16" />
+														<TextBlock Grid.Column="2" Text="{Binding PerLineText}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource AppWarn}" />
+														<TextBlock Grid.Column="3" Text="{Binding AverageText}" FontSize="16" />
+														<TextBlock Grid.Column="4" Text="{Binding DifferenceText}" FontSize="16" />
+														<TextBlock Grid.Column="5" Text="{Binding KgText}" FontSize="16" />
+													</Grid>
+												</Border>
+											</DataTemplate>
+										</ItemsControl.ItemTemplate>
+									</ItemsControl>
+								</ScrollViewer>
+							</Grid>
+						</TabItem>
+
+						<!-- 4: Pory dnia i klienci -->
+						<TabItem>
+							<TabItem.Header>
+								<TextBlock Text="Pory dnia i klienci" FontSize="18" FontWeight="SemiBold" Margin="6,3"/>
+							</TabItem.Header>
+							<ScrollViewer VerticalScrollBarVisibility="Auto">
+								<StackPanel Margin="0,10,10,10" Spacing="10">
+									<TextBlock Text="Średni czas obsługi wg godziny rozpoczęcia (w nawiasie liczba klientów)" FontSize="18" FontWeight="SemiBold" />
+									<oxy:PlotView Model="{Binding HourPlot}" Background="{DynamicResource AppBackground}" Height="280" />
+
+									<TextBlock Text="Klienci od najdłużej obsługiwanych" FontSize="18" FontWeight="SemiBold" Margin="0,10,0,0" />
+									<Border Background="{DynamicResource AppSurface}" BorderBrush="{DynamicResource AppBorder}" BorderThickness="1" CornerRadius="5,5,0,0" Padding="15,8">
+										<Grid ColumnDefinitions="2.5*,1*,1.4*,1.4*,1.4*">
+											<TextBlock Text="Klient" FontWeight="Bold" FontSize="16" />
+											<TextBlock Grid.Column="1" Text="Wizyty" FontWeight="Bold" FontSize="16" />
+											<TextBlock Grid.Column="2" Text="Śr. czas" FontWeight="Bold" FontSize="16" />
+											<TextBlock Grid.Column="3" Text="Śr. wartość" FontWeight="Bold" FontSize="16" />
+											<TextBlock Grid.Column="4" Text="Czas na 1 kg" FontWeight="Bold" FontSize="16" />
+										</Grid>
+									</Border>
+									<ItemsControl Items="{Binding ClientRows}" Margin="0,-10,0,0">
+										<ItemsControl.ItemTemplate>
+											<DataTemplate>
+												<Border BorderBrush="{DynamicResource AppBorder}" BorderThickness="1,0,1,1" Padding="15,6">
+													<Grid ColumnDefinitions="2.5*,1*,1.4*,1.4*,1.4*">
+														<TextBlock Text="{Binding Name}" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" />
+														<TextBlock Grid.Column="1" Text="{Binding Visits}" FontSize="16" />
+														<TextBlock Grid.Column="2" Text="{Binding AverageText}" FontSize="18" Foreground="{DynamicResource AppGood}" />
+														<TextBlock Grid.Column="3" Text="{Binding ValueText}" FontSize="16" />
+														<TextBlock Grid.Column="4" Text="{Binding PerKgText}" FontSize="16" />
+													</Grid>
+												</Border>
+											</DataTemplate>
+										</ItemsControl.ItemTemplate>
+									</ItemsControl>
+								</StackPanel>
+							</ScrollViewer>
+						</TabItem>
+
+					</TabControl>
+				</Grid>
+			</TabItem>
+
 		</TabControl>
 	</Grid>
 </UserControl>

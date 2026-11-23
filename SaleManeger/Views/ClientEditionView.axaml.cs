@@ -4,6 +4,7 @@ using Avalonia.Threading;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using AvaloniaEdit.Rendering;
+using Avalonia.Layout;
 using SaleManeger.Models;
 using SaleManeger.Services;
 using SaleManeger.ViewModels;
@@ -19,6 +20,8 @@ public partial class ClientEditionView : UserControl
 {
     private List<Product> _products = null;
     private OrderColorizer _colorizer;
+    private HashSet<string> _productNames = new HashSet<string>();
+    private readonly List<Button> _arrowButtons = new List<Button>();
     private readonly DispatcherTimer _autoSaveTimer = new() { Interval = TimeSpan.FromSeconds(20) };
 
     public ClientEditionView()
@@ -99,6 +102,15 @@ public partial class ClientEditionView : UserControl
                 order.TextArea.TextView.LineTransformers.Add(_colorizer);
             }
 
+            _productNames = new HashSet<string>((vm.ProductsList ?? Enumerable.Empty<Product>()).Select(x => x.Name));
+            var textView = order.TextArea.TextView;
+            textView.VisualLinesChanged -= OrderLayoutChanged;
+            textView.VisualLinesChanged += OrderLayoutChanged;
+            textView.ScrollOffsetChanged -= OrderLayoutChanged;
+            textView.ScrollOffsetChanged += OrderLayoutChanged;
+            orderArrows.LayoutUpdated -= OrderLayoutChanged;
+            orderArrows.LayoutUpdated += OrderLayoutChanged;
+
             order.TextChanged -= Order_TextChanged;
             order.TextChanged += Order_TextChanged;
 
@@ -107,6 +119,94 @@ public partial class ClientEditionView : UserControl
 
             UpdateColors();
         }
+    }
+
+    // The arrows live on a layer over the order box, at its right edge, so the text cursor never sees them.
+    private double _arrowLayoutWidth = -1;
+
+    private void OrderLayoutChanged(object sender, EventArgs e)
+    {
+        // LayoutUpdated fires often; only react to it when the width moved.
+        if (sender == orderArrows)
+        {
+            if (orderArrows.Bounds.Width == _arrowLayoutWidth)
+                return;
+            _arrowLayoutWidth = orderArrows.Bounds.Width;
+        }
+        UpdateOrderArrows();
+    }
+
+    private void UpdateOrderArrows()
+    {
+        var textView = order.TextArea.TextView;
+        var rows = new List<(string Name, double Top)>();
+        if (textView.VisualLinesValid)
+        {
+            foreach (var visualLine in textView.VisualLines)
+            {
+                var line = visualLine.FirstDocumentLine;
+                var name = ProductNameOf(order.Document.GetText(line.Offset, line.Length));
+                if (name == null)
+                    continue;
+                var point = Avalonia.VisualExtensions.TranslatePoint(textView, new Avalonia.Point(0, visualLine.VisualTop - textView.ScrollOffset.Y), orderArrows);
+                if (point != null)
+                    rows.Add((name, point.Value.Y));
+            }
+        }
+
+        while (_arrowButtons.Count < rows.Count)
+        {
+            var button = new Button
+            {
+                Content = "→",
+                FontSize = 16,
+                Padding = new Avalonia.Thickness(8, 0),
+                Focusable = false,
+                Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand),
+            };
+            button.Click += (b, _) =>
+            {
+                if (((Button)b).Tag is string productName)
+                    AddOrderedProductToSale(productName);
+            };
+            _arrowButtons.Add(button);
+            orderArrows.Children.Add(button);
+        }
+
+        for (int i = 0; i < _arrowButtons.Count; i++)
+        {
+            var button = _arrowButtons[i];
+            if (i >= rows.Count)
+            {
+                button.IsVisible = false;
+                continue;
+            }
+            button.IsVisible = true;
+            button.Tag = rows[i].Name;
+            ToolTip.SetTip(button, $"Dodaj \"{rows[i].Name}\" do kupionych (waga do wpisania)");
+            Canvas.SetLeft(button, Math.Max(0, orderArrows.Bounds.Width - 50));
+            Canvas.SetTop(button, rows[i].Top);
+        }
+    }
+
+    private string ProductNameOf(string lineText)
+    {
+        var colon = lineText.IndexOf(':');
+        if (colon <= 0)
+            return null;
+        var name = lineText.Substring(0, colon).Trim();
+        return _productNames.Contains(name) ? name : null;
+    }
+
+    // The arrow at the end of an ordered line: puts the product in the bought box with the amount left empty.
+    private void AddOrderedProductToSale(string productName)
+    {
+        var text = sale.Text ?? "";
+        var prefix = text.Length == 0 || text.EndsWith((char)10) ? "" : "\n";
+        sale.Document.Insert(sale.Document.TextLength, $"{prefix}{productName}: ");
+        sale.CaretOffset = sale.Document.TextLength;
+        sale.Focus();
+        sale.TextArea.Caret.BringCaretToView();
     }
 
     private void Order_TextChanged(object sender, EventArgs e)

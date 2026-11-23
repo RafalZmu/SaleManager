@@ -92,6 +92,10 @@ namespace SaleManeger.Services
         public Dictionary<string, DateTime> FirstActivityBySale { get; init; }
         public Dictionary<string, List<OrderLine>> LinesBySale { get; init; }
 
+        // Timed clients (see ServiceTimer) and the names to show for them.
+        public List<ServiceInfoRow> ServiceInfos { get; init; }
+        public Dictionary<string, string> ClientNames { get; init; }
+
         public static SalesSnapshot Load(IProjectRepository dataBase)
         {
             var products = dataBase.GetAll<Product>().AsNoTracking().ToList();
@@ -118,8 +122,23 @@ namespace SaleManeger.Services
                 .Select(g => new { SaleID = g.Key, First = g.Min(x => x.Date) })
                 .ToDictionary(x => x.SaleID, x => x.First);
 
+            var serviceInfos = dataBase.GetAll<ClientSaleInfo>()
+                .Where(x => x.ServiceStartTime != null && x.ServiceSeconds > 0)
+                .Select(x => new { x.SaleID, x.ClientID, x.ServiceStartTime, x.ServiceSeconds })
+                .AsEnumerable()
+                .Select(x => new ServiceInfoRow { SaleID = x.SaleID, ClientID = x.ClientID, Start = x.ServiceStartTime.Value, Seconds = x.ServiceSeconds })
+                .ToList();
+
+            var clientNames = dataBase.GetAll<Client>()
+                .Select(x => new { x.ID, x.Name, x.PhoneNumber })
+                .AsEnumerable()
+                .GroupBy(x => x.ID)
+                .ToDictionary(g => g.Key, g => string.Join(" ", new[] { g.First().Name, g.First().PhoneNumber }.Where(t => !string.IsNullOrWhiteSpace(t))));
+
             return new SalesSnapshot
             {
+                ServiceInfos = serviceInfos,
+                ClientNames = clientNames,
                 FirstActivityBySale = firstActivity,
                 Sales = sales,
                 Products = products,

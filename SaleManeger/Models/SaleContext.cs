@@ -24,7 +24,9 @@ namespace SaleManeger.Models
         public SaleContext(string givenPath = null)
         {
             string path;
-            if (givenPath == null)
+            // SALEMANAGER_DATA_DIR lets the program run against another folder (for example a copy of the database).
+            givenPath ??= Environment.GetEnvironmentVariable("SALEMANAGER_DATA_DIR");
+            if (string.IsNullOrEmpty(givenPath))
             {
                 var folder = Environment.SpecialFolder.LocalApplicationData;
                 path = Environment.GetFolderPath(folder);

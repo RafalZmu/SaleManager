@@ -21,6 +21,9 @@ namespace SaleManeger.ViewModels
         private ViewModelBase content;
         private SaleContext _saleContext;
 
+        // The client closed last; shown on the client list and on the next client's screen.
+        private LastClosedClient _lastClosed;
+
         #endregion Private Fields
 
         #region Public Properties
@@ -83,13 +86,14 @@ namespace SaleManeger.ViewModels
 
         public void OpenClientEdition(Client client)
         {
-            var clientEditionViewModel = new ClientEditionViewModel(_dataBase, client, _saleName);
+            var clientEditionViewModel = new ClientEditionViewModel(_dataBase, client, _saleName, _lastClosed ?? LastClosedClient.FromDatabase(_dataBase, _saleName));
             Content = clientEditionViewModel;
 
             clientEditionViewModel.OpenClientSelectionCommand.Subscribe(x => 
             {
                 if (!string.IsNullOrWhiteSpace(x))
                 {
+                    _lastClosed = clientEditionViewModel.ClosedSummary() ?? _lastClosed;
                     OpenClientSelection(x);
                 }
             });
@@ -97,6 +101,7 @@ namespace SaleManeger.ViewModels
             {
                 if (!string.IsNullOrWhiteSpace(clientId))
                 {
+                    _lastClosed = clientEditionViewModel.ClosedSummary() ?? _lastClosed;
                     OpenClientHistory(clientId);
                 }
             });
@@ -112,7 +117,8 @@ namespace SaleManeger.ViewModels
         public void OpenClientSelection(string saleName)
         {
             _saleName = saleName;
-            var clientSelectionViewModel = new ClientSelectionViewModel(saleName, _dataBase, _selected, _advancedFilters, _selectedTags);
+            var clientSelectionViewModel = new ClientSelectionViewModel(saleName, _dataBase, _selected, _advancedFilters, _selectedTags,
+                _lastClosed ?? LastClosedClient.FromDatabase(_dataBase, saleName));
             _advancedFilters = clientSelectionViewModel.AdvancedFilters;
             _selectedTags = clientSelectionViewModel.SelectedTags;
             Content = clientSelectionViewModel;

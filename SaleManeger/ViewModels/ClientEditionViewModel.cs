@@ -44,9 +44,25 @@ namespace SaleManeger.ViewModels
         private TimeSpan? _expectedArrivalTime;
         private bool _hasIgnoredTimeWarning = false;
 
+        // Time of serving this client, see ServiceTimer. Tracking starts after the screen is filled from the database.
+        private readonly ServiceTimer _serviceTimer = new();
+        private double _savedServiceSeconds;
+        private bool _trackService;
+        private string _lastClosedText;
+
 		#endregion Fields
 
 		#region Properties
+
+		/// <summary>The clock used for timing the service; tests replace it.</summary>
+		public Func<DateTime> Clock { get; set; } = () => DateTime.Now;
+
+		/// <summary>The client closed before this one, e.g. "Ostatnio zamknięty: Jan · 600 · kupione za 85.00 zł". Null when there is none.</summary>
+		public string LastClosedText
+		{
+			get => _lastClosedText;
+			private set => this.RaiseAndSetIfChanged(ref _lastClosedText, value);
+		}
 
 		public Client Client { get; set; }
 		public string ClientID { get; set; }
@@ -165,9 +181,12 @@ namespace SaleManeger.ViewModels
 			get => _sale;
 			set
 			{
-				if (_sale != value)
+				var changed = _sale != value;
+				if (changed)
 					MarkDirty();
 				_sale = value;
+				if (changed)
+					TrackServiceActivity();
 				UpdateSaleSum();
 			}
 		}
@@ -220,8 +239,10 @@ namespace SaleManeger.ViewModels
 
 		#region Public Constructors
 
-		public ClientEditionViewModel(IProjectRepository db, Client client, string saleID)
+		public ClientEditionViewModel(IProjectRepository db, Client client, string saleID, LastClosedClient lastClosed = null)
 		{
+			// Reopening the client that was closed last says nothing new, so it is not shown.
+			LastClosedText = lastClosed != null && lastClosed.ClientID != client.ID ? lastClosed.Text : null;
 			_dataBase = db;
 			_saleID = saleID;
 			_name = client.Name;
@@ -278,6 +299,7 @@ namespace SaleManeger.ViewModels
 			}
 
             var clientSaleInfo = _dataBase.GetAll<ClientSaleInfo>().FirstOrDefault(x => x.ClientID == client.ID && x.SaleID == _saleID);
+            _savedServiceSeconds = clientSaleInfo?.ServiceSeconds ?? 0;
             if (clientSaleInfo != null && clientSaleInfo.ExpectedArrivalTime.HasValue)
             {
                 _expectedArrivalDate = clientSaleInfo.ExpectedArrivalTime.Value.Date;
@@ -288,6 +310,7 @@ namespace SaleManeger.ViewModels
 
 			// Filling the boxes from the database is not an edit.
 			IsDirty = false;
+			_trackService = true;
 		}
 
         #endregion Public Constructors
@@ -421,6 +444,33 @@ namespace SaleManeger.ViewModels
 		#endregion Public Methods
 
 		#region Private Methods
+
+		// The timer starts with the first bought item that has an amount; removing every bought line stops it again.
+		private void TrackServiceActivity()
+		{
+			if (!_trackService)
+				return;
+			var lines = (_sale ?? "").Split((char)10).Where(x => x.Contains(':')).ToList();
+			if (lines.Count == 0)
+				_serviceTimer.Cancel();
+			else if (lines.Any(x => OrderValue.TryParse(x.Split(':')[1], out _)))
+				_serviceTimer.Activity(Clock());
+		}
+
+		/// <summary>Who was closed and what they bought; the main window shows it on the next screens.</summary>
+		public LastClosedClient ClosedSummary()
+		{
+			if (string.IsNullOrWhiteSpace(Name) && string.IsNullOrWhiteSpace(Number))
+				return null;
+			return new LastClosedClient
+			{
+				ClientID = ClientID,
+				Name = Name,
+				Number = Number,
+				BoughtValue = LastClosedClient.BoughtValueOf(Sale),
+				ClosedAt = Clock()
+			};
+		}
 
 		private void MarkDirty()
 		{
@@ -630,11 +680,36 @@ namespace SaleManeger.ViewModels
                 info.ExpectedArrivalTime = null;
             }
 
+            ApplyServiceTime(info);
+
             if (isNew) _dataBase.Add(info);
             else _dataBase.Update(info);
 
 			SaveClientOrder(_dataBase, Client, _saleID);
 			IsDirty = false;
+		}
+
+		// Writes the serving time. Visits add up: what earlier visits saved is kept and this visit's time is added.
+		private void ApplyServiceTime(ClientSaleInfo info)
+		{
+			var now = Clock();
+			_serviceTimer.Checkpoint(now);
+
+			if (!Client.Products.Any(x => !x.IsReserved && x.ID != "" && x.ID != OrderValue.CommentProductId))
+			{
+				// Nothing bought (any more), so there is nothing to time.
+				info.ServiceStartTime = null;
+				info.ServiceEndTime = null;
+				info.ServiceSeconds = 0;
+				_savedServiceSeconds = 0;
+				return;
+			}
+
+			if (!_serviceTimer.IsRunning)
+				return;
+			info.ServiceStartTime ??= _serviceTimer.Started;
+			info.ServiceEndTime = now;
+			info.ServiceSeconds = _savedServiceSeconds + _serviceTimer.Seconds;
 		}
 
 		private void UpdateSaleSum()

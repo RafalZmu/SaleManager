@@ -88,6 +88,10 @@ namespace SaleManeger.ViewModels
 
         public ReactiveCommand<Unit, Unit> ClearFiltersCommand { get; }
 
+        // "Ostatnio zamknięty: name · number · kupione za 85.00 zł"; null before anyone was closed in this sale.
+        public string LastClosedText { get; }
+        public bool HasLastClosed => !string.IsNullOrEmpty(LastClosedText);
+
         // Tags ticked in the flyout; a client matches when it has at least one of them.
         // The collection is handed on to the next visit of this screen like AdvancedFilters.
         public ObservableCollection<string> SelectedTags { get; }
@@ -180,9 +184,11 @@ namespace SaleManeger.ViewModels
         #region Public Constructors
 
         public ClientSelectionViewModel(string saleID, IProjectRepository dataBase, List<bool> selected,
-            IEnumerable<ClientFilterRule> advancedFilters = null, IEnumerable<string> selectedTags = null)
+            IEnumerable<ClientFilterRule> advancedFilters = null, IEnumerable<string> selectedTags = null,
+            LastClosedClient lastClosed = null)
         {
             SaleID = saleID;
+            LastClosedText = lastClosed?.Text;
             _dataBase = dataBase;
             SelectedTags = new ObservableCollection<string>(selectedTags ?? Enumerable.Empty<string>());
 

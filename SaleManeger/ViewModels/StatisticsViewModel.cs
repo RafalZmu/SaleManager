@@ -168,6 +168,15 @@ namespace SaleManeger.ViewModels
 
         public bool HasProductPerformance => ProductPerformance.Count > 0;
 
+        // ---- Czas obsługi ----
+
+        private ServiceStatisticsViewModel _service;
+        public ServiceStatisticsViewModel Service
+        {
+            get => _service;
+            private set => this.RaiseAndSetIfChanged(ref _service, value);
+        }
+
         public StatisticsViewModel(IProjectRepository db)
         {
             // Going back is held until the read ends: the database context must not be used from two places at once.
@@ -186,6 +195,7 @@ namespace SaleManeger.ViewModels
             InitializeScopes();
             CalculateSaleTrends();
             SelectedPerformanceScope = PerformanceScopes[1];
+            Service = new ServiceStatisticsViewModel(data);
             LoadMessage = "";
             IsLoading = false;
         }
